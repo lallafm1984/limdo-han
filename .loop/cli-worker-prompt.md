@@ -4,10 +4,10 @@
 
 ## 시작 절차
 
-1. `AGENTS.md`, `CLI_AUTOMATION.md`, `QA_CHECKLIST.md`, `LOOP_GOAL.md`, `.loop/queue.md`, `.loop/state.md`, `.loop/history.md` 최신 항목을 읽는다.
+1. `AGENTS.md`, `CLI_AUTOMATION.md`, `QA_CHECKLIST.md`, `LOOP_GOAL.md`, `.loop/queue.md`, `.loop/state.md`, `.loop/history.md`, `.loop/qa-findings.md`, `.loop/user-directives.md` 최신 항목을 읽는다.
 2. `git status`를 확인하고 기존 변경과 관련 없는 변경을 모두 보존한다.
 3. 앱 코드를 바꾸기 전에 `./scripts/check-automation.sh`를 실행한다.
-4. 활성 루프만 작업한다. 활성 루프가 없으면 이미 정의된 `준비` 항목만 활성화할 수 있다. 둘 다 없으면 변경 없이 한글로 유휴 상태를 보고하고 종료한다.
+4. 활성 루프만 작업한다. 활성 루프가 없으면 이미 정의된 `준비` 항목만 활성화할 수 있다. 둘 다 없으면 자동 QA 전환 실패를 한글로 보고하고 종료한다.
 
 ## 한 번의 반복 계약
 
@@ -21,11 +21,13 @@
 
 ## 완료와 안전
 
-- 모든 성공 조건에 새 근거가 있으면 최종 검증, 큐·상태 완료 처리, 로컬 체크포인트 커밋 하나, `git push origin HEAD` 일반 push를 순서대로 수행하고 push 성공을 확인한 뒤 종료한다.
+- 모든 성공 조건에 새 근거가 있으면 최종 검증 뒤 정확한 2340 × 1080에서 핵심 흐름을 새로 캡처해 `아이 대리 QA`한다. 발견을 `.loop/qa-findings.md`와 `.loop/history.md`에 기록하고 가장 중요한 미해결 불편 하나로 다음 번호 루프를 만든다.
+- 다음 루프를 만들 때 `LOOP_GOAL.md`, `.loop/queue.md`, `.loop/state.md`를 함께 갱신한다. 새 불편이 없으면 구체적인 미검증 흐름 하나를 QA 탐색 목표로 만든다. 다음 루프 구현은 시작하지 않는다.
+- 완료 루프와 준비된 다음 루프를 로컬 체크포인트 커밋 하나로 만들고 `git push origin HEAD` 일반 push 성공을 확인한 뒤 종료한다.
 - 중지 조건이면 루프를 `차단`으로 기록하고 이유를 한글로 남긴다.
 - `codex exec`, `codex exec resume`, `codex exec fork`, 감독자 스크립트 또는 중첩 agent 프로세스를 실행하지 않는다.
 - 검증된 루프 완료 커밋의 `git push origin HEAD`만 원격 변경으로 승인되어 있다. 일반 push가 실패하면 정확한 오류를 기록하고 force push하지 않는다.
-- force push, tag, release, pull request, 배포, 외부 메시지, 그 밖의 원격 서비스 변경, 큐 밖 범위 추가, 검증 비활성화, 파괴적 Git·파일 명령을 하지 않는다.
+- force push, tag, release, pull request, 배포, 외부 메시지, 그 밖의 원격 서비스 변경, QA 근거 없는 범위 추가, 검증 비활성화, 파괴적 Git·파일 명령을 하지 않는다.
 - 상태·이력·Markdown 문서와 최종 사용자 보고는 한글로 쓴다. 명령어, 파일명, 코드 식별자, API·상태 토큰은 정확성을 위해 원문을 유지할 수 있다.
 - 계약과 현재 근거에서 안전하게 추론 가능한 일반 구현 선택 때문에 멈추지 않는다.
 

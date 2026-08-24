@@ -15,6 +15,8 @@ $RequiredFiles = @(
     ".loop/queue.md",
     ".loop/state.md",
     ".loop/history.md",
+    ".loop/qa-findings.md",
+    ".loop/user-directives.md",
     ".loop/cli-worker-prompt.md",
     "scripts/run-cli-loop.sh",
     "scripts/start-cli-loop.sh",
@@ -61,6 +63,10 @@ if ($Goal -notmatch '2340 × 1080') { Stop-AutomationCheck "LOOP_GOAL.md에 기�
 if ($QaChecklist -notmatch '1170 px') { Stop-AutomationCheck "QA에 최소 쓰기 너비가 없음" }
 if ($QaChecklist -notmatch '378 px') { Stop-AutomationCheck "QA에 최소 쓰기 높이가 없음" }
 if ($QaChecklist -notmatch '실제 아이 관찰') { Stop-AutomationCheck "실제 아이 관찰 근거 경계가 없음" }
+if ($Queue -notmatch '(?m)^검토 관문: AUTO_CHILD_PROXY_QA$') { Stop-AutomationCheck "자동 아이 대리 QA 전환이 선택되지 않음" }
+if ($CliAutomation -notmatch '다음 루프 하나') { Stop-AutomationCheck "완료 뒤 단일 다음 루프 계약이 없음" }
+if ($WorkerPrompt -notmatch '\.loop/qa-findings\.md') { Stop-AutomationCheck "작업자 지시문에 QA 발견 기록이 없음" }
+if ($WorkerPrompt -notmatch '\.loop/user-directives\.md') { Stop-AutomationCheck "작업자 지시문에 Codex 앱 지시 기록이 없음" }
 
 $GoalLoop = [regex]::Match($Goal, '(?m)^# 루프 목표 ([0-9]{3})').Groups[1].Value
 $StateLoop = [regex]::Match($State, '(?m)^루프: ([0-9]{3})').Groups[1].Value
