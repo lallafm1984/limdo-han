@@ -20,6 +20,9 @@ internal fun SpeechPlaybackState.diagnosticToken(): String = when (this) {
     SpeechPlaybackState.Released -> "자원 해제"
 }
 
+internal val SpeechPlaybackState.canReplay: Boolean
+    get() = this is SpeechPlaybackState.Ready || this is SpeechPlaybackState.Completed
+
 internal class SpeechPlaybackTracker {
     var state: SpeechPlaybackState = SpeechPlaybackState.Initializing
         private set

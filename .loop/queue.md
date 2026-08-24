@@ -2,7 +2,7 @@
 
 실행 단계: CLI
 
-활성 루프: 007
+활성 루프: 008
 
 검토 관문: AUTO_CHILD_PROXY_QA
 
@@ -13,7 +13,8 @@
 | 004 | 완료 | `.loop/history.md` | 검증 완료 후 중지 |
 | 005 | 완료 | 이전 `LOOP_GOAL.md` | 사용자 UI 지시와 아이 대리 QA로 006 생성 |
 | 006 | 완료 | `.loop/user-directives.md`, `QA-001`, `QA-002` | `QA-004`로 007 생성 |
-| 007 | 준비 | `QA-004` | 완료 뒤 `AUTO_CHILD_PROXY_QA` |
+| 007 | 완료 | `QA-004` | `QA-005`로 008 생성 |
+| 008 | 준비 | `QA-005` | 완료 뒤 `AUTO_CHILD_PROXY_QA` |
 
 큐 규칙:
 

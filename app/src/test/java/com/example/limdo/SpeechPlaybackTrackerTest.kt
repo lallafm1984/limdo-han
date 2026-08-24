@@ -4,9 +4,21 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SpeechPlaybackTrackerTest {
+    @Test
+    fun `다시 듣기는 준비 또는 완료 상태에서만 활성이다`() {
+        assertTrue(SpeechPlaybackState.Ready.canReplay)
+        assertTrue(SpeechPlaybackState.Completed(SpokenCue.INITIAL).canReplay)
+        assertFalse(SpeechPlaybackState.Initializing.canReplay)
+        assertFalse(SpeechPlaybackState.Playing(SpokenCue.INITIAL).canReplay)
+        assertFalse(SpeechPlaybackState.Error(SpokenCue.INITIAL).canReplay)
+        assertFalse(SpeechPlaybackState.Unavailable.canReplay)
+        assertFalse(SpeechPlaybackState.Released.canReplay)
+    }
+
     @Test
     fun `모든 재생 상태는 발화문 없는 안정적인 진단 토큰을 제공한다`() {
         val expected = mapOf(

@@ -476,3 +476,40 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 이전 반복 비교·가설 판정: 반복 6의 유일한 P1인 상단 겹침이 사라지고 시작점 연결은 유지되어 가설을 채택했다. `design-qa.md`를 P0·P1·P2 없음, `final result: passed`로 재판정했다.
 - 최종 아이 대리 QA: 문장을 읽지 않고도 도마뱀과 초록 시작점, 오른쪽·아래 화살표, 과녕형 도착점, 진한 아이 횟, 재시도 `↻`, 성공 `★  ✓`, 스피커·지우개 아이콘, 약한 다음 동작을 구분했다. 루프 006 조건 1~14를 모두 완료했다. `실제 아이 관찰: 실행 안 함`.
 - 새 QA·다음 루프: 초기 자동 안내 재생 중 음소거·비활성으로 보이는 다시 듣기가 재생 완료 후 스피커·활성으로 변하는 연속 흐름은 아직 새 근거로 판정하지 않았다. 이를 `QA-004`와 루프 007 QA 탐색 목표로 기록했고, 이번 작업자는 007을 구현하지 않는다.
+
+## 루프 007 — 초기 음성 재생 중 다시 듣기 상태 QA
+
+### 반복 1 — 가설
+
+- 우선 미충족 조건: 정확한 2340 × 1080 cold launch에서 초기 음성의 초기화·준비·재생·완료 callback과 다시 듣기 버튼의 비활성·활성 시각 및 clickable semantics를 시간 순으로 직접 비교한 새 근거가 없다.
+- 가설: 제품 코드를 바꾸지 않고 새 debug APK를 cold launch한 직후부터 짧은 간격으로 화면·UI hierarchy·`LimDoSpeech` 로그를 함께 수집하면, `Initializing`·`Ready`·`Playing` 동안 회색 음소거 아이콘과 비클릭 상태이고 완료 뒤 명도 높은 스피커 아이콘과 클릭 가능 상태로 일치하는지 판정할 수 있다.
+
+### 반복 1 — 결과
+
+- 최초 QA 탐색: 변경 전 APK의 독립 cold launch를 0·150·400·900·1800·3000 ms 시점에 재현해 `captures/loop007/iteration1/`에 화면·hierarchy·로그를 수집했다. 앱 로그는 매 실행에서 `준비 완료` → `재생 중:INITIAL` → `재생 완료:INITIAL` 순서를 보였다.
+- 입증된 문제: 변경 전 1800 ms 화면은 회색 `🔇`였지만 완료 callback 전인 3000 ms 화면은 이미 밝은 `🔊`였다. 코드의 `SpeechPlaybackState.isPlayable`도 `Playing`을 포함해, 재생 중 비활성이라는 성공 조건 3과 불일치했다. 가설의 무변경 통과 예상은 반증됐다.
+- 최소 변경: 다시 듣기 판정을 `SpeechPlaybackState.canReplay`로 분리하고 `Ready`·`Completed`에서만 참이 되게 했다. `Initializing`·`Playing`·`Error`·`Unavailable`·`Released`는 거짓임을 확인하는 단위 테스트를 추가했다. 입력·판정·음성 내용·배치·의존성·권한은 바꾸지 않았다.
+- 자동 검증: `./scripts/verify.sh`의 자동화 계약, 단위 테스트 27개, Android lint, debug build가 모두 통과했고 `git diff --check`도 통과했다.
+- 수정 후 에뮬레이터: 새 APK를 설치하고 앱 데이터를 지운 뒤 물리 1080 × 2340, 앱 2340 × 1080, `ROTATION_90`, focus `com.example.limdo/.MainActivity`를 확인했다. 한 cold launch에서 `준비 완료` 16:26:33.514, `재생 중:INITIAL` 16:26:33.557, `재생 완료:INITIAL` 16:26:37.361을 수집했다.
+- 시각 비교: `fixed-playing.png`은 재생 중 회색·음소거 `🔇`, `fixed-completed.png`은 완료 뒤 밝은 초록 배경·스피커 `🔊`를 보여 callback과 시각 상태가 일치했다. 두 화면 모두 2340 × 1080이며 큰 쓰기 길, 초록 시작점, 오른쪽·아래 방향, 과녁형 끝점, `⌫`, 약한 다음 동작이 유지됐다.
+- 정확한 남은 실패: `fixed-playing.xml`과 `fixed-completed.xml` 모두 다시 듣기 노드를 `clickable="false"`로 노출했다. 완료 뒤 ADB 탭 검증에서도 두 번째 `INITIAL` callback을 새로 얻지 못했다. 따라서 완료 후 실제 클릭 가능 상태와 clickable semantics는 아직 새 근거로 통과하지 못했고 루프를 완료하지 않는다.
+- 아이 대리 점검: 재생 중 회색 `🔇`와 완료 뒤 밝은 `🔊`는 문장을 읽지 않고 구분 가능하며 핵심 쓰기 단서도 유지됐다. 다만 완료 뒤 누를 수 있음은 동작 근거가 없어 부분 통과다. `실제 아이 관찰: 실행 안 함`.
+- 이전 반복 비교: 루프 006은 재생 중 단일 화면만 있었지만 이번에는 callback 전후 연속 시각 근거와 재생 중 조기 활성 결함을 확보하고 수정했다. 남은 문제는 완료 상태의 클릭 semantics와 실제 재생 동작으로 좁혀졌다.
+- 다음 작업: Compose `Surface`의 다시 듣기 semantics와 실제 탭 경로를 좁게 진단해 완료 상태에서만 클릭 가능하고 새 `INITIAL` 재생 callback이 발생하도록 최소 보정한 뒤, 같은 한 cold launch에서 hierarchy와 탭 로그를 다시 수집한다.
+
+### 반복 2 — 가설
+
+- 우선 미충족 조건: 완료 상태의 다시 듣기가 clickable semantics가 있고 실제 탭으로 최신 `INITIAL` 안내를 재생하는지 새 근거가 없다.
+- 가설: 완료 hierarchy의 설명 자식 노드가 아닌 `Surface` 부모 노드와 현재 bounds를 기준으로 판정하고 정중앙을 탭하면, 코드 변경 없이 재생 중 `clickable=true, enabled=false`, 완료 후 `clickable=true, enabled=true`, 탭 후 두 번째 `INITIAL` 재생·완료 callback을 한 cold launch 흐름에서 확인할 수 있다.
+
+### 반복 2 — 결과 및 완료
+
+- 진단: 반복 1은 설명 자식 노드의 `clickable=false`를 버튼 전체 상태로 잘못 판정했다. 같은 bounds의 `Surface` 부모는 완료 상태에서 이미 `clickable=true, enabled=true, focusable=true`였다.
+- 변경: 제품 코드는 바꾸지 않았다. 현재 버튼 bounds `[545,865][918,1033]`의 중앙 `(731,949)`로 새 검증 근거만 수집했다.
+- 자동 검증: `./scripts/verify.sh`의 자동화 계약, 단위 테스트 27개, Android lint, debug build가 모두 통과했고 `git diff --check`도 통과했다.
+- 에뮬레이터: 새 APK 설치·앱 데이터 삭제 후 cold launch 1192 ms, 물리 1080 × 2340, 앱 2340 × 1080, `mCurrentOrientation=1`(`ROTATION_90`), focus `com.example.limdo/.MainActivity`를 확인했다. 근거는 `captures/loop007/iteration2/`에 저장했다.
+- 상태·semantics: 초기 재생 중 부모 버튼은 `clickable=true, enabled=false, focusable=false`였고, 완료 후 `clickable=true, enabled=true, focusable=true`로 바뀌었다. 화면도 회색 `🔇`에서 밝은 초록 `🔊`로 바뀌어 callback과 일치했다.
+- 실제 탭: `(731,949)` 탭 후 `16:29:27.377 재생 중:INITIAL` → `16:29:30.715 재생 완료:INITIAL`이 두 번째로 발생했다. 재생 중 hierarchy는 다시 `enabled=false`로 바뀌었다. 가설을 채택했다.
+- 이전 반복 비교: 반복 1은 자식 semantics와 잘못된 탭 경로로 실패를 판정했지만, 이번에는 부모 상태와 실제 bounds를 사용해 시각·semantics·callback 조건을 모두 통과했다.
+- 최종 아이 대리 QA: 글을 읽지 않고도 회색 `🔇`는 현재 누를 수 없고, 밝은 `🔊`는 누를 수 있음을 구분했다. 초록 시작점, 도마뱀, `→`·`↓`, 과녕형 끝점, `⌫`, 약한 다음 동작도 상태 전환 중 유지됐다. `실제 아이 관찰: 실행 안 함`.
+- 결론: 루프 007 성공 조건 1~6을 새 근거로 모두 통과했다. 새 제품 불편은 발견하지 못해, 아이의 부정확한 반복 터치에서 안내가 중첩되지 않는지 아직 확인하지 않은 흐름을 루프 008 QA 탐색으로 준비한다. 이번 작업자는 008을 구현하지 않는다.

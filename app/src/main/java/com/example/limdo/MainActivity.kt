@@ -167,7 +167,7 @@ private fun LearningShell(
         }
 
         ActionShelf(
-            speechAvailable = speechState.isPlayable,
+            speechAvailable = speechState.canReplay,
             onReplay = { speak(currentCue) },
             onClear = {
                 clearRequest += 1
@@ -413,11 +413,6 @@ private fun ReplayAction(
         }
     }
 }
-
-private val SpeechPlaybackState.isPlayable: Boolean
-    get() = this is SpeechPlaybackState.Ready ||
-        this is SpeechPlaybackState.Playing ||
-        this is SpeechPlaybackState.Completed
 
 @Composable
 private fun ClearAction(
