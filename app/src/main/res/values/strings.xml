@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LimDo</string>
+    <string name="journey_label">첫 번째 여행</string>
+    <string name="lesson_prompt">오늘은 선을 만나볼까?</string>
+    <string name="lesson_progress">첫 단계</string>
+    <string name="guide_character">리모</string>
+    <string name="guide_message">여기서 함께 연습할 거야!</string>
+    <string name="writing_board_label">쓰기판</string>
+    <string name="writing_board_placeholder">다음 루프에서 손가락으로 쓰는 기능이 들어와요</string>
+    <string name="action_replay">다시 보기</string>
+    <string name="action_clear">지우기</string>
+    <string name="action_next">다음</string>
+    <string name="not_available_yet">준비 중</string>
+</resources>

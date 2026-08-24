@@ -13,6 +13,7 @@ Do not implement the full application unless `LOOP_GOAL.md` explicitly requests 
 - Jetpack Compose
 - Custom Canvas for the future writing engine
 - Minimum SDK 26
+- Reference emulator viewport: 2340 × 1080 in landscape orientation
 - Local-first architecture
 - No server, login, ads, analytics, or sensitive permissions unless explicitly requested
 
@@ -37,6 +38,8 @@ For every iteration:
 
 Never claim completion from code inspection alone. Android changes normally require fresh unit-test, lint, and debug-build results through `./scripts/verify.sh` on macOS/Linux or `scripts/verify.ps1` on Windows.
 
+For visual Android loops, use the `alarmquest-qa` emulator at 1080 × 2340 device resolution and verify the application in its required 2340 × 1080 landscape orientation.
+
 ## Change Discipline
 
 - Prefer one focused change per iteration.
@@ -60,4 +63,3 @@ Stop and report when:
 ## Completion Report
 
 Report the iteration count, changed files, verification commands and results, remaining risks, and suggested next loop.
-
