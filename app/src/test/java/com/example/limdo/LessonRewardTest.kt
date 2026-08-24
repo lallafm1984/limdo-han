@@ -25,7 +25,7 @@ class LessonRewardTest {
         assertTrue(moving.inputLocked)
         assertEquals(1, completed.completedSteps)
         assertEquals(RewardMovePhase.COMPLETE, completed.phase)
-        assertFalse(completed.inputLocked)
+        assertTrue(completed.inputLocked)
     }
 
     @Test
@@ -37,5 +37,18 @@ class LessonRewardTest {
         val clear = LessonRewardState().onTraceResult(null, GieokLesson)
         assertEquals(0, retry.targetSteps)
         assertEquals(0, clear.targetSteps)
+    }
+
+    @Test
+    fun restoredCompleteStateStaysLockedUntilClearCreatesIdleState() {
+        val restored = LessonRewardState(
+            completedSteps = 1,
+            targetSteps = 1,
+            successConsumed = true,
+            phase = RewardMovePhase.COMPLETE,
+        )
+
+        assertTrue(restored.inputLocked)
+        assertFalse(LessonRewardState().inputLocked)
     }
 }

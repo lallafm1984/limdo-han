@@ -16,7 +16,7 @@ internal data class LessonRewardState(
     val phase: RewardMovePhase = RewardMovePhase.IDLE,
 ) {
     val inputLocked: Boolean
-        get() = phase == RewardMovePhase.START || phase == RewardMovePhase.MOVING
+        get() = phase != RewardMovePhase.IDLE
 
     fun onTraceResult(result: GieokTraceResult?, lesson: LessonSpec): LessonRewardState = when {
         result == GieokTraceResult.SUCCESS && !successConsumed -> copy(
