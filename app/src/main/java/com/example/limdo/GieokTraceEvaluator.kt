@@ -64,13 +64,6 @@ internal object GieokTraceEvaluator {
         val projections = sampledPoints.map { point ->
             projectOntoGuide(point, start, corner, end, horizontalLength, verticalLength)
         }
-        val backtrack = projections.zipWithNext().sumOf { (first, second) ->
-            (first.progress - second.progress).coerceAtLeast(0f).toDouble()
-        }.toFloat()
-        if (backtrack > shortestSide * MAX_BACKTRACK_FRACTION) {
-            return GieokTraceResult.WRONG_DIRECTION
-        }
-
         val offGuideFraction = projections.count { it.distance > corridorTolerance }.toFloat() /
             projections.size
         if (offGuideFraction > MAX_OFF_GUIDE_FRACTION) {
@@ -91,6 +84,17 @@ internal object GieokTraceEvaluator {
             shortestSide * MAX_CONSECUTIVE_OFF_GUIDE_FRACTION
         ) {
             return GieokTraceResult.OFF_GUIDE
+        }
+
+        val backtrack = projections.zipWithNext().sumOf { (first, second) ->
+            if (first.segment == second.segment) {
+                (first.progress - second.progress).coerceAtLeast(0f).toDouble()
+            } else {
+                0.0
+            }
+        }.toFloat()
+        if (backtrack > shortestSide * MAX_BACKTRACK_FRACTION) {
+            return GieokTraceResult.WRONG_DIRECTION
         }
 
         val reachedCorner = projections.any {
@@ -152,12 +156,14 @@ internal object GieokTraceEvaluator {
         return if (horizontalDistance <= verticalDistance) {
             GuideProjection(
                 point = point,
+                segment = GuideSegment.HORIZONTAL,
                 progress = horizontalLength * horizontalRatio,
                 distance = horizontalDistance,
             )
         } else {
             GuideProjection(
                 point = point,
+                segment = GuideSegment.VERTICAL,
                 progress = horizontalLength + (verticalLength * verticalRatio),
                 distance = verticalDistance,
             )
@@ -165,8 +171,14 @@ internal object GieokTraceEvaluator {
     }
 }
 
+private enum class GuideSegment {
+    HORIZONTAL,
+    VERTICAL,
+}
+
 private data class GuideProjection(
     val point: CanvasPoint,
+    val segment: GuideSegment,
     val progress: Float,
     val distance: Float,
 )

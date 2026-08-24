@@ -96,6 +96,45 @@ class GieokTraceEvaluatorTest {
     }
 
     @Test
+    fun shortSixCrossingBoundaryJitterStillSucceeds() {
+        assertActualCanvasResult(
+            GieokTraceResult.SUCCESS,
+            listOf(
+                879f to 159f, 1000f to 159f, 1050f to 270f, 1100f to 295f,
+                1150f to 270f, 1200f to 295f, 1250f to 270f, 1300f to 295f,
+                1350f to 270f, 1400f to 159f, 1461f to 159f, 1461f to 350f,
+                1461f to 550f, 1461f to 742f,
+            ),
+        )
+    }
+
+    @Test
+    fun shortEightCrossingBoundaryJitterStillSucceeds() {
+        assertActualCanvasResult(
+            GieokTraceResult.SUCCESS,
+            listOf(
+                879f to 159f, 1000f to 159f, 1040f to 270f, 1080f to 295f,
+                1120f to 270f, 1160f to 295f, 1200f to 270f, 1240f to 295f,
+                1280f to 270f, 1320f to 295f, 1360f to 270f, 1410f to 159f,
+                1461f to 159f, 1461f to 350f, 1461f to 550f, 1461f to 742f,
+            ),
+        )
+    }
+
+    @Test
+    fun repeatedLargeBoundaryDepartureReportsOffGuide() {
+        assertActualCanvasResult(
+            GieokTraceResult.OFF_GUIDE,
+            listOf(
+                879f to 159f, 1000f to 159f, 1050f to 250f, 1100f to 340f,
+                1150f to 250f, 1200f to 340f, 1250f to 250f, 1300f to 340f,
+                1350f to 250f, 1400f to 159f, 1461f to 159f, 1461f to 350f,
+                1461f to 550f, 1461f to 742f,
+            ),
+        )
+    }
+
+    @Test
     fun traceCanBeEvaluatedAtAnotherCanvasSize() {
         val scaledGuide = WritingCanvasGeometry.gieokPoints(width = 2_000f, height = 1_000f)
 
@@ -125,6 +164,22 @@ class GieokTraceEvaluatorTest {
                 width = width,
                 height = height,
                 stroke = StrokePath(points),
+            ),
+        )
+    }
+
+    private fun assertActualCanvasResult(
+        expected: GieokTraceResult,
+        screenPoints: List<Pair<Float, Float>>,
+    ) {
+        assertEquals(
+            expected,
+            GieokTraceEvaluator.evaluate(
+                width = 1_962f,
+                height = 775f,
+                stroke = StrokePath(
+                    screenPoints.map { (x, y) -> CanvasPoint(x - 189f, y - 63f) },
+                ),
             ),
         )
     }
