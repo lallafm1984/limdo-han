@@ -45,6 +45,17 @@ class BootstrapTest {
     }
 
     @Test
+    fun childStrokeUsesSixtyPercentOfGuideWidth() {
+        val glyph = WritingCanvasGeometry.gieok(width = 1_962f, height = 775f)
+        val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(width = 1_962f, height = 775f)
+
+        assertEquals(124f, glyph.strokeWidth, 0.001f)
+        assertEquals(74.4f, childStrokeWidth, 0.001f)
+        assertEquals(0.60f, childStrokeWidth / glyph.strokeWidth, 0.001f)
+        assertTrue(childStrokeWidth < glyph.strokeWidth)
+    }
+
+    @Test
     fun gaFixturePreservesNormalizedJamoLayoutAtUniformScale() {
         val first = WritingCanvasGeometry.gaFixture(width = 1_962f, height = 775f)
         val second = WritingCanvasGeometry.gaFixture(width = 1_000f, height = 500f)

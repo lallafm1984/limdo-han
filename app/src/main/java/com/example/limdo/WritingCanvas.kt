@@ -141,6 +141,24 @@ internal fun WritingCanvas(
                 cap = StrokeCap.Round,
             )
         }
+        val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(size.width, size.height)
+        if (attempt.stroke.points.size == 1) {
+            drawCircle(
+                color = ChildStroke,
+                radius = childStrokeWidth / 2f,
+                center = Offset(attempt.stroke.points.first().x, attempt.stroke.points.first().y),
+            )
+        } else {
+            attempt.stroke.points.zipWithNext().forEach { (start, end) ->
+                drawLine(
+                    color = ChildStroke,
+                    start = Offset(start.x, start.y),
+                    end = Offset(end.x, end.y),
+                    strokeWidth = childStrokeWidth,
+                    cap = StrokeCap.Round,
+                )
+            }
+        }
         val arrowLength = min(size.width, size.height) * 0.10f
         val arrowStroke = pathStroke * 0.18f
         drawDirectionArrow(
@@ -182,24 +200,6 @@ internal fun WritingCanvas(
             center = Offset(points.last().x, points.last().y),
         )
 
-        val childStrokeWidth = min(size.width, size.height) * 0.045f
-        if (attempt.stroke.points.size == 1) {
-            drawCircle(
-                color = ChildStroke,
-                radius = childStrokeWidth / 2f,
-                center = Offset(attempt.stroke.points.first().x, attempt.stroke.points.first().y),
-            )
-        } else {
-            attempt.stroke.points.zipWithNext().forEach { (start, end) ->
-                drawLine(
-                    color = ChildStroke,
-                    start = Offset(start.x, start.y),
-                    end = Offset(end.x, end.y),
-                    strokeWidth = childStrokeWidth,
-                    cap = StrokeCap.Round,
-                )
-            }
-        }
     }
 }
 

@@ -16,6 +16,7 @@ internal data class GlyphGeometry(
 internal object WritingCanvasGeometry {
     private const val EM_CANVAS_FRACTION = 0.80f
     private const val GUIDE_STROKE_EM_FRACTION = 0.20f
+    private const val CHILD_STROKE_GUIDE_FRACTION = 0.60f
 
     private val gieokTemplate = listOf(
         listOf(
@@ -41,6 +42,9 @@ internal object WritingCanvasGeometry {
 
     fun gieokPoints(width: Float, height: Float): List<CanvasPoint> =
         gieok(width, height).strokes.single()
+
+    fun childStrokeWidth(width: Float, height: Float): Float =
+        gieok(width, height).strokeWidth * CHILD_STROKE_GUIDE_FRACTION
 
     internal fun gaFixture(width: Float, height: Float): GlyphGeometry =
         transform(gaTemplate, width, height)
