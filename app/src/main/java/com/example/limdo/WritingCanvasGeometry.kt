@@ -1,26 +1,22 @@
 package com.example.limdo
 
-import kotlin.math.min
-
 internal data class CanvasPoint(
     val x: Float,
     val y: Float,
 )
 
 internal object WritingCanvasGeometry {
-    private const val CONTENT_PADDING_FRACTION = 0.18f
+    private const val HORIZONTAL_PADDING_FRACTION = 0.12f
+    private const val VERTICAL_PADDING_FRACTION = 0.10f
 
     fun gieokPoints(width: Float, height: Float): List<CanvasPoint> {
         require(width > 0f) { "width must be positive" }
         require(height > 0f) { "height must be positive" }
 
-        val shortestSide = min(width, height)
-        val contentPadding = shortestSide * CONTENT_PADDING_FRACTION
-        val contentSide = shortestSide - (contentPadding * 2f)
-        val left = (width - contentSide) / 2f
-        val top = (height - contentSide) / 2f
-        val right = left + contentSide
-        val bottom = top + contentSide
+        val left = width * HORIZONTAL_PADDING_FRACTION
+        val top = height * VERTICAL_PADDING_FRACTION
+        val right = width - left
+        val bottom = height - top
 
         return listOf(
             CanvasPoint(left, top),

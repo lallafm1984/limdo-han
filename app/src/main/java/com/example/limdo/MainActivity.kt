@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +36,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -107,35 +111,58 @@ private fun LearningShell(
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .background(Color(0xFFFFD85A)),
     ) {
-        LessonHeader()
-
-        Row(
+        Image(
+            painter = painterResource(R.drawable.limdo_sunny_flower_background),
+            contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(vertical = 14.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            GuideCharacterCard(
-                traceResult = traceResult,
-                modifier = Modifier
-                    .weight(LearningShellSpec.GUIDE_WEIGHT)
-                    .fillMaxHeight(),
-            )
-            WritingBoardPreview(
-                clearRequest = clearRequest,
-                onTraceResult = { result ->
-                    traceResult = result
-                    if (result != null) speak(SpokenCueModel.forResult(result))
+                .fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            alpha = 0.32f,
+        )
+
+        WritingBoardPreview(
+            clearRequest = clearRequest,
+            onTraceResult = { result ->
+                traceResult = result
+                if (result != null) speak(SpokenCueModel.forResult(result))
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 72.dp, top = 24.dp, end = 72.dp, bottom = 92.dp),
+        )
+
+        Image(
+            painter = painterResource(R.drawable.limdo_gecko_guide),
+            contentDescription = stringResource(R.string.guide_character),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(x = (-344).dp, y = (-139).dp)
+                .size(width = 128.dp, height = 86.dp),
+            contentScale = ContentScale.Fit,
+        )
+
+        if (traceResult != null && traceResult != GieokTraceResult.EMPTY) {
+            Text(
+                text = if (traceResult == GieokTraceResult.SUCCESS) "★  ✓" else "↻",
+                modifier = if (traceResult == GieokTraceResult.SUCCESS) {
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 116.dp)
+                } else {
+                    Modifier.align(Alignment.TopCenter)
                 },
-                modifier = Modifier
-                    .weight(LearningShellSpec.WRITING_BOARD_WEIGHT)
-                    .fillMaxHeight(),
+                color = if (traceResult == GieokTraceResult.SUCCESS) {
+                    Color(0xFF276B50)
+                } else {
+                    Color(0xFF9A5527)
+                },
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Bold,
             )
         }
 
@@ -146,6 +173,10 @@ private fun LearningShell(
                 clearRequest += 1
                 traceResult = null
             },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth(0.58f)
+                .padding(bottom = 10.dp),
         )
     }
 }
@@ -285,28 +316,15 @@ private fun WritingBoardPreview(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier.border(
-            width = 3.dp,
-            color = Color(0xFFB8D8C9),
-            shape = RoundedCornerShape(30.dp),
-        ),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(30.dp),
+        modifier = modifier,
+        color = Color.Transparent,
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            WritingCanvas(
-                contentDescription = stringResource(R.string.writing_canvas_description),
-                clearRequest = clearRequest,
-                onTraceResult = onTraceResult,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-            )
-        }
+        WritingCanvas(
+            contentDescription = stringResource(R.string.writing_canvas_description),
+            clearRequest = clearRequest,
+            onTraceResult = onTraceResult,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }
 
@@ -322,12 +340,12 @@ private fun ActionShelf(
     speechAvailable: Boolean,
     onReplay: () -> Unit,
     onClear: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .heightIn(min = 72.dp),
-        color = Color(0xFFEDE9E1),
+        color = Color(0xE6FFF9E9),
         shape = RoundedCornerShape(24.dp),
     ) {
         Row(

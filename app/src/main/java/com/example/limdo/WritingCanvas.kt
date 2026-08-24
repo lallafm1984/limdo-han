@@ -25,13 +25,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import kotlin.math.min
 
-private val PracticeSurface = Color(0xFFF7FBF8)
-private val PracticeBorder = Color(0xFFD4E8DE)
-private val PracticeGuide = Color(0xFFCEE0D7)
-private val GieokGuide = Color(0xFF4F806B)
-private val StartMarker = Color(0xFFF0A660)
-private val ChildStroke = Color(0xFF2D5B89)
-private val DirectionArrow = Color(0xFFFFFEFA)
+private val PracticeSurface = Color(0x5CFFD84F)
+private val PracticeBorder = Color(0x66FFF4C2)
+private val PracticeGuide = Color(0x4D9B7620)
+private val GieokGuide = Color(0xFFFFFEF6)
+private val StartMarker = Color(0xFF35A77B)
+private val FinishMarker = Color(0xFFFFA93A)
+private val ChildStroke = Color(0xFF174F73)
+private val DirectionArrow = Color(0xFF176B52)
 
 @Composable
 internal fun WritingCanvas(
@@ -163,6 +164,21 @@ internal fun WritingCanvas(
             color = StartMarker,
             radius = pathStroke * 0.62f,
             center = Offset(points.first().x, points.first().y),
+        )
+        drawCircle(
+            color = GieokGuide,
+            radius = pathStroke * 0.76f,
+            center = Offset(points.last().x, points.last().y),
+        )
+        drawCircle(
+            color = FinishMarker,
+            radius = pathStroke * 0.48f,
+            center = Offset(points.last().x, points.last().y),
+        )
+        drawCircle(
+            color = GieokGuide,
+            radius = pathStroke * 0.18f,
+            center = Offset(points.last().x, points.last().y),
         )
 
         val childStrokeWidth = min(size.width, size.height) * 0.045f

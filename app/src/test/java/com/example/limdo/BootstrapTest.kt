@@ -28,6 +28,16 @@ class BootstrapTest {
         assertTrue(points.last().x < 1_000f && points.last().y < 500f)
     }
 
+    @Test
+    fun gieokGuideUsesWideCanvasAndMeetsChildWritingMinimums() {
+        val points = WritingCanvasGeometry.gieokPoints(width = 1_962f, height = 775f)
+
+        assertTrue(points[1].x - points[0].x >= 1_170f)
+        assertTrue(points[2].y - points[1].y >= 540f)
+        assertEquals(1_491.12f, points[1].x - points[0].x, 0.01f)
+        assertEquals(620f, points[2].y - points[1].y, 0.01f)
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun gieokPreviewRejectsEmptyCanvas() {
         WritingCanvasGeometry.gieokPoints(width = 0f, height = 500f)

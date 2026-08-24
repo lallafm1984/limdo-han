@@ -39,14 +39,15 @@ internal object GieokTraceEvaluator {
         val corner = guide[1]
         val end = guide[2]
         val shortestSide = min(width, height)
-        val segmentLength = corner.x - start.x
+        val horizontalLength = corner.x - start.x
+        val verticalLength = end.y - corner.y
 
         if (points.first().distanceTo(start) > shortestSide * START_TOLERANCE_FRACTION) {
             return GieokTraceResult.WRONG_START
         }
 
         val meaningfulPoint = points.firstOrNull {
-            it.distanceTo(start) >= segmentLength * MEANINGFUL_MOVEMENT_FRACTION
+            it.distanceTo(start) >= shortestSide * MEANINGFUL_MOVEMENT_FRACTION
         }
         if (meaningfulPoint != null) {
             val dx = meaningfulPoint.x - start.x
@@ -57,12 +58,12 @@ internal object GieokTraceEvaluator {
         }
 
         val projections = points.map { point ->
-            projectOntoGuide(point, start, corner, end, segmentLength)
+            projectOntoGuide(point, start, corner, end, horizontalLength, verticalLength)
         }
         val backtrack = projections.zipWithNext().sumOf { (first, second) ->
             (first.progress - second.progress).coerceAtLeast(0f).toDouble()
         }.toFloat()
-        if (backtrack > segmentLength * MAX_BACKTRACK_FRACTION) {
+        if (backtrack > shortestSide * MAX_BACKTRACK_FRACTION) {
             return GieokTraceResult.WRONG_DIRECTION
         }
 
@@ -74,10 +75,10 @@ internal object GieokTraceEvaluator {
         }
 
         val reachedCorner = projections.any {
-            it.progress >= segmentLength * CORNER_PROGRESS && it.distance <= corridorTolerance
+            it.progress >= horizontalLength * CORNER_PROGRESS && it.distance <= corridorTolerance
         }
         val reachedFinishProgress = projections.maxOf { it.progress } >=
-            segmentLength * FINISH_PROGRESS
+            horizontalLength + (verticalLength * (FINISH_PROGRESS - 1f))
         val finishedNearEnd = points.last().distanceTo(end) <=
             shortestSide * FINISH_TOLERANCE_FRACTION
 
@@ -93,29 +94,30 @@ internal object GieokTraceEvaluator {
         start: CanvasPoint,
         corner: CanvasPoint,
         end: CanvasPoint,
-        segmentLength: Float,
+        horizontalLength: Float,
+        verticalLength: Float,
     ): GuideProjection {
-        val horizontalRatio = ((point.x - start.x) / segmentLength).coerceIn(0f, 1f)
+        val horizontalRatio = ((point.x - start.x) / horizontalLength).coerceIn(0f, 1f)
         val horizontalPoint = CanvasPoint(
-            x = start.x + (segmentLength * horizontalRatio),
+            x = start.x + (horizontalLength * horizontalRatio),
             y = start.y,
         )
-        val verticalRatio = ((point.y - corner.y) / segmentLength).coerceIn(0f, 1f)
+        val verticalRatio = ((point.y - corner.y) / verticalLength).coerceIn(0f, 1f)
         val verticalPoint = CanvasPoint(
             x = corner.x,
-            y = corner.y + (segmentLength * verticalRatio),
+            y = corner.y + (verticalLength * verticalRatio),
         )
         val horizontalDistance = point.distanceTo(horizontalPoint)
         val verticalDistance = point.distanceTo(verticalPoint)
 
         return if (horizontalDistance <= verticalDistance) {
             GuideProjection(
-                progress = segmentLength * horizontalRatio,
+                progress = horizontalLength * horizontalRatio,
                 distance = horizontalDistance,
             )
         } else {
             GuideProjection(
-                progress = segmentLength * (1f + verticalRatio),
+                progress = horizontalLength + (verticalLength * verticalRatio),
                 distance = verticalDistance,
             )
         }
