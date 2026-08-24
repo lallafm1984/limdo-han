@@ -1,32 +1,36 @@
-# Loop Goal 002 — Non-interactive Writing Canvas
+# Loop Goal 003 — Child-ready Stroke Input Foundation
 
 ## Objective
 
-Replace the writing-board placeholder with an isolated, non-interactive Compose Canvas foundation for future Hangul tracing.
+Turn the non-interactive `ㄱ` preview into a large, child-ready writing surface that captures and displays a single finger stroke and can be cleared safely.
 
-This loop defines rendering and geometry only. Do not implement touch input, stroke capture, stroke order or direction validation, scoring, audio, persistence, rewards, or lesson navigation.
+This loop implements input capture only. Do not implement stroke-order or direction validation, correctness scoring, audio, persistence, rewards, lesson navigation, multi-character lessons, or remote services.
 
 ## Success Criteria
 
-1. A dedicated `WritingCanvas` composable replaces the placeholder artwork inside the existing writing-board region.
-2. The canvas renders a calm child-friendly practice surface, center guides, and a fixed preview path for the first consonant `ㄱ`.
-3. Preview geometry is derived from the available canvas size and remains within explicit padded bounds.
-4. Geometry and rendering responsibilities are separated so the normalized `ㄱ` path can be unit tested without Compose UI or Android instrumentation.
-5. The existing guide-character area and approximately 70% writing-board width are preserved.
-6. Visible copy and accessibility wording clearly identify the canvas as a preview; no control implies that handwriting input already works.
-7. No pointer, gesture, touch-tracking, validation, server, login, ads, analytics, sensitive permission, or unnecessary dependency is added.
-8. The final debug APK installs and launches on `alarmquest-qa` in landscape with exact 2340 × 1080 app bounds.
-9. A fresh screenshot shows no clipping, overlap, illegible guide path, or regression in the surrounding shell.
-10. `./scripts/verify.sh` passes the automation contract check, unit tests, Android lint, and debug assembly.
+1. At the exact 2340 × 1080 landscape viewport, the active drawable interior is at least 1170 × 378 px and is the largest child-interaction region on screen.
+2. The surrounding lesson chrome and copy are reduced as needed before shrinking the drawable surface.
+3. The fixed `ㄱ` preview, center guides, start point, and at least 24 dp of drawable safe inset remain visible and unclipped.
+4. A single-finger down-and-drag gesture produces an immediate visible stroke that follows the pointer within the Canvas.
+5. Captured points are clipped or constrained to drawable bounds and do not trigger navigation or destructive behavior.
+6. A new active Clear control removes the child stroke without removing the preview guide.
+7. Clear has at least a 64 × 64 dp touch target; unavailable actions remain visibly secondary and cannot be mistaken for active controls.
+8. Visible Korean copy and accessibility semantics make the current task, writing location, start point, and Clear action identifiable without implying validation or scoring.
+9. Pure input-state behavior and geometry have focused unit tests; no new dependency is added.
+10. `CHILD_PROXY` can answer what to do, where to write, where to start, and which controls are unavailable from the first frame. Record `OBSERVED_CHILD: NOT RUN` unless a supervised child test actually occurs.
+11. `./scripts/verify.sh` passes the automation contract, unit tests, Android lint, and debug assembly.
+12. The debug APK installs and cold-launches on `alarmquest-qa`; fresh UI hierarchy and screenshot evidence confirm exact bounds, active drawable dimensions, focus, and no clipping or overlap.
 
 ## Verification
 
 - Run `./scripts/check-automation.sh` before implementation.
-- Run `./scripts/verify.sh` after each application-code iteration.
-- Inspect the debug APK artifact.
+- Run `./scripts/verify.sh` after every code iteration.
 - Install and cold-launch the debug APK on `alarmquest-qa`.
-- Confirm focused app bounds are 2340 × 1080 in landscape and inspect a fresh screenshot.
+- Draw a stroke through ADB input, confirm it is visible, activate Clear, and confirm only the child stroke is removed.
+- Capture and inspect a fresh exact 2340 × 1080 screenshot before and after Clear.
+- Measure the Canvas and child-control bounds from the UI hierarchy.
+- Complete the `CHILD_PROXY` report in `.loop/history.md` and state `OBSERVED_CHILD` accurately.
 
 ## Completion Definition
 
-This loop is complete only when all ten criteria pass with fresh evidence. Then update `.loop/queue.md` to `Active Loop: NONE`, create one local checkpoint commit, do not push, and stop at `HUMAN_REVIEW_AFTER_LOOP_002`.
+This loop is complete only when all twelve criteria pass with fresh evidence. Then set `.loop/queue.md` to `Active Loop: NONE`, create one local checkpoint commit, do not push, and stop at `HUMAN_REVIEW_AFTER_LOOP_003`.

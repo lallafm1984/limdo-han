@@ -337,3 +337,25 @@ The completed non-interactive preview remains valid. Any next loop that enables 
 - `./scripts/verify.sh`: passed automation contract, 4 unit tests, Android lint, and debug assembly
 - `git diff --check`: passed
 - Application code and APK contents were unchanged by this policy update
+
+## Loop 003 — Goal Activation
+
+### Objective
+
+Provide a child-ready writing surface large enough for comfortable input, capture one finger stroke, and make Clear safely usable without introducing correctness validation or progression.
+
+### Baseline
+
+- Previous Canvas: 1394 × 185 px at 2340 × 1080
+- Required minimum: 1170 × 378 px
+- Current input behavior: none
+- `CHILD_PROXY`: writing height fails
+- `OBSERVED_CHILD: NOT RUN`
+
+### Queue Transition
+
+Activated Loop 003 and set the stopping condition to `HUMAN_REVIEW_AFTER_LOOP_003`.
+
+### Next Action
+
+Validate the new loop contract, create a local goal-definition checkpoint, and start Codex App Goal mode.

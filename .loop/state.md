@@ -1,35 +1,27 @@
 # Current Loop State
 
-Loop: 002 — Non-interactive Writing Canvas
+Loop: 003 — Child-ready Stroke Input Foundation
 
-Status: COMPLETE
+Status: READY
 
-Iteration: 1
+Iteration: 0
 
-Last Verification: The child-usability QA policy update passed the automation self-check, 4 unit tests, Android lint, debug assembly, and `git diff --check` on 2026-08-24. The latest application visual evidence remains the exact 2340 × 1080 Loop 002 screenshot.
+Last Verification: Loop 002 and the child-usability QA policy passed their recorded automated and emulator checks on 2026-08-24. Loop 003 has not yet run fresh application verification.
 
-Current Failure: None.
+Current Failure: The current preview Canvas measures 1394 × 185 px, below the 378 px minimum height for child handwriting input, and does not accept touch input.
 
-Non-blocking Notes: Lint reports four available version updates and the expected Android 16 fixed-orientation warning. PowerShell is not installed on this Mac, so the Windows parity check is present but was not executed locally. The Loop 002 preview Canvas measured 1394 × 185 px; its width is sufficient but its height is below the new 378 px minimum for future interactive handwriting. This does not reopen the completed non-interactive preview loop, but it is a mandatory condition for the next input loop. `OBSERVED_CHILD` has not been run.
+Non-blocking Notes: `OBSERVED_CHILD` has not been run. PowerShell is not installed on this Mac, so Windows parity remains unexecuted locally.
 
-Current Hypothesis: Confirmed. The normalized geometry produced a legible, bounded `ㄱ` preview without changing the shell layout or introducing input behavior.
+Current Hypothesis: Compressing surrounding chrome and placing the instruction beside the guide can expand the Canvas above 1170 × 378 px without losing the 30/70 lesson hierarchy; a small pure stroke model can then support single-finger drawing and Clear without new dependencies.
 
-Next Action: Stop at `HUMAN_REVIEW_AFTER_LOOP_002`. The next authorized input loop must first enlarge the active drawable interior to at least 1170 × 378 px and pass the child-focused QA gates.
+Next Action: Run the automation check, measure the available central layout, and implement the smallest layout and input-state change for Loop 003 iteration 1.
 
 Completed Criteria:
 
-- Loop 001 landscape shell completed and emulator-verified
-- Loop 002 objective, boundaries, verification, and review gate defined
-- Codex App execution stage selected
-- Automation contract check passed
-- Unit tests, Android lint, and debug assembly passed after automation setup
-- Dedicated WritingCanvas and pure Kotlin `ㄱ` geometry implemented
-- Loop 002 iteration 1 unit tests, lint, and debug assembly passed
-- Debug APK inspected, installed, and cold-launched successfully
-- App focus, `ROTATION_90`, and exact 2340 × 1080 bounds confirmed
-- Fresh exact-size screenshot inspected without clipping or overlap
-- Writing Canvas accessibility description confirmed in the UI hierarchy
+- Loop 001 landscape shell completed
+- Loop 002 non-interactive Writing Canvas completed
+- Child-usability and active writing-area QA gates defined
 
 Remaining Criteria:
 
-- None
+- All Loop 003 success criteria 1–12
