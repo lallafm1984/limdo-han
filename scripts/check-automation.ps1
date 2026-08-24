@@ -62,7 +62,9 @@ if ($Agents -notmatch '2340 × 1080') { Stop-AutomationCheck "AGENTS.md에 기�
 if ($Goal -notmatch '2340 × 1080') { Stop-AutomationCheck "LOOP_GOAL.md에 기준 화면이 없음" }
 if ($QaChecklist -notmatch '1872 px') { Stop-AutomationCheck "QA에 최소 쓰기 너비가 없음" }
 if ($QaChecklist -notmatch '648 px') { Stop-AutomationCheck "QA에 최소 쓰기 높이가 없음" }
-if ($QaChecklist -notmatch '가로 획이 최소 1170 px') { Stop-AutomationCheck "QA에 실제 글자 가로 획 기준이 없음" }
+if ($QaChecklist -notmatch '균일 배율') { Stop-AutomationCheck "QA에 글자 비율 보존 기준이 없음" }
+if ($QaChecklist -notmatch '각각 최소 580 px') { Stop-AutomationCheck "QA에 실제 글자 양방향 크기 기준이 없음" }
+if ($QaChecklist -notmatch '12% 이상 18% 이하') { Stop-AutomationCheck "QA에 교육용 목표 획 굵기 기준이 없음" }
 if ($QaChecklist -notmatch '실제 아이 관찰') { Stop-AutomationCheck "실제 아이 관찰 근거 경계가 없음" }
 if ($Queue -notmatch '(?m)^검토 관문: AUTO_CHILD_PROXY_QA$') { Stop-AutomationCheck "자동 아이 대리 QA 전환이 선택되지 않음" }
 if ($CliAutomation -notmatch '다음 루프 하나') { Stop-AutomationCheck "완료 뒤 단일 다음 루프 계약이 없음" }
