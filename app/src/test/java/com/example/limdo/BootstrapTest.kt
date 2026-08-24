@@ -57,6 +57,31 @@ class BootstrapTest {
     }
 
     @Test
+    fun inputBeforeDemonstrationMovesFromStartThroughCornerToEnd() {
+        val points = WritingCanvasGeometry.gieokPoints(width = 1_962f, height = 775f)
+
+        assertEquals(
+            points[0],
+            WritingCanvasGeometry.gieokDemonstrationPoint(1_962f, 775f, 0f),
+        )
+        assertEquals(
+            CanvasPoint((points[0].x + points[1].x) / 2f, points[0].y),
+            WritingCanvasGeometry.gieokDemonstrationPoint(1_962f, 775f, 0.25f),
+        )
+        assertEquals(
+            points[1],
+            WritingCanvasGeometry.gieokDemonstrationPoint(1_962f, 775f, 0.5f),
+        )
+        val verticalMidpoint = WritingCanvasGeometry.gieokDemonstrationPoint(1_962f, 775f, 0.75f)
+        assertEquals(points[1].x, verticalMidpoint.x, 0.001f)
+        assertEquals((points[1].y + points[2].y) / 2f, verticalMidpoint.y, 0.001f)
+        assertEquals(
+            points[2],
+            WritingCanvasGeometry.gieokDemonstrationPoint(1_962f, 775f, 1f),
+        )
+    }
+
+    @Test
     fun childStrokeUsesSixtyPercentOfGuideWidth() {
         val glyph = WritingCanvasGeometry.gieok(width = 1_962f, height = 775f)
         val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(width = 1_962f, height = 775f)

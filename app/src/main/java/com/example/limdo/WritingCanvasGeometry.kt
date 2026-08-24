@@ -53,6 +53,19 @@ internal object WritingCanvasGeometry {
     fun gieokPoints(width: Float, height: Float): List<CanvasPoint> =
         gieok(width, height).strokes.single()
 
+    fun gieokDemonstrationPoint(width: Float, height: Float, progress: Float): CanvasPoint {
+        require(progress in 0f..1f) { "progress must be between 0 and 1" }
+        val points = gieokPoints(width, height)
+        val segmentProgress = progress * 2f
+        val start = if (segmentProgress <= 1f) points[0] else points[1]
+        val end = if (segmentProgress <= 1f) points[1] else points[2]
+        val fraction = if (segmentProgress <= 1f) segmentProgress else segmentProgress - 1f
+        return CanvasPoint(
+            x = start.x + ((end.x - start.x) * fraction),
+            y = start.y + ((end.y - start.y) * fraction),
+        )
+    }
+
     fun childStrokeWidth(width: Float, height: Float): Float =
         gieok(width, height).strokeWidth * CHILD_STROKE_GUIDE_FRACTION
 

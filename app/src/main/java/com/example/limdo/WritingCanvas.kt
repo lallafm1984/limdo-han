@@ -1,5 +1,10 @@
 package com.example.limdo
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
@@ -33,6 +39,7 @@ private val StartMarker = Color(0xFF35A77B)
 private val FinishMarker = Color(0xFFFFA93A)
 private val ChildStroke = Color(0xFF174F73)
 private val DirectionArrow = Color(0xFF176B52)
+private val DemonstrationMarker = Color(0xFF0B6F88)
 
 @Composable
 internal fun WritingCanvas(
@@ -46,6 +53,27 @@ internal fun WritingCanvas(
     val currentOnTraceResult by rememberUpdatedState(onTraceResult)
     val emptyStateDescription = "아직 그린 선이 없어요"
     val drawingStateDescription = "선을 그리고 있어요"
+    val demonstrationProgress = if (attempt.stroke.points.isEmpty() && attempt.result == null) {
+        val transition = rememberInfiniteTransition(label = "기역 첫 획 시범")
+        val progress by transition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = keyframes {
+                    durationMillis = 3_000
+                    0f at 0
+                    0.5f at 1_100
+                    1f at 2_200
+                    1f at 2_600
+                },
+                repeatMode = RepeatMode.Restart,
+            ),
+            label = "시작에서 끝까지",
+        )
+        progress
+    } else {
+        null
+    }
 
     LaunchedEffect(clearRequest) {
         attempt = attempt.clear()
@@ -200,6 +228,26 @@ internal fun WritingCanvas(
             radius = pathStroke * 0.18f,
             center = Offset(points.last().x, points.last().y),
         )
+
+        demonstrationProgress?.let { progress ->
+            val marker = WritingCanvasGeometry.gieokDemonstrationPoint(
+                width = size.width,
+                height = size.height,
+                progress = progress,
+            )
+            drawCircle(
+                color = GieokGuide,
+                radius = pathStroke * 0.27f,
+                center = Offset(marker.x, marker.y),
+                style = Stroke(width = pathStroke * 0.12f),
+            )
+            drawCircle(
+                color = DemonstrationMarker,
+                radius = pathStroke * 0.20f,
+                center = Offset(marker.x, marker.y),
+                style = Stroke(width = pathStroke * 0.08f),
+            )
+        }
 
     }
 }
