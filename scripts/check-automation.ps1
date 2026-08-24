@@ -43,11 +43,11 @@ if ($Automation -notmatch '(?m)^Stage: `CLI`$') { Stop-AutomationCheck "Codex Ap
 if ($CliAutomation -notmatch '(?m)^Stage: `CLI`$') { Stop-AutomationCheck "CLI stage is not selected" }
 if ($Queue -notmatch '(?m)^Execution Stage: CLI$') { Stop-AutomationCheck "queue stage does not match" }
 if ($CliAutomation -notmatch 'exactly one loop iteration') { Stop-AutomationCheck "single-iteration session contract missing" }
-if ($CliAutomation -notmatch 'codex exec --ephemeral --json --sandbox workspace-write') { Stop-AutomationCheck "fresh-session command contract missing" }
+if ($CliAutomation -notmatch 'codex exec --ephemeral --json --sandbox danger-full-access') { Stop-AutomationCheck "fresh-session command contract missing" }
 if ($WorkerPrompt -notmatch 'Perform exactly ONE loop iteration') { Stop-AutomationCheck "worker iteration boundary missing" }
 if ($WorkerPrompt -notmatch 'Never invoke `codex exec`') { Stop-AutomationCheck "nested CLI prohibition missing" }
 if ($Runner -notmatch '--ephemeral') { Stop-AutomationCheck "ephemeral CLI flag missing" }
-if ($Runner -notmatch '--sandbox workspace-write') { Stop-AutomationCheck "workspace sandbox flag missing" }
+if ($Runner -notmatch 'CODEX_LOOP_SANDBOX:-danger-full-access') { Stop-AutomationCheck "Android tooling sandbox mode missing" }
 if ($Runner -notmatch 'env -u CODEX_SESSION_ID') { Stop-AutomationCheck "fresh-session environment isolation missing" }
 if ($Starter -notmatch 'screen -dmS') { Stop-AutomationCheck "detached CLI session host missing" }
 if ($Agents -notmatch '2340 × 1080') { Stop-AutomationCheck "reference viewport missing from AGENTS.md" }

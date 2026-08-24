@@ -30,6 +30,7 @@ prompt_file="$repo_root/.loop/cli-worker-prompt.md"
 session_log="$runtime_dir/sessions.tsv"
 max_process_failures=3
 pause_seconds="${CODEX_LOOP_PAUSE_SECONDS:-2}"
+sandbox_mode="${CODEX_LOOP_SANDBOX:-danger-full-access}"
 
 mkdir -p "$sessions_dir"
 
@@ -126,7 +127,7 @@ while has_work; do
         --ephemeral
         --json
         --color never
-        --sandbox workspace-write
+        --sandbox "$sandbox_mode"
         -C "$repo_root"
         -o "$run_dir/final.txt"
     )

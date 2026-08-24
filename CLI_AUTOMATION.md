@@ -13,7 +13,7 @@ Complete only the active loop in `.loop/queue.md` according to `LOOP_GOAL.md`. E
 ## Session Protocol
 
 1. The supervisor validates `./scripts/check-automation.sh` and acquires one atomic repository-local lock.
-2. It starts `codex exec --ephemeral --json --sandbox workspace-write` with `.loop/cli-worker-prompt.md` on standard input.
+2. It starts `codex exec --ephemeral --json --sandbox danger-full-access` with `.loop/cli-worker-prompt.md` on standard input. Android Gradle locking, ADB, and emulator control require local sockets that the macOS workspace sandbox blocks; the runner does not use the separate approval-and-sandbox bypass flag.
 3. The worker reads all durable project contracts and the current Git state instead of relying on conversation history.
 4. The worker performs exactly one iteration and records success or failure before exiting.
 5. The supervisor records the new thread ID and exit status under `.loop/runtime/sessions/`.

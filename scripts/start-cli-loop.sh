@@ -16,7 +16,7 @@ if [[ -r "$lock_pid_file" ]]; then
 fi
 
 mkdir -p "$runtime_dir"
-if screen -ls 2>/dev/null | grep -Eq "[0-9]+\.${screen_name}[[:space:]]"; then
+if screen -ls 2>/dev/null | grep -E "[0-9]+\.${screen_name}[[:space:]]" >/dev/null; then
     screen -S "$screen_name" -X quit >/dev/null 2>&1 || true
 fi
 
