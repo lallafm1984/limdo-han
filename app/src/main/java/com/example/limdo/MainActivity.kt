@@ -24,10 +24,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -65,6 +71,8 @@ private fun LimDoApp() {
 
 @Composable
 private fun LearningShell() {
+    var clearRequest by remember { mutableIntStateOf(0) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -85,13 +93,14 @@ private fun LearningShell() {
                     .fillMaxHeight(),
             )
             WritingBoardPreview(
+                clearRequest = clearRequest,
                 modifier = Modifier
                     .weight(LearningShellSpec.WRITING_BOARD_WEIGHT)
                     .fillMaxHeight(),
             )
         }
 
-        ActionShelf()
+        ActionShelf(onClear = { clearRequest += 1 })
     }
 }
 
@@ -170,7 +179,10 @@ private fun GuideCharacterCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun WritingBoardPreview(modifier: Modifier = Modifier) {
+private fun WritingBoardPreview(
+    clearRequest: Int,
+    modifier: Modifier = Modifier,
+) {
     Surface(
         modifier = modifier.border(
             width = 3.dp,
@@ -181,36 +193,23 @@ private fun WritingBoardPreview(modifier: Modifier = Modifier) {
         shape = RoundedCornerShape(30.dp),
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Text(
-                text = stringResource(R.string.writing_board_label),
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-            )
             WritingCanvas(
                 contentDescription = stringResource(R.string.writing_canvas_description),
+                clearRequest = clearRequest,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(vertical = 12.dp),
-            )
-            Text(
-                text = stringResource(R.string.writing_board_placeholder),
-                color = Color(0xFF58645E),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center,
+                    .weight(1f),
             )
         }
     }
 }
 
 @Composable
-private fun ActionShelf() {
+private fun ActionShelf(onClear: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -227,15 +226,45 @@ private fun ActionShelf() {
                 label = stringResource(R.string.action_replay),
                 modifier = Modifier.weight(1f),
             )
-            ActionPlaceholder(
+            ClearAction(
                 label = stringResource(R.string.action_clear),
+                contentDescription = stringResource(R.string.action_clear_description),
+                onClick = onClear,
                 modifier = Modifier.weight(1f),
             )
             Spacer(modifier = Modifier.width(8.dp))
             ActionPlaceholder(
                 label = stringResource(R.string.action_next),
                 modifier = Modifier.weight(1f),
-                emphasized = true,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ClearAction(
+    label: String,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier
+            .heightIn(min = 64.dp)
+            .semantics { this.contentDescription = contentDescription },
+        color = Color(0xFFFFF3E6),
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Box(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = label,
+                color = Color(0xFF7A4A22),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
             )
         }
     }
@@ -245,11 +274,10 @@ private fun ActionShelf() {
 private fun ActionPlaceholder(
     label: String,
     modifier: Modifier = Modifier,
-    emphasized: Boolean = false,
 ) {
     Surface(
-        modifier = modifier.heightIn(min = 56.dp),
-        color = if (emphasized) Color(0xFFCBE7D8) else Color(0xFFFFFEFA),
+        modifier = modifier.heightIn(min = 64.dp),
+        color = Color(0xFFF8F7F3),
         shape = RoundedCornerShape(20.dp),
     ) {
         Column(
@@ -259,7 +287,7 @@ private fun ActionPlaceholder(
         ) {
             Text(
                 text = label,
-                color = if (emphasized) MaterialTheme.colorScheme.primary else Color(0xFF68716C),
+                color = Color(0xFF68716C),
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
             )

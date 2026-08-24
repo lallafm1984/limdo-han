@@ -32,4 +32,34 @@ class BootstrapTest {
     fun gieokPreviewRejectsEmptyCanvas() {
         WritingCanvasGeometry.gieokPoints(width = 0f, height = 500f)
     }
+
+    @Test
+    fun strokePathConstrainsPointsToChildSafeInsetAndClears() {
+        val started = StrokePath().start(
+            point = CanvasPoint(-20f, 900f),
+            width = 1_200f,
+            height = 500f,
+            safeInset = 24f,
+        )
+        val extended = started.append(
+            point = CanvasPoint(1_400f, -10f),
+            width = 1_200f,
+            height = 500f,
+            safeInset = 24f,
+        )
+
+        assertEquals(CanvasPoint(24f, 476f), extended.points.first())
+        assertEquals(CanvasPoint(1_176f, 24f), extended.points.last())
+        assertTrue(extended.clear().points.isEmpty())
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun strokePathRejectsCanvasSmallerThanSafeInset() {
+        StrokePath().start(
+            point = CanvasPoint(10f, 10f),
+            width = 40f,
+            height = 40f,
+            safeInset = 24f,
+        )
+    }
 }

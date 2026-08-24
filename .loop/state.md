@@ -2,26 +2,33 @@
 
 Loop: 003 — Child-ready Stroke Input Foundation
 
-Status: READY
+Status: COMPLETE
 
-Iteration: 0
+Iteration: 3
 
-Last Verification: Loop 002 and the child-usability QA policy passed their recorded automated and emulator checks on 2026-08-24. Loop 003 has not yet run fresh application verification.
+Last Verification: Loop 003 iteration 3 passed the automation contract, 6 unit tests, Android lint, debug assembly, APK install, cold launch, focus, exact 2340 × 1080 rendering, live stroke input, Clear restoration, UI-bound measurement, and child-proxy review on 2026-08-24.
 
-Current Failure: The current preview Canvas measures 1394 × 185 px, below the 378 px minimum height for child handwriting input, and does not accept touch input.
+Current Failure: None.
 
-Non-blocking Notes: `OBSERVED_CHILD` has not been run. PowerShell is not installed on this Mac, so Windows parity remains unexecuted locally.
+Non-blocking Notes: `OBSERVED_CHILD: NOT RUN`; emulator and child-proxy evidence do not replace a supervised five-year-old test. PowerShell is not installed on this Mac, so Windows parity remains unexecuted locally.
 
-Current Hypothesis: Compressing surrounding chrome and placing the instruction beside the guide can expand the Canvas above 1170 × 378 px without losing the 30/70 lesson hierarchy; a small pure stroke model can then support single-finger drawing and Clear without new dependencies.
+Current Hypothesis: Confirmed. Neutral unavailable actions make the warm Clear surface the only actionable control, while the enlarged Canvas preserves passing input behavior.
 
-Next Action: Run the automation check, measure the available central layout, and implement the smallest layout and input-state change for Loop 003 iteration 1.
+Next Action: Stop at `HUMAN_REVIEW_AFTER_LOOP_003`; do not define or start another loop without user direction.
 
 Completed Criteria:
 
 - Loop 001 landscape shell completed
 - Loop 002 non-interactive Writing Canvas completed
 - Child-usability and active writing-area QA gates defined
+- Bounded single-finger StrokePath and active Clear implemented
+- Loop 003 iteration 2 automated verification passed
+- Active Canvas measured 1456 × 438 px at exact 2340 × 1080
+- Clear measured approximately 251 × 64 dp with at least 14.1 dp action spacing
+- Live ADB stroke drawing and exact Clear restoration verified
+- Unavailable action emphasis removed and child-proxy gate passed
+- Loop 003 final automated and emulator verification passed
 
 Remaining Criteria:
 
-- All Loop 003 success criteria 1–12
+- None

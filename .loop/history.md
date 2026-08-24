@@ -359,3 +359,141 @@ Activated Loop 003 and set the stopping condition to `HUMAN_REVIEW_AFTER_LOOP_00
 ### Next Action
 
 Validate the new loop contract, create a local goal-definition checkpoint, and start Codex App Goal mode.
+
+## Loop 003 — Iteration 1
+
+### Hypothesis
+
+Removing vertical copy from inside the writing card will expand the Canvas above 1170 × 378 px while preserving the 30/70 hierarchy; a pure bounded stroke model can support one-finger input and Clear without dependencies.
+
+### Change
+
+- Expanded the Canvas to fill the writing-card interior.
+- Added bounded pure stroke state, one-finger pointer capture, immediate stroke rendering, and an active Clear control.
+- Increased all child action surfaces to a 64 dp minimum height.
+- Moved concise task guidance to the header and guide character.
+- Added unit coverage for safe-inset clamping and Clear.
+
+### Verification
+
+- `./scripts/verify.sh`: failed during `compileDebugKotlin` in unit, lint, and assembly stages
+- Exact error: unresolved `semantics` and `contentDescription` references in `MainActivity.kt`
+
+### Result
+
+FAILED. The Clear accessibility modifier is missing two imports.
+
+### Next Action
+
+Add only the missing Compose semantics imports and rerun the complete verification suite.
+
+## Loop 003 — Iteration 2
+
+### Hypothesis
+
+Adding only the missing semantics imports will make the focused input implementation compile and allow all automated verification stages to run.
+
+### Change
+
+Added the missing `semantics` and `contentDescription` imports in `MainActivity.kt`.
+
+### Verification
+
+- `./scripts/verify.sh`: passed all four stages
+- Automation contract: Loop 003 `IN_PROGRESS`, iteration 2, active Loop 003
+- Unit tests: passed, including safe-inset clamping and Clear behavior
+- Android lint: passed
+- Debug APK assembly: passed
+
+### Result
+
+PASSED. The implementation compiles and the pure input-state contract is verified.
+
+### Failure / Improvement
+
+Drawable size, live pointer input, Clear behavior, and child-proxy comprehension still require fresh emulator evidence.
+
+### Next Action
+
+Install the APK, measure UI bounds, draw a stroke, activate Clear, and inspect exact 2340 × 1080 screenshots.
+
+## Loop 003 — Iteration 2 Emulator Review
+
+### Verification
+
+- APK install and cold launch: passed in 1687 ms
+- App focus and bounds: `2340 × 1080`, `ROTATION_90`
+- Canvas bounds: `[789,321][2245,759]`, measuring 1456 × 438 px
+- Canvas share: 62.2% of app width and 40.6% of app height; both minimums pass
+- Clear bounds: `[811,849][1470,1017]`, measuring 659 × 168 px, approximately 251 × 64 dp
+- Minimum action gap: 37 px, approximately 14.1 dp; passes 12 dp
+- ADB swipe created a visible blue stroke within the Canvas
+- Clear tap removed only the child stroke and preserved the `ㄱ` guide
+- Exact 2340 × 1080 before, stroke, and cleared screenshots inspected
+
+### Result
+
+PARTIAL PASS. Size, input, Clear, clipping, and visual-layout criteria pass.
+
+### Child Proxy Failure
+
+The unavailable `다음` action still uses a green emphasized background. A five-year-old who cannot rely on the `준비 중` text could mistake it for the active action.
+
+### Next Action
+
+Remove emphasis from the unavailable Next placeholder without changing layout or behavior, then rerun full and emulator verification.
+
+## Loop 003 — Iteration 3
+
+### Hypothesis
+
+Removing only the unavailable Next emphasis will make Clear the sole visually active control while preserving all passing size and input behavior.
+
+### Change
+
+Removed the green emphasis from the unavailable Next placeholder and aligned both unavailable actions to the same neutral presentation.
+
+### Automated Verification
+
+- `./scripts/verify.sh`: passed all four stages
+- Unit tests: 6 passed, 0 failures, 0 errors
+- Android lint: passed
+- Debug assembly: passed
+- APK SHA-256: `5cde9a6492cda7a724c6cc8e6c44ff50b37b5518f2b7d2012425836abca883f2`
+
+### Emulator Verification
+
+- Final APK install and cold launch: passed in 1568 ms
+- Focused activity: `com.example.limdo/.MainActivity`
+- App bounds: exact 2340 × 1080, `ROTATION_90`
+- Canvas bounds: `[789,321][2245,759]` = 1456 × 438 px
+- Canvas share: 62.2% width and 40.6% height; minimum 50% × 35% passes
+- Clear bounds: `[811,849][1470,1017]` = 659 × 168 px, approximately 251 × 64 dp
+- Smallest child-action spacing: approximately 14.1 dp; minimum 12 dp passes
+- ADB swipe produced a visible blue stroke without navigation
+- Clear removed the child stroke and preserved the guide
+- Final before and cleared screenshots have identical SHA-256 `45a609ac963de8d4f2650124215e29555c2c1fd9666d05bee31435eb034a644f`
+- Fresh 2340 × 1080 before, stroke, and cleared screenshots inspected without clipping or overlap
+
+### Child Proxy
+
+1. What should the child do now? Draw `ㄱ`, stated once in the large header and demonstrated by the guide.
+2. Where should the child write? In the largest white-and-green region occupying most of the learning area.
+3. Where should the child start? At the distinct orange start marker.
+4. Which controls are unavailable? Replay and Next share a neutral appearance and `준비 중`; Clear is the only warm active control.
+
+`CHILD_PROXY: PASSED`
+
+`OBSERVED_CHILD: NOT RUN`
+
+### Result
+
+PASSED. All twelve Loop 003 success criteria are satisfied within the declared automated, emulator, and child-proxy boundaries.
+
+### Remaining Risk
+
+Actual five-year-old comprehension and physical comfort remain unproven until the supervised observed-child protocol is run.
+
+### Queue Transition
+
+Marked Loop 003 `COMPLETE`, set `Active Loop: NONE`, and stopped at `HUMAN_REVIEW_AFTER_LOOP_003`.

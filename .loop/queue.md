@@ -2,14 +2,14 @@
 
 Execution Stage: CODEX_APP
 
-Active Loop: 003
+Active Loop: NONE
 
 Review Gate: HUMAN_REVIEW_AFTER_LOOP_003
 
 | Loop | Status | Goal source | Automatic transition |
 | --- | --- | --- | --- |
 | 002 | COMPLETE | `.loop/history.md` | Stopped at human review after verified completion |
-| 003 | ACTIVE | `LOOP_GOAL.md` | Stop for human review after verified completion |
+| 003 | COMPLETE | `LOOP_GOAL.md` | Stopped at human review after verified completion |
 
 Queue rules:
 

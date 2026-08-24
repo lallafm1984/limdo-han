@@ -2,15 +2,14 @@
 <resources>
     <string name="app_name">LimDo</string>
     <string name="journey_label">첫 번째 여행</string>
-    <string name="lesson_prompt">오늘은 선을 만나볼까?</string>
+    <string name="lesson_prompt">주황 점에서 시작해 ㄱ을 그려봐!</string>
     <string name="lesson_progress">첫 단계</string>
     <string name="guide_character">리모</string>
-    <string name="guide_message">여기서 함께 연습할 거야!</string>
-    <string name="writing_board_label">ㄱ 길 미리보기</string>
-    <string name="writing_board_placeholder">주황 점에서 시작해요 · 손가락 쓰기는 다음 단계에서 만나요</string>
-    <string name="writing_canvas_description">손가락 입력 전 단계인 기역 쓰기 길 미리보기</string>
+    <string name="guide_message">큰 쓰기판에 그려보자!</string>
+    <string name="writing_canvas_description">큰 쓰기판. 주황 점에서 시작해 기역을 손가락으로 그려요</string>
     <string name="action_replay">다시 보기</string>
     <string name="action_clear">지우기</string>
+    <string name="action_clear_description">내가 그린 선 지우기</string>
     <string name="action_next">다음</string>
     <string name="not_available_yet">준비 중</string>
 </resources>
