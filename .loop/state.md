@@ -1,27 +1,31 @@
-# Current Loop State
+# 현재 루프 상태
 
-Loop: 005 — Local Spoken Guidance and Replay
+루프: 005 — 로컬 음성 안내와 다시 듣기
 
-Status: READY
+상태: 완료
 
-Iteration: 0
+반복: 8
 
-Last Verification: Fresh-session CLI isolation smoke test, shell syntax, automation contract, 17 unit tests, Android lint, and debug assembly passed on 2026-08-24; Loop 004 remains the most recent emulator-verified product checkpoint.
+마지막 검증: 2026-08-24 `./scripts/check-automation.sh`와 `./scripts/verify.sh`가 통과했다. 단위 테스트 25개, Android lint, debug build가 통과했다. `alarmquest-qa`의 네트워크 차단 2340 × 1080 cold launch에서 초기·재시도·성공·현재·지우기 후 다시 듣기의 `LimDoSpeech` 요청·완료와 현재 화면 일치함을 확인했다. Google TTS 일시 비활성 재현에서 `사용 불가`, 비활성 `🔇` 다시 듣기를 확인했고 엔진 복구 후 `INITIAL` 재생 완료까지 확인했다.
 
-Current Failure: None.
+현재 실패: 없음.
 
-Non-blocking Notes: `OBSERVED_CHILD: NOT RUN`; technical playback callbacks never prove that a child heard or understood guidance.
+참고: `실제 아이 관찰: 실행 안 함`. callback 근거는 아이가 실제 발화를 듣고 이해했다는 근거가 아니다.
 
-Current Hypothesis: A lifecycle-safe, offline-capable Korean speech controller plus one large speaker-symbol Replay control can add listening support without shrinking or destabilizing the completed writing interaction.
+현재 가설: 없음. 루프 005의 13개 성공 조건이 모두 통과했다.
 
-Next Action: Run the CLI automation contract, inspect installed offline Korean speech capability, and make exactly one smallest implementation change for the highest-priority unmet criterion.
+다음 작업: 큐에 정의된 `준비` 항목이 없으며 `HUMAN_REVIEW_AFTER_LOOP_005`에서 사람 검토한다. 다음 루프는 임의로 만들지 않는다.
 
-Completed Criteria:
+완료한 조건:
 
-- Loops 001–004 complete
-- Fresh-session CLI stage explicitly authorized
-- Loop 005 objective and thirteen measurable success criteria defined
+- 루프 005 성공 조건 1~13
+- 정확한 2340 × 1080의 Canvas·터치·배치·흐름·callback·안전 대체 근거
+- 금지된 권한·서비스·의존성 변경 없음
+- `아이 대리 점검: 통과`
+- `실제 아이 관찰: 실행 안 함`
 
-Remaining Criteria:
+남은 조건:
 
-- All Loop 005 success criteria
+- 없음. 실제 아이 관찰은 제품 코드로만 검증했으며, 아이가 음성을 듣고 이해했다는 근거는 아니다.
+
+다음 작업: `HUMAN_REVIEW_AFTER_LOOP_005`에서 사람 검토한다. 명시적 `준비` 항목이 없으며 새 루프를 만들지 않는다.

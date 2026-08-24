@@ -4,7 +4,7 @@ set -u
 set -o pipefail
 
 usage() {
-    echo "Usage: $0 [--once]"
+    echo "사용법: $0 [--once]"
 }
 
 once=0
@@ -45,13 +45,13 @@ acquire_lock() {
         existing_pid="$(sed -n '1p' "$lock_dir/pid")"
     fi
     if [[ "$existing_pid" =~ ^[0-9]+$ ]] && kill -0 "$existing_pid" 2>/dev/null; then
-        echo "CLI LOOP ALREADY RUNNING: pid=$existing_pid" >&2
+        echo "CLI 루프가 이미 실행 중: pid=$existing_pid" >&2
         return 1
     fi
 
     rm -f "$lock_dir/pid"
     rmdir "$lock_dir" 2>/dev/null || {
-        echo "CLI LOOP LOCK CANNOT BE RECOVERED: $lock_dir" >&2
+        echo "CLI 루프 잠금을 복구할 수 없음: $lock_dir" >&2
         return 1
     }
     mkdir "$lock_dir" || return 1
@@ -71,9 +71,9 @@ release_lock() {
 
 has_work() {
     local active_loop
-    active_loop="$(sed -n 's/^Active Loop: //p' "$repo_root/.loop/queue.md")"
-    [[ -n "$active_loop" && "$active_loop" != "NONE" ]] && return 0
-    grep -Eq '^\| [0-9]{3} \| READY \|' "$repo_root/.loop/queue.md"
+    active_loop="$(sed -n 's/^활성 루프: //p' "$repo_root/.loop/queue.md")"
+    [[ -n "$active_loop" && "$active_loop" != "없음" ]] && return 0
+    grep -Eq '^\| [0-9]{3} \| 준비 \|' "$repo_root/.loop/queue.md"
 }
 
 durable_fingerprint() {
@@ -86,7 +86,7 @@ rm -f "$stop_file"
 
 cd "$repo_root" || exit 2
 if ! ./scripts/check-automation.sh; then
-    echo "CLI LOOP STOPPED: automation contract failed" >&2
+    echo "CLI 루프 중지: 자동화 계약 실패" >&2
     exit 2
 fi
 
@@ -95,11 +95,11 @@ if [[ -z "$codex_bin" ]]; then
     codex_bin="$(command -v codex 2>/dev/null || true)"
 fi
 if [[ -z "$codex_bin" || ! -x "$codex_bin" ]]; then
-    echo "CLI LOOP STOPPED: codex executable not found" >&2
+    echo "CLI 루프 중지: codex 실행 파일을 찾을 수 없음" >&2
     exit 2
 fi
 if [[ ! -s "$prompt_file" ]]; then
-    echo "CLI LOOP STOPPED: worker prompt missing" >&2
+    echo "CLI 루프 중지: 작업자 지시문이 없음" >&2
     exit 2
 fi
 
@@ -108,7 +108,7 @@ session_number=0
 
 while has_work; do
     if [[ -e "$stop_file" ]]; then
-        echo "CLI LOOP STOPPED: stop signal received"
+        echo "CLI 루프 중지: 중지 신호를 받음"
         exit 0
     fi
 
@@ -119,7 +119,7 @@ while has_work; do
 
     before_fingerprint="$(durable_fingerprint)"
     printf '%s\n' "$run_id" > "$runtime_dir/current-session"
-    printf 'CLI LOOP SESSION START run=%s ordinal=%s\n' "$run_id" "$session_number"
+    printf 'CLI 루프 세션 시작 run=%s 순번=%s\n' "$run_id" "$session_number"
 
     codex_args=(
         exec
@@ -154,34 +154,34 @@ while has_work; do
     fi
 
     printf '%s\t%s\t%s\t%s\n' "$run_id" "${thread_id:-UNKNOWN}" "$cli_status" "$progress" >> "$session_log"
-    printf 'CLI LOOP SESSION END run=%s thread=%s exit=%s durable_progress=%s\n' \
+    printf 'CLI 루프 세션 종료 run=%s thread=%s 종료=%s 지속기록=%s\n' \
         "$run_id" "${thread_id:-UNKNOWN}" "$cli_status" "$progress"
 
     if [[ "$cli_status" -eq 0 && "$progress" == "yes" ]]; then
         consecutive_failures=0
     else
         consecutive_failures=$((consecutive_failures + 1))
-        echo "CLI LOOP PROCESS FAILURE: consecutive=$consecutive_failures" >&2
+        echo "CLI 루프 프로세스 실패: 연속=$consecutive_failures" >&2
     fi
 
     if (( consecutive_failures >= max_process_failures )); then
-        echo "CLI LOOP STOPPED: three consecutive failed or non-persisting sessions" >&2
+        echo "CLI 루프 중지: 세션 실패 또는 지속 기록 누락이 세 번 연속 발생" >&2
         exit 1
     fi
 
-    iteration="$(sed -n 's/^Iteration: //p' .loop/state.md)"
-    status="$(sed -n 's/^Status: //p' .loop/state.md)"
-    if [[ "$iteration" =~ ^[0-9]+$ ]] && (( iteration >= 15 )) && [[ "$status" != "COMPLETE" && "$status" != "BLOCKED" ]]; then
-        echo "CLI LOOP STOPPED: iteration limit reached without terminal state" >&2
+    iteration="$(sed -n 's/^반복: //p' .loop/state.md)"
+    status="$(sed -n 's/^상태: //p' .loop/state.md)"
+    if [[ "$iteration" =~ ^[0-9]+$ ]] && (( iteration >= 15 )) && [[ "$status" != "완료" && "$status" != "차단" ]]; then
+        echo "CLI 루프 중지: 종료 상태 없이 반복 제한에 도달" >&2
         exit 1
     fi
 
     if (( once == 1 )); then
-        echo "CLI LOOP STOPPED: one-session mode complete"
+        echo "CLI 루프 중지: 한 세션 모드 완료"
         exit 0
     fi
 
     sleep "$pause_seconds"
 done
 
-echo "CLI LOOP COMPLETE: no active or READY work remains"
+echo "CLI 루프 완료: 활성 또는 준비 작업이 없음"

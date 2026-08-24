@@ -1,21 +1,21 @@
-# Codex CLI Loop Queue
+# Codex CLI 루프 큐
 
-Execution Stage: CLI
+실행 단계: CLI
 
-Active Loop: 005
+활성 루프: 없음
 
-Review Gate: HUMAN_REVIEW_AFTER_LOOP_005
+검토 관문: HUMAN_REVIEW_AFTER_LOOP_005
 
-| Loop | Status | Goal source | Automatic transition |
+| 루프 | 상태 | 목표 출처 | 자동 전환 |
 | --- | --- | --- | --- |
-| 002 | COMPLETE | `.loop/history.md` | Stopped after verified completion |
-| 003 | COMPLETE | `.loop/history.md` | Stopped after verified completion |
-| 004 | COMPLETE | `.loop/history.md` | Stopped after verified completion |
-| 005 | ACTIVE | `LOOP_GOAL.md` | Fresh CLI sessions continue one iteration at a time until completion or stop |
+| 002 | 완료 | `.loop/history.md` | 검증 완료 후 중지 |
+| 003 | 완료 | `.loop/history.md` | 검증 완료 후 중지 |
+| 004 | 완료 | `.loop/history.md` | 검증 완료 후 중지 |
+| 005 | 완료 | `LOOP_GOAL.md` | `HUMAN_REVIEW_AFTER_LOOP_005`에서 중지 |
 
-Queue rules:
+큐 규칙:
 
-- Exactly one loop may be `ACTIVE`.
-- Only an explicitly defined item marked `READY` may be promoted next.
-- A worker may complete the active loop but may not invent its successor.
-- Queue transitions must be recorded in `.loop/history.md`.
+- `활성` 루프는 정확히 하나만 존재할 수 있다.
+- 명시적으로 정의되고 `준비`로 표시된 항목만 다음 루프로 올릴 수 있다.
+- 작업자는 활성 루프를 완료할 수 있지만 다음 루프를 임의로 만들 수 없다.
+- 큐 전환은 `.loop/history.md`에 한글로 기록한다.

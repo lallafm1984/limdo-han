@@ -1,47 +1,52 @@
-# LimDo Fresh-session CLI Automation Contract
+# LimDo 새 세션 CLI 자동화 계약
 
-## Execution Stage
+## 실행 단계
 
-Stage: `CLI`
+단계: `CLI`
 
-`scripts/run-cli-loop.sh` is the only session supervisor. `scripts/start-cli-loop.sh` hosts it in a detached local `screen` session so it survives the terminal or Codex App command that started it without requiring extra macOS privacy permissions. Each worker is a brand-new, ephemeral `codex exec` session; no session is resumed or forked.
+`scripts/run-cli-loop.sh`만 세션 감독자 역할을 한다. `scripts/start-cli-loop.sh`는 별도 macOS 권한 없이 시작 명령이 끝난 뒤에도 계속 실행되도록 로컬 `screen` 분리 세션에서 감독자를 구동한다. 각 작업자는 새 임시 `codex exec` 세션이며 이전 세션을 재개하거나 분기하지 않는다.
 
-## Durable Objective
+## 지속 목표
 
-Complete only the active loop in `.loop/queue.md` according to `LOOP_GOAL.md`. Each fresh worker performs exactly one loop iteration with one focused change, persists its evidence to `.loop/history.md` and `.loop/state.md`, then exits so the supervisor can start the next fresh session.
+`.loop/queue.md`의 활성 루프만 `LOOP_GOAL.md`에 따라 완료한다. 각 새 작업자는 초점이 분명한 변경 하나로 정확히 한 번 반복하고, 한글 근거를 `.loop/history.md`와 `.loop/state.md`에 저장한 뒤 종료한다.
 
-## Session Protocol
+## 세션 절차
 
-1. The supervisor validates `./scripts/check-automation.sh` and acquires one atomic repository-local lock.
-2. It starts `codex exec --ephemeral --json --sandbox danger-full-access` with `.loop/cli-worker-prompt.md` on standard input. Android Gradle locking, ADB, and emulator control require local sockets that the macOS workspace sandbox blocks; the runner does not use the separate approval-and-sandbox bypass flag.
-3. The worker reads all durable project contracts and the current Git state instead of relying on conversation history.
-4. The worker performs exactly one iteration and records success or failure before exiting.
-5. The supervisor records the new thread ID and exit status under `.loop/runtime/sessions/`.
-6. A new session starts only while an active loop or explicitly `READY` queue item remains.
+1. 감독자는 `./scripts/check-automation.sh`를 검증하고 저장소 전용 원자적 잠금을 얻는다.
+2. `.loop/cli-worker-prompt.md`를 표준 입력으로 전달해 `codex exec --ephemeral --json --sandbox danger-full-access`를 시작한다. Android Gradle 잠금, ADB, 에뮬레이터는 macOS 작업공간 샌드박스가 막는 로컬 소켓을 사용하므로 이 모드가 필요하다. 별도의 승인·샌드박스 우회 플래그는 사용하지 않는다.
+3. 작업자는 대화 기억 대신 현재 프로젝트 계약과 Git 상태를 읽는다.
+4. 작업자는 정확히 한 번 반복하고 성공 또는 실패를 한글로 기록한 뒤 종료한다.
+5. 감독자는 새 thread ID와 종료 상태를 `.loop/runtime/sessions/`에 남긴다.
+6. 활성 루프 또는 명시적 `준비` 항목이 있을 때만 다음 새 세션을 시작한다.
 
-## Allowed Autonomous Actions
+## 허용되는 자율 작업
 
-- Read and edit files inside this repository.
-- Run local Gradle, Android SDK, emulator, ADB, and inspection commands.
-- Install and launch debug builds on the designated local emulator.
-- Capture local screenshots and logs needed for verification.
-- Create one focused local Git checkpoint commit after a loop is fully verified.
+- 저장소 내부 파일 읽기와 편집
+- 로컬 Gradle, Android SDK, 에뮬레이터, ADB, 검사 명령 실행
+- 지정 로컬 에뮬레이터에 debug build 설치와 실행
+- 검증용 로컬 화면 캡처와 로그 수집
+- 루프가 완전히 검증된 뒤 로컬 Git 체크포인트 커밋 하나 생성
+- 검증된 루프 완료 커밋을 `git push origin HEAD`로 현재 브랜치에 일반 push
 
-## Actions Requiring User Authorization
+## 사용자 승인이 필요한 작업
 
-- Git push, force push, tag, release, pull request, deployment, or any other remote mutation.
-- Destructive Git or filesystem operations.
-- Server, login, analytics, advertising, sensitive permissions, paid services, or external messages.
-- Dependency, Gradle, SDK, architecture, or product-scope changes not required by the active loop.
-- Inventing or starting a loop that is not explicitly defined in `LOOP_GOAL.md` and marked active or `READY` in `.loop/queue.md`.
+- force push, tag, release, pull request, 배포 또는 완료 커밋의 일반 push 이외 모든 원격 변경
+- 파괴적 Git 또는 파일 작업
+- 서버, 로그인, 분석, 광고, 민감 권한, 유료 서비스, 외부 메시지
+- 활성 목표에 필요하지 않은 의존성, Gradle, SDK, 구조, 제품 범위 변경
+- `LOOP_GOAL.md`와 큐에 활성 또는 `준비`로 정의되지 않은 루프 생성·시작
 
-## Stop Conditions
+## 중지 조건
 
-The supervisor stops cleanly when there is no active or `READY` work, `.loop/runtime/stop` exists, or the one-session mode was requested. It stops defensively after three consecutive non-zero CLI exits.
+감독자는 활성 또는 `준비` 작업이 없거나 `.loop/runtime/stop`이 있거나 1회 실행 모드가 끝나면 정상 종료한다. CLI 프로세스가 세 번 연속 실패하거나 한글 지속 기록을 남기지 않으면 방어적으로 종료한다.
 
-The worker marks the loop `BLOCKED` and exits when any `AGENTS.md` stop condition is met. A completed loop stops at its review gate unless another already-defined queue item is explicitly `READY`.
+작업자는 `AGENTS.md` 중지 조건에 도달하면 루프를 `차단`으로 기록하고 종료한다. 완료 루프는 최종 검증, 큐·상태 갱신, 체크포인트 커밋, `git push origin HEAD` 성공까지 마친 뒤 완료로 인계한다. 일반 push가 실패하면 정확한 오류를 기록하고 force push하지 않는다. 완료 루프 뒤에 이미 정의된 `준비` 항목이 없으면 검토 관문에서 멈춘다.
 
-## Operator Commands
+## Codex 앱 진행 보고
+
+Codex 앱 heartbeat 자동화 `LimDo 진행 상황 보고`가 10분마다 이 저장소를 읽기 전용으로 확인하고 현재 대화에 한글로 보고한다. 앱과 컴퓨터가 켜져 있어야 로컬 파일을 확인할 수 있다. 보고 작업은 파일 수정, 커밋, 감독자 시작·중지를 하지 않는다.
+
+## 운영 명령
 
 ```bash
 ./scripts/start-cli-loop.sh
@@ -49,4 +54,4 @@ The worker marks the loop `BLOCKED` and exits when any `AGENTS.md` stop conditio
 ./scripts/stop-cli-loop.sh
 ```
 
-Use `./scripts/run-cli-loop.sh` for a foreground supervisor or `./scripts/run-cli-loop.sh --once` for one fresh worker session. Runtime logs, lock files, and stop signals are intentionally ignored by Git.
+`./scripts/run-cli-loop.sh`는 전면 실행, `./scripts/run-cli-loop.sh --once`는 새 작업자 한 세션만 실행한다. 실행 로그, 잠금, 중지 신호는 Git에서 제외한다.

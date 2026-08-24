@@ -1,85 +1,82 @@
-# LimDo Child Usability QA
+# LimDo 아이 사용성 QA
 
-## Purpose
+## 목적
 
-Every visual or interactive loop must prove that the screen is understandable and physically comfortable for a five-year-old child. A successful build or an adult visual review is not proof of child usability.
+모든 시각·상호작용 루프는 화면이 다섯 살 아이에게 이해하기 쉽고 신체적으로 편한지 입증해야 한다. build 성공이나 성인 검토만으로 아이 사용성을 입증할 수 없다.
 
-The target child can understand spoken Korean but cannot yet read Korean UI text. Visible copy may help a supervising adult or accessibility service, but it never counts as the only child-facing cue.
+대상 아이는 한국어 듣기는 가능하지만 한글 UI 문장을 아직 읽지 못한다. 보이는 문구는 보호자와 접근성 서비스에는 도움이 되지만 아이를 위한 유일한 단서로 인정하지 않는다.
 
-## Required QA Boundaries
+## 근거 단계
 
-Report these levels separately:
+각 단계는 따로 기록한다.
 
-1. `AUTOMATED`: unit tests, lint, build, and measurable layout rules pass.
-2. `EMULATOR`: exact 2340 × 1080 landscape rendering, focus, bounds, and interaction behavior are verified.
-3. `CHILD_PROXY`: the screen passes the child-focused heuristic checklist below, inspected from a fresh screenshot and UI hierarchy.
-4. `OBSERVED_CHILD`: a five-year-old child completes the short observation protocol with a supervising adult.
+1. `자동`: 단위 테스트, lint, build, 측정 가능한 배치 규칙
+2. `에뮬레이터`: 정확한 2340 × 1080 가로 화면, focus, bounds, 상호작용
+3. `아이 대리 점검`: 새 화면과 UI hierarchy를 이용한 아이 중심 휴리스틱
+4. `실제 아이 관찰`: 보호자 감독 아래 다섯 살 아이가 짧은 관찰 절차 수행
 
-Never claim `OBSERVED_CHILD` from code, screenshots, an emulator, an adult tester, or Codex judgment.
+코드, 화면, 에뮬레이터, 성인 판단을 `실제 아이 관찰`로 표현하지 않는다.
 
-## Five-year-old Comprehension Gate
+## 다섯 살 이해 가능성 관문
 
-For every child-facing screen:
+- 한 화면에 분명한 학습 과제 하나만 제시한다.
+- 아이가 보고 행동할 곳을 가장 크고 강한 시각 요소로 만든다.
+- 주 행동을 찾기 위해 글을 읽게 하지 않는다. 모양, 위치, 아이콘, 색, 움직임, 캐릭터 시범 또는 검증된 음성을 사용한다.
+- 짧고 구체적인 한국어를 쓰고 추상적이거나 긴 복문을 피한다.
+- 손글씨에서는 시작 위치와 진행 방향을 시각적으로 보여 준다.
+- 사용할 수 없는 동작은 시각적으로 약하게 만들고 글을 읽지 않아도 비활성임을 알 수 있게 한다.
+- 복잡한 장식과 경쟁하는 강조를 피한다.
+- 중요한 의미를 색 하나에만 의존하지 않고 명도 대비를 확인한다.
 
-- Present one obvious learning task at a time.
-- Make the place to look or act the largest and strongest visual element.
-- Do not require any reading to discover the primary action; use shape, position, icon, color, motion, a character demonstration, or verified spoken guidance.
-- Use short, concrete Korean phrasing. Avoid abstract instructions and long multi-clause sentences.
-- Show the start location and intended direction visually when handwriting is involved.
-- Keep unavailable actions visually secondary and make their unavailable state recognizable without reading its label.
-- Avoid dense decoration, competing highlights, and controls that look active when they are not.
-- Maintain strong foreground/background contrast and verify that important meaning is not conveyed by color alone.
+첫 관련 화면에서 한글 문장을 읽지 않고 다음 질문에 답할 수 없으면 아이 대리 점검은 실패다.
 
-The `CHILD_PROXY` gate fails if a reviewer cannot answer these questions from the first frame without using visible Korean words:
+1. 지금 무엇을 해야 하는가?
+2. 어디를 누르거나 써야 하는가?
+3. 어디서 시작하는가?
+4. 어떤 버튼을 사용할 수 없는가?
+5. 시도 뒤 성공인지 다시 해야 하는지 알 수 있는가?
+6. 글을 읽지 않고 어떻게 초기화하는가?
+7. 어느 버튼으로 안내를 다시 듣는가?
 
-1. What should the child do now?
-2. Where should the child touch or write?
-3. Where should the child start?
-4. Which visible controls are unavailable?
-5. After an attempt, does the non-reading cue clearly mean success or try again?
-6. How can the child reset without reading the control label?
+## 쓰기 영역 크기 관문
 
-## Writing-area Size Gate
+손글씨 입력을 추가하거나 활성화하는 루프는 카드가 아닌 실제 그리기 내부를 측정한다.
 
-For every loop that adds or enables handwriting input, measure the active drawable interior rather than the surrounding card.
+2340 × 1080 기준:
 
-At the 2340 × 1080 reference viewport:
+- 너비는 앱 너비의 50% 이상인 1170 px
+- 높이는 앱 높이의 35% 이상인 378 px
+- 화면에서 가장 큰 아이 상호작용 영역
+- 허용 획과 잘림 경계 사이 최소 24 dp 안전 여백
+- 글자, 시스템 바, 동작 버튼 위에서 시작하지 않아도 전체 글자를 그릴 수 있어야 함
+- 손가락 아래에서도 목표 경로와 아이 획을 가능한 한 계속 볼 수 있어야 함
 
-- Active drawable width must be at least 50% of app width: 1170 px.
-- Active drawable height must be at least 35% of app height: 378 px.
-- The drawable area must be the largest single child-interaction region on the screen.
-- At least 24 dp of safe inset must remain between the accepted stroke region and clipping edges.
-- A child must be able to draw the target without starting on labels, system bars, or action controls.
-- The full target path and the child's stroke must remain visible under the finger as much as practical.
+기준을 못 맞추면 그리기 영역을 줄이기 전에 주변 문구와 장식을 줄인다. 그릴 수 없는 컨테이너를 측정해 통과 처리하지 않는다.
 
-If a lesson layout cannot meet these minimums, reduce surrounding copy and chrome before shrinking the drawable area. Do not satisfy the gate by measuring a non-drawable container.
+## 아이 터치 관문
 
-## Child Touch Gate
+- 주요 아이 버튼은 최소 64 × 64 dp
+- 인접 버튼 간격은 최소 12 dp
+- 길게 누르기, 두 번 누르기, 정밀한 가장자리 제스처, 작은 아이콘에 필수 동작을 맡기지 않음
+- 어린아이의 부정확한 접촉을 허용하고 우발적 이동이나 파괴 동작을 방지함
+- 초기화와 재시도는 분명하고 되돌릴 수 있으며 처벌 문구를 사용하지 않음
 
-- Primary child controls must have a minimum 64 × 64 dp touch target.
-- Adjacent child controls must have at least 12 dp separation.
-- Essential actions must not depend on long press, double tap, precise edge gestures, or small icons.
-- Touch input must tolerate a young child's imprecise contact without accidental navigation or destructive actions.
-- Reset or retry must be obvious, recoverable, and free of punishment language.
+## 실제 아이 관찰 절차
 
-## Observed-child Protocol
+보호자 감독과 로컬 debug build에서만 실행하며 아이의 이름, 정확한 나이, 음성, 영상, 사진, 자유 서술 행동 기록을 수집하지 않는다.
 
-Run only with a supervising adult and a debug/local build. Do not collect identifying data, audio, video, or analytics.
+1. 버튼 설명 없이 화면을 보여 준다.
+2. `어디에 써야 할까?`라고 묻고 5초 안에 쓰기 영역을 찾는지 통과·실패만 기록한다.
+3. `어디서 시작하면 될까?`라고 묻고 5초 안에 시작점을 찾는지 통과·실패만 기록한다.
+4. 세 번 시도하게 하고 반복적인 가장자리 충돌 없이 자연스럽게 쓸 수 있는지 본다.
+5. 한 번 시범 뒤 추가 설명 없이 다시 듣기와 지우기를 찾는지 통과·실패만 기록한다.
 
-1. Show the screen without explaining the controls.
-2. Ask, `어디에 써야 할까?`
-3. Record only pass/fail: the child identifies the writing area within 5 seconds.
-4. Ask, `어디서 시작하면 될까?`
-5. Record only pass/fail: the child identifies the start point within 5 seconds.
-6. Let the child make three attempts and observe whether the writing area permits a comfortable natural stroke without repeated edge collisions.
-7. After one demonstration, record only pass/fail: the child can find retry/reset without additional coaching.
+실패는 다음 루프의 명시적 조건으로 만든다.
 
-Any failure becomes an explicit next-loop condition. Do not store the child's name, exact age, voice, image, or free-form behavioral notes.
+## 이력에 필요한 근거
 
-## Evidence Required in Loop History
-
-- Exact screenshot pixel dimensions.
-- Active drawable bounds and width/height percentages.
-- Primary touch-target dimensions and spacing for interactive screens.
-- `CHILD_PROXY` answers with concrete visual evidence.
-- `OBSERVED_CHILD: NOT RUN`, `PASSED`, or `FAILED`; never imply it was run when it was not.
+- 정확한 화면 픽셀 크기
+- 실제 그리기 내부 bounds와 너비·높이 비율
+- 주요 터치 영역 크기와 간격
+- 구체적 시각 근거가 있는 한글 아이 대리 점검 답변
+- `실제 아이 관찰: 실행 안 함`, `통과`, `실패` 중 하나

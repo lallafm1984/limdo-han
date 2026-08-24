@@ -1,91 +1,96 @@
-# LimDo Development Instructions
+# LimDo 개발 지침
 
-## Project Purpose
+## 프로젝트 목적
 
-LimDo is a personal, local-first Android learning application for a five-year-old child. Its long-term goal is to teach Korean Hangul progressively, especially handwriting, stroke order, stroke direction, and child-friendly interaction.
+LimDo는 다섯 살 아이를 위한 개인용 로컬 우선 Android 학습 앱이다. 장기 목표는 한글을 단계적으로 익히게 하는 것이며, 특히 손글씨, 획순, 획 방향, 아이 친화적 상호작용을 중요하게 다룬다.
 
-Do not implement the full application unless `LOOP_GOAL.md` explicitly requests it.
+`LOOP_GOAL.md`에서 명시적으로 요청하지 않은 전체 앱 기능을 한꺼번에 구현하지 않는다.
 
-## Target Child Profile
+## 기록 언어 규칙
 
-- The target child can listen to spoken Korean but cannot yet read Korean UI text.
-- Never use visible words as the sole way to discover an instruction, direction, result, reset, or unavailable action.
-- Preserve short Korean copy for supervising adults and accessibility services, but prove child comprehension from non-reading cues such as demonstration, shape, position, icon, motion, or verified audio.
-- Audio is helpful only after its playback and fallback behavior are implemented and verified; do not assume that visible text has been heard aloud.
+- 상태, 이력, 목표, QA, 자동화 계약, 작업자 지시문을 포함한 프로젝트 Markdown 문서는 한글로 작성한다.
+- 파일명, 명령어, 코드 식별자, Android API명, 상태 토큰처럼 정확성이 필요한 기술 표기는 원문을 유지할 수 있다.
+- `.loop/history.md`는 2026-08-24에 기존 영문 기록을 한글 연대기로 한 번 정리했다. 이후에는 한글로만 덧붙이고 기존 기록을 수정하거나 삭제하지 않는다.
+- CLI 작업자의 최종 보고와 Codex 앱 주기 보고도 한글로 작성한다.
 
-## Technology
+## 대상 아이 특성
 
-- Android
-- Kotlin
-- Jetpack Compose
-- Custom Canvas for the future writing engine
-- Minimum SDK 26
-- Reference emulator viewport: 2340 × 1080 in landscape orientation
-- Local-first architecture
-- No server, login, ads, analytics, or sensitive permissions unless explicitly requested
+- 대상 아이는 한국어 듣기는 가능하지만 아직 한글 UI 문장을 읽지 못한다.
+- 지시, 방향, 결과, 초기화, 사용할 수 없는 동작을 글자만으로 알려주지 않는다.
+- 보호자와 접근성 서비스를 위한 짧은 한글 문구는 유지하되, 아이의 이해 가능성은 시범, 모양, 위치, 아이콘, 움직임 또는 검증된 음성으로 입증한다.
+- 음성은 재생과 실패 대체 동작을 구현하고 검증한 뒤에만 이해 근거로 인정한다.
 
-## Required Loop
+## 기술 기준
 
-For every iteration:
+- Android, Kotlin, Jetpack Compose
+- 향후 쓰기 엔진은 Custom Canvas 사용
+- 최소 SDK 26
+- 기준 에뮬레이터 화면: 가로 2340 × 세로 1080
+- 로컬 우선 구조
+- 명시적 요청 없이는 서버, 로그인, 광고, 분석, 민감 권한을 추가하지 않는다.
 
-1. Read `LOOP_GOAL.md`.
-2. Read `.loop/state.md`.
-3. Read recent entries in `.loop/history.md`.
-4. Inspect the current implementation and verification evidence.
-5. Identify the single highest-priority unmet condition.
-6. Form one concrete hypothesis.
-7. Make the smallest reasonable change.
-8. Run fresh verification.
-9. Compare the result with the previous iteration.
-10. Append the outcome to `.loop/history.md`.
-11. Update `.loop/state.md`.
-12. Continue until the loop succeeds or a stop condition is met.
+## 필수 루프 절차
 
-## Codex CLI Automation
+매 반복마다 다음 순서를 지킨다.
 
-The project is now in the fresh-session CLI stage. Read `CLI_AUTOMATION.md` and `.loop/queue.md` before starting or resuming work.
+1. `LOOP_GOAL.md`를 읽는다.
+2. `.loop/state.md`를 읽는다.
+3. `.loop/history.md`의 최근 기록을 읽는다.
+4. 현재 구현과 검증 근거를 확인한다.
+5. 충족되지 않은 조건 중 우선순위가 가장 높은 하나를 고른다.
+6. 검증 가능한 구체적 가설 하나를 세운다.
+7. 합리적인 최소 변경 하나를 적용한다.
+8. 새 검증을 실행한다.
+9. 이전 반복과 결과를 비교한다.
+10. 결과를 한글로 `.loop/history.md`에 덧붙인다.
+11. `.loop/state.md`를 한글로 갱신한다.
+12. 성공 또는 중지 조건까지 계속한다.
 
-- Work only on the single active loop named in `.loop/queue.md`.
-- Resume from `.loop/state.md`; never restart a partially completed loop from memory.
-- Keep `.loop/history.md` append-only and record every fresh verification result.
-- A `codex exec` worker performs exactly one loop iteration and exits; only `scripts/run-cli-loop.sh` may start the next fresh session.
-- Never run `codex exec resume`, `codex exec fork`, or another nested Codex process from a worker.
-- When a loop completes, update the queue and state, create one local checkpoint commit, and stop at the declared review gate unless another explicitly defined queue item is already `READY`.
-- Do not push, publish, deploy, send external messages, or change remote state without explicit user authorization.
-- Do not invent a next loop when the queue has no `READY` item.
+## Codex CLI 자동화
 
-## Verification Rules
+현재 프로젝트는 새 세션 CLI 단계다. 작업 시작 또는 재개 전에 `CLI_AUTOMATION.md`와 `.loop/queue.md`를 읽는다.
 
-Never claim completion from code inspection alone. Android changes normally require fresh unit-test, lint, and debug-build results through `./scripts/verify.sh` on macOS/Linux or `scripts/verify.ps1` on Windows.
+- `.loop/queue.md`의 활성 루프 하나만 작업한다.
+- 중단된 루프는 `.loop/state.md`에서 재개하며 기억만으로 처음부터 다시 시작하지 않는다.
+- `.loop/history.md`는 한글 덧붙이기 전용 기록으로 유지하고 새 검증을 모두 남긴다.
+- `codex exec` 작업자는 정확히 한 번의 루프 반복만 수행하고 종료한다. 다음 새 세션은 `scripts/run-cli-loop.sh`만 시작한다.
+- 작업자는 `codex exec resume`, `codex exec fork` 또는 다른 중첩 Codex 프로세스를 실행하지 않는다.
+- 루프 완료 시 큐와 상태를 갱신하고 로컬 체크포인트 커밋 하나를 만든 뒤 `git push origin HEAD`로 현재 브랜치를 일반 push한다. push 성공 뒤 이미 정의된 다음 `준비` 항목이 없다면 검토 관문에서 멈춘다.
+- 사용자는 검증된 루프 완료 커밋의 위 일반 push를 승인했다. force push, tag, release, pull request, 배포, 외부 메시지와 그 밖의 원격 상태 변경은 별도 명시적 승인 없이는 하지 않는다.
+- 큐에 `준비` 항목이 없으면 다음 루프를 임의로 만들지 않는다.
 
-For visual Android loops, use the `alarmquest-qa` emulator at 1080 × 2340 device resolution and verify the application in its required 2340 × 1080 landscape orientation.
+## 검증 규칙
 
-Every visual or input loop must also read and satisfy `QA_CHECKLIST.md`. Report automated, emulator, child-proxy, and observed-child evidence separately. Never describe adult or emulator inspection as proof that a five-year-old child can use the screen.
+코드 확인만으로 완료를 주장하지 않는다. Android 변경은 보통 macOS/Linux에서 `./scripts/verify.sh`, Windows에서 `scripts/verify.ps1`로 새 단위 테스트, lint, debug build 결과를 확보해야 한다.
 
-For handwriting input, measure the active drawable interior, not its surrounding card. At 2340 × 1080 it must be at least 1170 × 378 px and remain the largest child-interaction region on screen.
+시각 Android 루프는 `alarmquest-qa` 에뮬레이터의 세로 기기 해상도 1080 × 2340을 사용하고, 앱이 요구하는 가로 2340 × 세로 1080 상태에서 검증한다.
 
-## Change Discipline
+시각 또는 입력 루프는 `QA_CHECKLIST.md`를 읽고 충족한다. `자동`, `에뮬레이터`, `아이 대리 점검`, `실제 아이 관찰` 근거를 구분하며 성인이나 에뮬레이터 점검을 다섯 살 아이 사용성의 실제 증거로 표현하지 않는다.
 
-- Prefer one focused change per iteration.
-- Preserve unrelated user changes.
-- Do not add dependencies without a concrete need.
-- Do not change Gradle or SDK versions without evidence.
-- Do not disable tests or lint merely to pass verification.
-- Do not use destructive Git commands, including `git reset --hard`.
+손글씨 입력 영역은 카드 외곽이 아니라 실제 그리기 내부를 측정한다. 2340 × 1080에서 최소 1170 × 378 px이고 화면에서 가장 큰 아이 상호작용 영역이어야 한다.
 
-## Stop Conditions
+## 변경 원칙
 
-Stop and report when:
+- 반복마다 초점이 분명한 변경 하나를 우선한다.
+- 사용자 또는 이전 작업자의 관련 없는 변경을 보존한다.
+- 구체적인 필요가 없으면 의존성을 추가하지 않는다.
+- 근거 없이 Gradle 또는 SDK 버전을 바꾸지 않는다.
+- 통과만을 위해 테스트나 lint를 끄지 않는다.
+- `git reset --hard`를 포함한 파괴적 Git 명령을 사용하지 않는다.
 
-- every success criterion passes;
-- the same root cause fails three consecutive iterations;
-- 15 iterations have been reached;
-- a destructive operation is required;
-- a major architectural choice cannot be inferred from the goal; or
-- required Android tooling is unavailable;
-- the active queue reaches its human-review gate; or
-- continuation would require remote mutation or permission beyond local development.
+## 중지 조건
 
-## Completion Report
+다음 중 하나면 멈추고 한글로 보고한다.
 
-Report the iteration count, changed files, verification commands and results, remaining risks, and suggested next loop.
+- 모든 성공 조건이 통과했다.
+- 같은 근본 원인이 세 반복 연속 실패했다.
+- 15회 반복에 도달했다.
+- 파괴적 작업이 필요하다.
+- 목표에서 추론할 수 없는 큰 구조 결정이 필요하다.
+- 필수 Android 도구를 사용할 수 없다.
+- 활성 큐가 사람 검토 관문에 도달했다.
+- 계속하려면 원격 변경 또는 현재 범위를 넘는 권한이 필요하다.
+
+## 완료 보고
+
+반복 횟수, 변경 파일, 검증 명령과 결과, 남은 위험, 권장 다음 루프를 한글로 보고한다.

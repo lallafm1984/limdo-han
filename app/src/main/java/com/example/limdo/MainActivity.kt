@@ -24,11 +24,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,11 +44,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
+    private lateinit var localSpeech: LocalKoreanSpeech
+    private var speechState by mutableStateOf<SpeechPlaybackState>(SpeechPlaybackState.Initializing)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            LimDoApp()
+        localSpeech = LocalKoreanSpeech(this) { newState ->
+            runOnUiThread { speechState = newState }
         }
+        setContent {
+            LimDoApp(
+                speechState = speechState,
+                speak = localSpeech::speakLatest,
+            )
+        }
+    }
+
+    override fun onDestroy() {
+        localSpeech.release()
+        super.onDestroy()
     }
 }
 
@@ -60,21 +76,36 @@ private val LimDoColorScheme = lightColorScheme(
 )
 
 @Composable
-private fun LimDoApp() {
+private fun LimDoApp(
+    speechState: SpeechPlaybackState,
+    speak: (SpokenCue) -> Boolean,
+) {
     MaterialTheme(colorScheme = LimDoColorScheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            LearningShell()
+            LearningShell(speechState = speechState, speak = speak)
         }
     }
 }
 
 @Composable
-private fun LearningShell() {
+private fun LearningShell(
+    speechState: SpeechPlaybackState,
+    speak: (SpokenCue) -> Boolean,
+) {
     var clearRequest by remember { mutableIntStateOf(0) }
     var traceResult by remember { mutableStateOf<GieokTraceResult?>(null) }
+    var initialSpeechRequested by rememberSaveable { mutableStateOf(false) }
+    val currentCue = SpokenCueModel.forResult(traceResult)
+
+    LaunchedEffect(speechState, initialSpeechRequested) {
+        if (speechState == SpeechPlaybackState.Ready && !initialSpeechRequested) {
+            initialSpeechRequested = true
+            speak(SpokenCue.INITIAL)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -98,7 +129,10 @@ private fun LearningShell() {
             )
             WritingBoardPreview(
                 clearRequest = clearRequest,
-                onTraceResult = { traceResult = it },
+                onTraceResult = { result ->
+                    traceResult = result
+                    if (result != null) speak(SpokenCueModel.forResult(result))
+                },
                 modifier = Modifier
                     .weight(LearningShellSpec.WRITING_BOARD_WEIGHT)
                     .fillMaxHeight(),
@@ -106,6 +140,8 @@ private fun LearningShell() {
         }
 
         ActionShelf(
+            speechAvailable = speechState.isPlayable,
+            onReplay = { speak(currentCue) },
             onClear = {
                 clearRequest += 1
                 traceResult = null
@@ -282,7 +318,11 @@ private data class ChildFeedback(
 )
 
 @Composable
-private fun ActionShelf(onClear: () -> Unit) {
+private fun ActionShelf(
+    speechAvailable: Boolean,
+    onReplay: () -> Unit,
+    onClear: () -> Unit,
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -295,8 +335,11 @@ private fun ActionShelf(onClear: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ActionPlaceholder(
+            ReplayAction(
                 label = stringResource(R.string.action_replay),
+                contentDescription = stringResource(R.string.action_replay_description),
+                available = speechAvailable,
+                onClick = onReplay,
                 modifier = Modifier.weight(1f),
             )
             ClearAction(
@@ -313,6 +356,50 @@ private fun ActionShelf(onClear: () -> Unit) {
         }
     }
 }
+
+@Composable
+private fun ReplayAction(
+    label: String,
+    contentDescription: String,
+    available: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = onClick,
+        enabled = available,
+        modifier = modifier
+            .heightIn(min = 64.dp)
+            .semantics {
+                this.contentDescription = contentDescription
+                stateDescription = if (available) "음성 안내 사용 가능" else "음성 안내 사용 불가"
+            },
+        color = if (available) Color(0xFFDCEDE5) else Color(0xFFD8D4CC),
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = if (available) "🔊" else "🔇",
+                fontSize = 28.sp,
+            )
+            Text(
+                text = label,
+                color = if (available) Color(0xFF285A46) else Color(0xFF68645E),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+}
+
+private val SpeechPlaybackState.isPlayable: Boolean
+    get() = this is SpeechPlaybackState.Ready ||
+        this is SpeechPlaybackState.Playing ||
+        this is SpeechPlaybackState.Completed
 
 @Composable
 private fun ClearAction(

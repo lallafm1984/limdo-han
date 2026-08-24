@@ -1,40 +1,40 @@
-# Loop Goal 005 — Local Spoken Guidance and Replay
+# 루프 목표 005 — 로컬 음성 안내와 다시 듣기
 
-## Objective
+## 목표
 
-Add short Korean spoken guidance to the completed `ㄱ` tracing cycle and make Replay the obvious large control for hearing the current instruction again. The target five-year-old can listen but cannot read, so initial guidance, success, and gentle retry must be understandable without relying on visible Korean words.
+완료된 `ㄱ` 따라 쓰기 흐름에 짧은 한국어 음성 안내를 추가하고, 현재 안내를 다시 들을 수 있는 크고 분명한 다시 듣기 버튼을 만든다. 대상 아이는 듣기는 가능하지만 글을 읽지 못하므로 초기 안내, 성공, 부드러운 재시도는 한글 문장을 읽지 않아도 이해할 수 있어야 한다.
 
-Keep the lesson local-first. Use an on-device, offline-capable Android speech path with a safe non-audio fallback; do not add a server, account, analytics, ads, sensitive permission, paid service, or network requirement.
+로컬 우선 원칙을 유지한다. 실패 시 안전한 시각 대체 동작을 갖춘 Android 기기 내 오프라인 가능 음성 경로를 사용하고 서버, 계정, 분석, 광고, 민감 권한, 유료 서비스, 네트워크 요구 사항을 추가하지 않는다.
 
-This loop does not add persistence, scores, rewards, lesson navigation, multi-character lessons, speech recognition, microphone access, or new remote dependencies.
+이 루프는 저장, 점수, 보상, 수업 이동, 여러 글자 수업, 음성 인식, 마이크 접근, 새 원격 의존성을 추가하지 않는다.
 
-## Success Criteria
+## 성공 조건
 
-1. At the exact 2340 × 1080 landscape viewport, the active drawable interior remains at least 1170 × 378 px and remains the largest child-interaction region.
-2. A pure deterministic cue model maps initial, success, and every retry result to one short concrete Korean utterance plus stable replay identity; focused unit tests cover every mapping.
-3. Initial guidance is requested after the local speech engine becomes ready, without blocking first paint or repeating on recomposition and rotation.
-4. Success or retry guidance is requested only after pointer release, matching the visible final state; drawing and Clear do not produce stale or overlapping speech.
-5. Replay becomes an active control with a reading-independent speaker symbol, accessibility semantics, a minimum 64 × 64 dp target, and at least 12 dp separation. It repeats the current cue rather than an outdated cue.
-6. The speech path selects installed Korean speech that does not require a network connection when available, queues only the latest cue, exposes completion/error state for verification, and releases resources with the activity lifecycle.
-7. If initialization, Korean availability, or playback fails, the app does not crash or hang. Existing visual start, direction, success, retry, and Clear cues remain usable, and Replay becomes unmistakably unavailable without relying on text alone.
-8. No internet or microphone permission, server call, analytics event, account, ad, or new dependency is introduced.
-9. Clear resets the stroke and feedback, restores the initial current cue, and allows Replay to request that initial cue; it does not unexpectedly auto-speak merely because Clear was tapped.
-10. The guide, child stroke, result feedback, Replay, and Clear remain visible without clipping or overlap. Next remains unmistakably unavailable.
-11. Without reading visible Korean, `CHILD_PROXY` can identify the writing task, start, direction, success/retry, Clear, and the control used to hear guidance again. Record `OBSERVED_CHILD: NOT RUN` unless a supervised child test actually occurs.
-12. `./scripts/verify.sh` passes the automation contract, unit tests, Android lint, and debug assembly after every code iteration.
-13. The debug APK installs and cold-launches on `alarmquest-qa`; fresh exact 2340 × 1080 evidence verifies focus, bounds, initial/replay/result/clear behavior, and either successful Korean speech callbacks or the complete safe-unavailable fallback.
+1. 정확한 2340 × 1080 가로 화면에서 실제 그리기 내부는 최소 1170 × 378 px이며 가장 큰 아이 상호작용 영역이다.
+2. 순수하고 결정적인 안내 모델이 초기, 성공, 모든 재시도 결과를 짧고 구체적인 한국어 발화와 안정적인 다시 듣기 식별자로 연결하며 모든 매핑을 단위 테스트한다.
+3. 로컬 음성 엔진 준비 후 초기 안내를 요청하되 첫 화면을 막거나 재구성·회전 때 반복하지 않는다.
+4. 성공 또는 재시도 안내는 손을 뗀 뒤에만 현재 시각 결과와 일치하게 요청한다. 그리는 중이거나 지우기 뒤에 오래된 음성이 겹치지 않는다.
+5. 다시 듣기는 글을 읽지 않아도 아는 스피커 기호, 접근성 설명, 최소 64 × 64 dp, 12 dp 이상 간격을 갖춘 활성 버튼이며 오래된 안내가 아닌 현재 안내를 반복한다.
+6. 음성 경로는 설치된 한국어 음성 중 네트워크 연결이 필요 없는 음성을 선택하고, 최신 안내만 대기시키며, 완료·오류 상태를 검증 가능하게 노출하고 Activity 생명주기에 맞춰 자원을 해제한다.
+7. 초기화, 한국어 음성 사용 가능 여부, 재생이 실패해도 앱이 멈추거나 종료되지 않는다. 기존 시각 시작·방향·성공·재시도·지우기 단서는 유지되고 다시 듣기는 글자 없이도 사용할 수 없음이 분명하다.
+8. 인터넷·마이크 권한, 서버 호출, 분석, 계정, 광고, 새 의존성을 추가하지 않는다.
+9. 지우기는 획과 결과를 초기화하고 현재 안내를 초기 안내로 되돌려 다시 듣기가 가능하게 하되, 지우기만으로 자동 발화하지 않는다.
+10. 안내, 아이 획, 결과, 다시 듣기, 지우기는 잘림이나 겹침 없이 보이며 다음 버튼은 사용할 수 없음이 분명하다.
+11. 한글 문장을 읽지 않고도 `아이 대리 점검`에서 쓰기 과제, 시작점, 방향, 성공·재시도, 지우기, 안내를 다시 듣는 버튼을 식별한다. 실제 관찰을 하지 않았다면 `실제 아이 관찰: 실행 안 함`으로 기록한다.
+12. 코드 반복마다 `./scripts/verify.sh`의 자동화 계약, 단위 테스트, Android lint, debug build가 통과한다.
+13. debug APK가 `alarmquest-qa`에 설치되고 정확한 2340 × 1080에서 cold launch된다. 초기·다시 듣기·결과·지우기 동작과 한국어 음성 callback 성공 또는 완전한 안전 대체 상태를 새 근거로 확인한다.
 
-## Verification
+## 검증 방법
 
-- Run `./scripts/check-automation.sh` before implementation.
-- Run `./scripts/verify.sh` after every code iteration.
-- Inspect the manifest and dependency diff to prove that no forbidden permission, service, or dependency was added.
-- Install and cold-launch the debug APK on `alarmquest-qa` at exact 2340 × 1080 landscape.
-- Exercise initial Replay, one invalid attempt, one valid `ㄱ`, result Replay, and Clear followed by Replay.
-- Capture fresh screenshots and UI hierarchy evidence for active and unavailable speech states encountered.
-- Use lifecycle/playback callbacks and local logs as technical playback evidence; do not claim that a human heard or understood audio unless it was actually observed.
-- Complete the non-reading `CHILD_PROXY` report in `.loop/history.md` and state `OBSERVED_CHILD` accurately.
+- 구현 전 `./scripts/check-automation.sh`를 실행한다.
+- 코드 반복 뒤 `./scripts/verify.sh`를 실행한다.
+- manifest와 의존성 diff로 금지된 권한, 서비스, 의존성이 없음을 확인한다.
+- `alarmquest-qa`에서 정확한 2340 × 1080 가로 화면으로 설치하고 cold launch한다.
+- 초기 다시 듣기, 잘못된 시도, 올바른 `ㄱ`, 결과 다시 듣기, 지우기 뒤 다시 듣기를 수행한다.
+- 실제로 나타난 활성 또는 사용 불가 음성 상태의 새 화면과 UI hierarchy를 확보한다.
+- 생명주기와 재생 callback 및 로컬 로그를 기술 재생 근거로 사용한다. 사람이 실제로 듣고 이해하지 않았다면 그렇게 주장하지 않는다.
+- `.loop/history.md`에 한글 아이 대리 점검을 기록하고 실제 아이 관찰 여부를 정확히 남긴다.
 
-## Completion Definition
+## 완료 정의
 
-This loop is complete only when all thirteen criteria pass with fresh evidence. Then set `.loop/queue.md` to `Active Loop: NONE`, create one local checkpoint commit, do not push, and stop at `HUMAN_REVIEW_AFTER_LOOP_005` unless a later explicitly defined loop is already `READY`.
+새 근거로 13개 조건이 모두 통과해야 완료다. `.loop/queue.md`의 활성 루프를 `없음`으로 바꾸고 로컬 체크포인트 커밋 하나를 만든 뒤 `git push origin HEAD`로 현재 브랜치에 일반 push한다. push 성공 후 이미 정의된 다음 `준비` 루프가 없다면 `HUMAN_REVIEW_AFTER_LOOP_005`에서 멈춘다. push가 실패하면 정확한 오류를 기록하고 force push하지 않는다.

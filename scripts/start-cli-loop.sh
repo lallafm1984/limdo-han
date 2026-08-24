@@ -10,7 +10,7 @@ screen_name="limdo_cli_loop"
 if [[ -r "$lock_pid_file" ]]; then
     running_pid="$(sed -n '1p' "$lock_pid_file")"
     if [[ "$running_pid" =~ ^[0-9]+$ ]] && kill -0 "$running_pid" 2>/dev/null; then
-        echo "CLI LOOP ALREADY RUNNING: pid=$running_pid"
+        echo "CLI 루프가 이미 실행 중: pid=$running_pid"
         exit 0
     fi
 fi
@@ -32,11 +32,11 @@ else
     launched_pid=""
 fi
 if [[ "$launched_pid" =~ ^[0-9]+$ ]] && kill -0 "$launched_pid" 2>/dev/null; then
-    echo "CLI LOOP STARTED: screen=$screen_name pid=$launched_pid"
-    echo "Status: $repo_root/scripts/cli-loop-status.sh"
+    echo "CLI 루프 시작됨: screen=$screen_name pid=$launched_pid"
+    echo "상태 확인: $repo_root/scripts/cli-loop-status.sh"
     exit 0
 fi
 
-echo "CLI LOOP FAILED TO START" >&2
+echo "CLI 루프 시작 실패" >&2
 tail -n 40 "$runtime_dir/supervisor.log" >&2 || true
 exit 1
