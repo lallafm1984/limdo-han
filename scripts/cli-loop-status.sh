@@ -19,7 +19,8 @@ if [[ -r "$lock_pid_file" ]]; then
 else
     echo "Supervisor: STOPPED"
 fi
-if screen -ls 2>/dev/null | grep -E "[0-9]+\.${screen_name}[[:space:]]" >/dev/null; then
+screen_list="$(screen -ls 2>/dev/null || true)"
+if grep -E "[0-9]+\.${screen_name}[[:space:]]" <<< "$screen_list" >/dev/null; then
     echo "Detached CLI session: RUNNING ($screen_name)"
 else
     echo "Detached CLI session: STOPPED"
