@@ -497,3 +497,30 @@ Actual five-year-old comprehension and physical comfort remain unproven until th
 ### Queue Transition
 
 Marked Loop 003 `COMPLETE`, set `Active Loop: NONE`, and stopped at `HUMAN_REVIEW_AFTER_LOOP_003`.
+
+## Loop 004 — Goal Activation
+
+### Objective
+
+Complete one full, child-friendly `ㄱ` tracing cycle: evaluate a continuous stroke for a forgiving start, horizontal-then-vertical order and direction, guide proximity, turn, and finish, then show an immediate success or gentle retry response.
+
+### Baseline
+
+- Canvas: 1456 × 438 px at exact 2340 × 1080, passing the child-size gate
+- Input: bounded single-finger stroke and Clear are implemented
+- Validation: none
+- Result feedback: none
+- `CHILD_PROXY`: input discovery passes; attempt-result comprehension is unavailable
+- `OBSERVED_CHILD: NOT RUN`
+
+### Queue Transition
+
+User direction on 2026-08-24 authorized continued Goal execution without intermediate review. Activated Loop 004 and moved the next review gate to `HUMAN_REVIEW_AFTER_LOOP_004`.
+
+### Hypothesis
+
+A pure normalized evaluator and a single pointer-release callback can add forgiving `ㄱ` validation and clear child-facing feedback without changing the passing Canvas or action-shelf geometry.
+
+### Next Action
+
+Run the automation preflight, create a local goal-definition checkpoint, then implement and test the evaluator before connecting it to Compose.
