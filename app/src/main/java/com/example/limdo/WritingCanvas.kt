@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -30,18 +31,24 @@ private val PracticeGuide = Color(0xFFCEE0D7)
 private val GieokGuide = Color(0xFF4F806B)
 private val StartMarker = Color(0xFFF0A660)
 private val ChildStroke = Color(0xFF2D5B89)
+private val DirectionArrow = Color(0xFFFFFEFA)
 
 @Composable
 internal fun WritingCanvas(
     contentDescription: String,
     clearRequest: Int,
+    onTraceResult: (GieokTraceResult?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(24.dp)
-    var strokePath by remember { mutableStateOf(StrokePath()) }
+    var attempt by remember { mutableStateOf(TraceAttempt()) }
+    val currentOnTraceResult by rememberUpdatedState(onTraceResult)
+    val emptyStateDescription = "아직 그린 선이 없어요"
+    val drawingStateDescription = "선을 그리고 있어요"
 
     LaunchedEffect(clearRequest) {
-        strokePath = strokePath.clear()
+        attempt = attempt.clear()
+        currentOnTraceResult(null)
     }
 
     Canvas(
@@ -52,12 +59,13 @@ internal fun WritingCanvas(
                 val safeInset = 24.dp.toPx()
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
-                    strokePath = strokePath.start(
+                    attempt = attempt.start(
                         point = CanvasPoint(down.position.x, down.position.y),
                         width = size.width.toFloat(),
                         height = size.height.toFloat(),
                         safeInset = safeInset,
                     )
+                    currentOnTraceResult(null)
                     down.consume()
 
                     while (true) {
@@ -65,7 +73,7 @@ internal fun WritingCanvas(
                         val change = event.changes.firstOrNull { it.id == down.id } ?: break
                         if (!change.pressed) break
 
-                        strokePath = strokePath.append(
+                        attempt = attempt.append(
                             point = CanvasPoint(change.position.x, change.position.y),
                             width = size.width.toFloat(),
                             height = size.height.toFloat(),
@@ -73,14 +81,30 @@ internal fun WritingCanvas(
                         )
                         change.consume()
                     }
+
+                    val finishedAttempt = attempt.finish(
+                        width = size.width.toFloat(),
+                        height = size.height.toFloat(),
+                    )
+                    attempt = finishedAttempt
+                    currentOnTraceResult(finishedAttempt.result)
                 }
             }
             .semantics {
                 this.contentDescription = contentDescription
-                stateDescription = if (strokePath.points.isEmpty()) {
-                    "아직 그린 선이 없어요"
-                } else {
-                    "내가 그린 선이 있어요"
+                stateDescription = when (attempt.result) {
+                    GieokTraceResult.SUCCESS -> "기역을 완성했어요"
+                    GieokTraceResult.WRONG_START,
+                    GieokTraceResult.WRONG_DIRECTION,
+                    GieokTraceResult.OFF_GUIDE,
+                    GieokTraceResult.INCOMPLETE,
+                    GieokTraceResult.EMPTY,
+                    -> "다시 해볼 수 있어요"
+                    null -> if (attempt.stroke.points.isEmpty()) {
+                        emptyStateDescription
+                    } else {
+                        drawingStateDescription
+                    }
                 }
             },
     ) {
@@ -115,6 +139,26 @@ internal fun WritingCanvas(
                 cap = StrokeCap.Round,
             )
         }
+        val arrowLength = min(size.width, size.height) * 0.10f
+        val arrowStroke = pathStroke * 0.18f
+        drawDirectionArrow(
+            center = Offset(
+                x = (points[0].x + points[1].x) / 2f,
+                y = points[0].y,
+            ),
+            direction = Offset(1f, 0f),
+            length = arrowLength,
+            strokeWidth = arrowStroke,
+        )
+        drawDirectionArrow(
+            center = Offset(
+                x = points[1].x,
+                y = (points[1].y + points[2].y) / 2f,
+            ),
+            direction = Offset(0f, 1f),
+            length = arrowLength,
+            strokeWidth = arrowStroke,
+        )
         drawCircle(
             color = StartMarker,
             radius = pathStroke * 0.62f,
@@ -122,14 +166,14 @@ internal fun WritingCanvas(
         )
 
         val childStrokeWidth = min(size.width, size.height) * 0.045f
-        if (strokePath.points.size == 1) {
+        if (attempt.stroke.points.size == 1) {
             drawCircle(
                 color = ChildStroke,
                 radius = childStrokeWidth / 2f,
-                center = Offset(strokePath.points.first().x, strokePath.points.first().y),
+                center = Offset(attempt.stroke.points.first().x, attempt.stroke.points.first().y),
             )
         } else {
-            strokePath.points.zipWithNext().forEach { (start, end) ->
+            attempt.stroke.points.zipWithNext().forEach { (start, end) ->
                 drawLine(
                     color = ChildStroke,
                     start = Offset(start.x, start.y),
@@ -139,5 +183,48 @@ internal fun WritingCanvas(
                 )
             }
         }
+    }
+}
+
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawDirectionArrow(
+    center: Offset,
+    direction: Offset,
+    length: Float,
+    strokeWidth: Float,
+) {
+    val halfLength = length / 2f
+    val tail = Offset(
+        x = center.x - (direction.x * halfLength),
+        y = center.y - (direction.y * halfLength),
+    )
+    val tip = Offset(
+        x = center.x + (direction.x * halfLength),
+        y = center.y + (direction.y * halfLength),
+    )
+    val headLength = length * 0.30f
+    val perpendicular = Offset(-direction.y, direction.x)
+    val headBase = Offset(
+        x = tip.x - (direction.x * headLength),
+        y = tip.y - (direction.y * headLength),
+    )
+
+    drawLine(
+        color = DirectionArrow,
+        start = tail,
+        end = tip,
+        strokeWidth = strokeWidth,
+        cap = StrokeCap.Round,
+    )
+    listOf(-1f, 1f).forEach { side ->
+        drawLine(
+            color = DirectionArrow,
+            start = tip,
+            end = Offset(
+                x = headBase.x + (perpendicular.x * headLength * side),
+                y = headBase.y + (perpendicular.y * headLength * side),
+            ),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round,
+        )
     }
 }

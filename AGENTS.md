@@ -6,6 +6,13 @@ LimDo is a personal, local-first Android learning application for a five-year-ol
 
 Do not implement the full application unless `LOOP_GOAL.md` explicitly requests it.
 
+## Target Child Profile
+
+- The target child can listen to spoken Korean but cannot yet read Korean UI text.
+- Never use visible words as the sole way to discover an instruction, direction, result, reset, or unavailable action.
+- Preserve short Korean copy for supervising adults and accessibility services, but prove child comprehension from non-reading cues such as demonstration, shape, position, icon, motion, or verified audio.
+- Audio is helpful only after its playback and fallback behavior are implemented and verified; do not assume that visible text has been heard aloud.
+
 ## Technology
 
 - Android

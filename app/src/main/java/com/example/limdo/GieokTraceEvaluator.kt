@@ -1,0 +1,131 @@
+package com.example.limdo
+
+import kotlin.math.abs
+import kotlin.math.hypot
+import kotlin.math.min
+
+internal enum class GieokTraceResult {
+    EMPTY,
+    WRONG_START,
+    WRONG_DIRECTION,
+    OFF_GUIDE,
+    INCOMPLETE,
+    SUCCESS,
+}
+
+internal object GieokTraceEvaluator {
+    private const val START_TOLERANCE_FRACTION = 0.18f
+    private const val CORRIDOR_TOLERANCE_FRACTION = 0.16f
+    private const val FINISH_TOLERANCE_FRACTION = 0.20f
+    private const val MEANINGFUL_MOVEMENT_FRACTION = 0.12f
+    private const val MAX_OFF_GUIDE_FRACTION = 0.25f
+    private const val MAX_BACKTRACK_FRACTION = 0.20f
+    private const val CORNER_PROGRESS = 0.72f
+    private const val FINISH_PROGRESS = 1.78f
+
+    fun evaluate(
+        width: Float,
+        height: Float,
+        stroke: StrokePath,
+    ): GieokTraceResult {
+        require(width > 0f) { "width must be positive" }
+        require(height > 0f) { "height must be positive" }
+
+        val points = stroke.points
+        if (points.isEmpty()) return GieokTraceResult.EMPTY
+
+        val guide = WritingCanvasGeometry.gieokPoints(width, height)
+        val start = guide[0]
+        val corner = guide[1]
+        val end = guide[2]
+        val shortestSide = min(width, height)
+        val segmentLength = corner.x - start.x
+
+        if (points.first().distanceTo(start) > shortestSide * START_TOLERANCE_FRACTION) {
+            return GieokTraceResult.WRONG_START
+        }
+
+        val meaningfulPoint = points.firstOrNull {
+            it.distanceTo(start) >= segmentLength * MEANINGFUL_MOVEMENT_FRACTION
+        }
+        if (meaningfulPoint != null) {
+            val dx = meaningfulPoint.x - start.x
+            val dy = meaningfulPoint.y - start.y
+            if (dx <= 0f || abs(dx) <= abs(dy)) {
+                return GieokTraceResult.WRONG_DIRECTION
+            }
+        }
+
+        val projections = points.map { point ->
+            projectOntoGuide(point, start, corner, end, segmentLength)
+        }
+        val backtrack = projections.zipWithNext().sumOf { (first, second) ->
+            (first.progress - second.progress).coerceAtLeast(0f).toDouble()
+        }.toFloat()
+        if (backtrack > segmentLength * MAX_BACKTRACK_FRACTION) {
+            return GieokTraceResult.WRONG_DIRECTION
+        }
+
+        val corridorTolerance = shortestSide * CORRIDOR_TOLERANCE_FRACTION
+        val offGuideFraction = projections.count { it.distance > corridorTolerance }.toFloat() /
+            projections.size
+        if (offGuideFraction > MAX_OFF_GUIDE_FRACTION) {
+            return GieokTraceResult.OFF_GUIDE
+        }
+
+        val reachedCorner = projections.any {
+            it.progress >= segmentLength * CORNER_PROGRESS && it.distance <= corridorTolerance
+        }
+        val reachedFinishProgress = projections.maxOf { it.progress } >=
+            segmentLength * FINISH_PROGRESS
+        val finishedNearEnd = points.last().distanceTo(end) <=
+            shortestSide * FINISH_TOLERANCE_FRACTION
+
+        return if (reachedCorner && reachedFinishProgress && finishedNearEnd) {
+            GieokTraceResult.SUCCESS
+        } else {
+            GieokTraceResult.INCOMPLETE
+        }
+    }
+
+    private fun projectOntoGuide(
+        point: CanvasPoint,
+        start: CanvasPoint,
+        corner: CanvasPoint,
+        end: CanvasPoint,
+        segmentLength: Float,
+    ): GuideProjection {
+        val horizontalRatio = ((point.x - start.x) / segmentLength).coerceIn(0f, 1f)
+        val horizontalPoint = CanvasPoint(
+            x = start.x + (segmentLength * horizontalRatio),
+            y = start.y,
+        )
+        val verticalRatio = ((point.y - corner.y) / segmentLength).coerceIn(0f, 1f)
+        val verticalPoint = CanvasPoint(
+            x = corner.x,
+            y = corner.y + (segmentLength * verticalRatio),
+        )
+        val horizontalDistance = point.distanceTo(horizontalPoint)
+        val verticalDistance = point.distanceTo(verticalPoint)
+
+        return if (horizontalDistance <= verticalDistance) {
+            GuideProjection(
+                progress = segmentLength * horizontalRatio,
+                distance = horizontalDistance,
+            )
+        } else {
+            GuideProjection(
+                progress = segmentLength * (1f + verticalRatio),
+                distance = verticalDistance,
+            )
+        }
+    }
+}
+
+private data class GuideProjection(
+    val progress: Float,
+    val distance: Float,
+)
+
+private fun CanvasPoint.distanceTo(other: CanvasPoint): Float =
+    hypot(x - other.x, y - other.y)

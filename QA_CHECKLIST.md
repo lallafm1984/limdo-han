@@ -4,6 +4,8 @@
 
 Every visual or interactive loop must prove that the screen is understandable and physically comfortable for a five-year-old child. A successful build or an adult visual review is not proof of child usability.
 
+The target child can understand spoken Korean but cannot yet read Korean UI text. Visible copy may help a supervising adult or accessibility service, but it never counts as the only child-facing cue.
+
 ## Required QA Boundaries
 
 Report these levels separately:
@@ -21,19 +23,21 @@ For every child-facing screen:
 
 - Present one obvious learning task at a time.
 - Make the place to look or act the largest and strongest visual element.
-- Do not require fluent reading to discover the primary action; use shape, position, color, motion, or a character demonstration.
+- Do not require any reading to discover the primary action; use shape, position, icon, color, motion, a character demonstration, or verified spoken guidance.
 - Use short, concrete Korean phrasing. Avoid abstract instructions and long multi-clause sentences.
 - Show the start location and intended direction visually when handwriting is involved.
-- Keep unavailable actions visually secondary and label their unavailable state consistently.
+- Keep unavailable actions visually secondary and make their unavailable state recognizable without reading its label.
 - Avoid dense decoration, competing highlights, and controls that look active when they are not.
 - Maintain strong foreground/background contrast and verify that important meaning is not conveyed by color alone.
 
-The `CHILD_PROXY` gate fails if a reviewer cannot answer these questions from the first frame:
+The `CHILD_PROXY` gate fails if a reviewer cannot answer these questions from the first frame without using visible Korean words:
 
 1. What should the child do now?
 2. Where should the child touch or write?
 3. Where should the child start?
 4. Which visible controls are unavailable?
+5. After an attempt, does the non-reading cue clearly mean success or try again?
+6. How can the child reset without reading the control label?
 
 ## Writing-area Size Gate
 

@@ -524,3 +524,258 @@ A pure normalized evaluator and a single pointer-release callback can add forgiv
 ### Next Action
 
 Run the automation preflight, create a local goal-definition checkpoint, then implement and test the evaluator before connecting it to Compose.
+
+## Loop 004 — Iteration 1
+
+### Hypothesis
+
+A normalized pure evaluator can distinguish empty, wrong-start, wrong-direction, off-guide, incomplete, and successful `ㄱ` attempts while tolerating a sparse jittery valid stroke.
+
+### Change
+
+- Added a pure `GieokTraceEvaluator` with named outcomes and size-relative tolerances.
+- Added focused tests for each result, child-like jitter, scaling, and invalid bounds.
+
+### Verification
+
+- Automation contract: passed
+- Unit tests: failed, 13 passed and 1 failed
+- Android lint: passed
+- Debug assembly: passed
+- Failed test: `substantialGuideDepartureRequestsRetry`
+
+### Result
+
+FAILED. The fixture's first meaningful movement was more vertical than horizontal, so the evaluator correctly returned the higher-priority `WRONG_DIRECTION` result instead of reaching the intended `OFF_GUIDE` branch.
+
+### Next Action
+
+Add one short valid horizontal sample to the off-guide fixture and rerun the full verification suite without changing production logic.
+
+## Loop 004 — Iteration 2
+
+### Hypothesis
+
+A short valid horizontal sample before the displaced samples will isolate the intended `OFF_GUIDE` result.
+
+### Change
+
+Added one valid initial horizontal sample to the off-guide unit-test fixture; production code was unchanged.
+
+### Verification
+
+- Automation contract: passed
+- Unit tests: failed, 13 passed and 1 failed
+- Android lint: passed
+- Debug assembly: passed
+- Actual result: expected `OFF_GUIDE`, received `SUCCESS`
+
+### Result
+
+FAILED. Projection review showed only 1 of 6 samples was more than the 80 px child corridor from either guide segment, so the 16.7% outside fraction correctly remained below the 25% substantial-departure threshold.
+
+### Next Action
+
+Use monotonically advancing samples 120 px parallel to the vertical segment so the fixture measures substantial guide departure without adding backtracking.
+
+## Loop 004 — Iteration 3
+
+### Hypothesis
+
+Three monotonically advancing samples 120 px parallel to the vertical segment will exceed the 25% outside-corridor threshold without triggering another earlier rule.
+
+### Change
+
+Replaced only the ambiguous off-guide samples with measured parallel-offset samples; production code was unchanged.
+
+### Verification
+
+- Automation contract: passed
+- Unit tests: 14 passed, 0 failed
+- Android lint: passed
+- Debug assembly: passed
+
+### Result
+
+PASSED. The normalized evaluator now has fresh automated evidence for all six outcomes, jitter tolerance, scaling, and invalid bounds.
+
+### Next Action
+
+Connect the evaluator to pointer release and child-facing result feedback without changing the passing layout geometry.
+
+## Loop 004 — Iteration 4
+
+### Hypothesis
+
+Hoisting only the final trace result and wrapping stroke lifecycle in pure state will provide stable after-release feedback while preserving the passing Canvas geometry.
+
+### Change
+
+- Added pure `TraceAttempt` lifecycle state with start, append, finish, and Clear.
+- Evaluated only after pointer release and reset feedback on the next gesture or Clear.
+- Added distinct icon, child-facing Korean guidance, color, and semantics for success and each gentle retry result.
+- Added focused lifecycle tests for release-only result publication, stroke replacement, and Clear reset.
+
+### Verification
+
+- Automation contract: passed
+- Unit tests: compilation failed
+- Android lint: compilation failed
+- Debug assembly: compilation failed
+- Exact error: unresolved `stateDescription` at `MainActivity.kt:191`
+
+### Result
+
+FAILED. The guide-card accessibility semantics is missing one Compose extension import.
+
+### Next Action
+
+Add only the missing `stateDescription` import and rerun all four verification stages.
+
+## Loop 004 — Iteration 5
+
+### Hypothesis
+
+Adding only the missing Compose semantics import will compile the release-feedback implementation and allow the complete verification suite to run.
+
+### Change
+
+Added the missing `stateDescription` import; no behavior or layout logic changed.
+
+### Verification
+
+- Automation contract: passed
+- Unit tests: 17 passed, 0 failed
+- Android lint: passed
+- Debug assembly: passed
+
+### Result
+
+PASSED. Release-only evaluation, feedback mapping, stroke replacement, and Clear reset now have fresh automated build evidence.
+
+### New User Constraint
+
+The target five-year-old can listen but cannot read. Visible Korean copy cannot count as the sole instruction, result, direction, reset, or unavailable-state cue.
+
+### Next Action
+
+Strengthen the durable QA contract and add reading-independent direction, result, and reset cues before emulator verification.
+
+## Loop 004 — Iteration 6
+
+### Hypothesis
+
+Visible guide arrows plus large success, retry, and Clear symbols will make the trace cycle discoverable without reading while preserving passing geometry and adult/accessibility copy.
+
+### Change
+
+- Recorded the target child's listening-but-not-reading profile in `AGENTS.md` and `QA_CHECKLIST.md`.
+- Made non-reading comprehension an explicit Loop 004 success criterion.
+- Drew high-contrast right and down arrowheads directly on the `ㄱ` guide.
+- Added large `✓` success, `↻` retry, and `⌫` Clear cues without removing Korean copy or semantics.
+
+### Verification
+
+- Automation contract: passed
+- Unit tests: 17 passed, 0 failed
+- Android lint: passed
+- Debug assembly: passed
+
+### Result
+
+PASSED. The reading-independent cue implementation is build-verified; visual clarity and interaction state transitions still require emulator evidence.
+
+### Next Action
+
+Install the fresh debug APK and verify initial, invalid, valid, and cleared states at exact 2340 × 1080.
+
+## Loop 004 — Iteration 7 Emulator Review
+
+### Verification
+
+- Debug APK SHA-256: `8dfb02f45785a4850a16d82bd0d75d1b3209d26791de34063ef58687cd445b9c`
+- APK install: passed
+- Cold launch: passed in 1432 ms
+- Focused activity: `com.example.limdo/.MainActivity`
+- Window: exact 2340 × 1080, `ROTATION_90`
+- Canvas: `[789,321][2245,759]` = 1456 × 438 px
+- Initial guide visibly includes orange start plus white right and down arrows
+- Clear visibly includes a large `⌫` cue and remains `[811,849][1470,1017]` = 659 × 168 px
+- Injected wrong-start gesture produced a blue mark and changed the card from rabbit to `↻` only after release
+
+### Result
+
+PARTIAL PASS. Geometry, reading-independent direction/reset cues, release timing, and invalid retry pass.
+
+### Failure
+
+The added visual-cue row overflowed the fixed-height guide card. The Korean helper message is absent from both the fresh screenshot and UI hierarchy, violating the requirement to preserve short copy for supervising adults and accessibility support.
+
+### Next Action
+
+Compact only the guide-card content, rerun the complete verification suite, and repeat the full emulator scenario.
+
+## Loop 004 — Iteration 8
+
+### Hypothesis
+
+Reducing only guide-card padding, icon size, and type sizes will restore the helper message without changing Canvas, action-shelf, or reading-independent cue geometry.
+
+### Change
+
+- Reduced guide-card padding from 20 dp to 12 dp and its result circle from 88 dp to 72 dp.
+- Reduced only guide-card type sizes enough to keep the visual cue and complete Korean helper message visible.
+- Preserved Canvas and action-shelf dimensions.
+
+### Automated Verification
+
+- `./scripts/verify.sh`: passed all four stages
+- Automation contract: passed
+- Unit tests: 17 passed, 0 failures, 0 errors
+- Android lint: passed with 0 errors and 5 pre-existing version/orientation advisory warnings
+- Debug assembly: passed
+- Final APK SHA-256: `68da1dc7d3599f373ef4de115809eb1e1ed91c6d3ed599f8d6f099eb6c5c0c4f`
+
+### Emulator Verification
+
+- Fresh APK install: passed
+- Exact final-hash APK reinstall: passed
+- Cold launch: passed in 1300 ms
+- Focused activity: `com.example.limdo/.MainActivity`
+- Window: exact 2340 × 1080, `ROTATION_90`
+- Canvas: `[789,321][2245,759]` = 1456 × 438 px, 62.2% of width and 40.6% of height
+- Clear: `[811,849][1470,1017]` = 659 × 168 px, approximately 251 × 64 dp
+- Smallest child-action gap: 37 px, approximately 14.1 dp
+- Initial state: orange start, white right/down guide arrows, rabbit, and complete helper copy are visible
+- Invalid state: wrong-start gesture produces blue stroke plus large `↻` and retry copy only after release
+- Success state: one continuous injected right-then-down gesture produces the complete blue `ㄱ`, green result card, large `★` plus `✓`, and success copy
+- Success persists in the captured state until Clear
+- Clear after success removes the child stroke and result, restores rabbit/start/direction cues, and preserves the guide
+- Fresh exact screenshots inspected without clipping or overlap: `final-initial`, `exact-retry`, `exact-success`, and `exact-cleared`
+
+### Non-reading Child Proxy
+
+1. What should the child do? The only large trace shape is the green `ㄱ`, with an orange dot and arrows; no Korean word is needed.
+2. Where should the child write? The bordered writing surface is the largest interactive region by a wide margin.
+3. Where should the child start? The orange circle is the only distinct start marker.
+4. Which direction should the child move? White arrowheads point right on the first segment and down on the second.
+5. Was the attempt successful or should it be retried? Retry uses a large circular arrow; success changes to a star plus check mark, so color and copy are not required.
+6. How can the child reset? The only warm active shelf surface contains a large backspace/erase symbol; both outer surfaces are neutral and non-clickable.
+
+`CHILD_PROXY: PASSED WITHOUT READING`
+
+`OBSERVED_CHILD: NOT RUN`
+
+### Result
+
+PASSED. All thirteen Loop 004 success criteria are satisfied within automated, emulator, and non-reading child-proxy boundaries.
+
+### Remaining Risk
+
+- No supervised five-year-old session has verified that the chosen arrows and reset symbol are understood or physically comfortable.
+- The target child can listen, but the app does not yet provide spoken instruction, feedback, or replay; visible text is not counted as child comprehension evidence.
+- Lint retains five non-blocking advisory warnings for dependency versions and fixed landscape orientation; none were introduced to bypass verification.
+
+### Queue Transition
+
+Marked Loop 004 `COMPLETE`, set `Active Loop: NONE`, and stopped at `HUMAN_REVIEW_AFTER_LOOP_004`.

@@ -5,7 +5,12 @@
     <string name="lesson_prompt">주황 점에서 시작해 ㄱ을 그려봐!</string>
     <string name="lesson_progress">첫 단계</string>
     <string name="guide_character">리모</string>
-    <string name="guide_message">큰 쓰기판에 그려보자!</string>
+    <string name="guide_message">주황 점에서 시작! 오른쪽, 아래로!</string>
+    <string name="trace_success">해냈다! ㄱ 완성!</string>
+    <string name="trace_retry_start">괜찮아! 주황 점에서 시작해보자!</string>
+    <string name="trace_retry_direction">괜찮아! 오른쪽, 아래로 그려보자!</string>
+    <string name="trace_retry_guide">괜찮아! 초록 길을 따라가보자!</string>
+    <string name="trace_retry_finish">조금만 더! 끝까지 이어보자!</string>
     <string name="writing_canvas_description">큰 쓰기판. 주황 점에서 시작해 기역을 손가락으로 그려요</string>
     <string name="action_replay">다시 보기</string>
     <string name="action_clear">지우기</string>

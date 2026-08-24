@@ -1,0 +1,111 @@
+package com.example.limdo
+
+import org.junit.Assert.assertEquals
+import org.junit.Test
+
+class GieokTraceEvaluatorTest {
+    private val width = 1_000f
+    private val height = 500f
+    private val guide = WritingCanvasGeometry.gieokPoints(width, height)
+    private val start = guide[0]
+    private val corner = guide[1]
+    private val end = guide[2]
+
+    @Test
+    fun emptyStrokeHasNamedResult() {
+        assertResult(GieokTraceResult.EMPTY, emptyList())
+    }
+
+    @Test
+    fun strokeMustBeginNearOrangeMarker() {
+        assertResult(
+            GieokTraceResult.WRONG_START,
+            listOf(CanvasPoint(corner.x, corner.y), end),
+        )
+    }
+
+    @Test
+    fun firstMeaningfulMovementMustBeHorizontalAndForward() {
+        assertResult(
+            GieokTraceResult.WRONG_DIRECTION,
+            listOf(start, CanvasPoint(start.x, start.y + 90f), corner, end),
+        )
+    }
+
+    @Test
+    fun substantialGuideDepartureRequestsRetry() {
+        assertResult(
+            GieokTraceResult.OFF_GUIDE,
+            listOf(
+                start,
+                CanvasPoint(start.x + 55f, start.y),
+                corner,
+                CanvasPoint(corner.x - 120f, corner.y + 160f),
+                CanvasPoint(corner.x - 120f, corner.y + 240f),
+                CanvasPoint(corner.x - 120f, corner.y + 310f),
+                end,
+            ),
+        )
+    }
+
+    @Test
+    fun partialStrokeIsIncomplete() {
+        assertResult(
+            GieokTraceResult.INCOMPLETE,
+            listOf(start, midpoint(start, corner), corner),
+        )
+    }
+
+    @Test
+    fun jitterySparseChildStrokeSucceeds() {
+        assertResult(
+            GieokTraceResult.SUCCESS,
+            listOf(
+                CanvasPoint(start.x - 12f, start.y + 8f),
+                CanvasPoint(start.x + 75f, start.y - 18f),
+                CanvasPoint(corner.x - 38f, corner.y + 14f),
+                CanvasPoint(corner.x + 20f, corner.y + 82f),
+                CanvasPoint(end.x - 15f, end.y - 10f),
+            ),
+        )
+    }
+
+    @Test
+    fun traceCanBeEvaluatedAtAnotherCanvasSize() {
+        val scaledGuide = WritingCanvasGeometry.gieokPoints(width = 2_000f, height = 1_000f)
+
+        assertEquals(
+            GieokTraceResult.SUCCESS,
+            GieokTraceEvaluator.evaluate(
+                width = 2_000f,
+                height = 1_000f,
+                stroke = StrokePath(scaledGuide),
+            ),
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun evaluatorRejectsEmptyCanvasBounds() {
+        GieokTraceEvaluator.evaluate(
+            width = 0f,
+            height = height,
+            stroke = StrokePath(listOf(start)),
+        )
+    }
+
+    private fun assertResult(expected: GieokTraceResult, points: List<CanvasPoint>) {
+        assertEquals(
+            expected,
+            GieokTraceEvaluator.evaluate(
+                width = width,
+                height = height,
+                stroke = StrokePath(points),
+            ),
+        )
+    }
+
+    private fun midpoint(first: CanvasPoint, second: CanvasPoint): CanvasPoint = CanvasPoint(
+        x = (first.x + second.x) / 2f,
+        y = (first.y + second.y) / 2f,
+    )
+}
