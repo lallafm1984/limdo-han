@@ -52,6 +52,10 @@ Never claim completion from code inspection alone. Android changes normally requ
 
 For visual Android loops, use the `alarmquest-qa` emulator at 1080 × 2340 device resolution and verify the application in its required 2340 × 1080 landscape orientation.
 
+Every visual or input loop must also read and satisfy `QA_CHECKLIST.md`. Report automated, emulator, child-proxy, and observed-child evidence separately. Never describe adult or emulator inspection as proof that a five-year-old child can use the screen.
+
+For handwriting input, measure the active drawable interior, not its surrounding card. At 2340 × 1080 it must be at least 1170 × 378 px and remain the largest child-interaction region on screen.
+
 ## Change Discipline
 
 - Prefer one focused change per iteration.

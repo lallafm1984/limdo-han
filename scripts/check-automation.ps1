@@ -9,6 +9,7 @@ function Stop-AutomationCheck {
 $RequiredFiles = @(
     "AGENTS.md",
     "APP_AUTOMATION.md",
+    "QA_CHECKLIST.md",
     "LOOP_GOAL.md",
     ".loop/queue.md",
     ".loop/state.md",
@@ -24,6 +25,7 @@ foreach ($RequiredFile in $RequiredFiles) {
 $Automation = Get-Content APP_AUTOMATION.md -Raw
 $Agents = Get-Content AGENTS.md -Raw
 $Goal = Get-Content LOOP_GOAL.md -Raw
+$QaChecklist = Get-Content QA_CHECKLIST.md -Raw
 $Queue = Get-Content .loop/queue.md -Raw
 $State = Get-Content .loop/state.md -Raw
 
@@ -31,6 +33,9 @@ if ($Automation -notmatch '(?m)^Stage: `CODEX_APP`$') { Stop-AutomationCheck "Co
 if ($Queue -notmatch '(?m)^Execution Stage: CODEX_APP$') { Stop-AutomationCheck "queue stage does not match" }
 if ($Agents -notmatch '2340 × 1080') { Stop-AutomationCheck "reference viewport missing from AGENTS.md" }
 if ($Goal -notmatch '2340 × 1080') { Stop-AutomationCheck "reference viewport missing from LOOP_GOAL.md" }
+if ($QaChecklist -notmatch '1170 px') { Stop-AutomationCheck "minimum writing width missing from QA_CHECKLIST.md" }
+if ($QaChecklist -notmatch '378 px') { Stop-AutomationCheck "minimum writing height missing from QA_CHECKLIST.md" }
+if ($QaChecklist -notmatch 'OBSERVED_CHILD') { Stop-AutomationCheck "observed-child evidence boundary missing" }
 
 $GoalLoop = [regex]::Match($Goal, '(?m)^# Loop Goal ([0-9]{3})').Groups[1].Value
 $StateLoop = [regex]::Match($State, '(?m)^Loop: ([0-9]{3})').Groups[1].Value

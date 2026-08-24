@@ -14,6 +14,7 @@ The active Goal must always name:
 
 - the outcome in `LOOP_GOAL.md`;
 - the local-only boundaries in this file and `AGENTS.md`;
+- the child-usability and writing-area gates in `QA_CHECKLIST.md`;
 - `./scripts/verify.sh` plus required emulator evidence as proof; and
 - the queue review gate as the stopping condition.
 
@@ -21,7 +22,7 @@ The active Goal must always name:
 
 At the start of every Goal turn or after any interruption:
 
-1. Read `AGENTS.md`, this file, `LOOP_GOAL.md`, `.loop/queue.md`, `.loop/state.md`, and the most recent `.loop/history.md` entries.
+1. Read `AGENTS.md`, this file, `QA_CHECKLIST.md`, `LOOP_GOAL.md`, `.loop/queue.md`, `.loop/state.md`, and the most recent `.loop/history.md` entries.
 2. Inspect `git status` and preserve unrelated changes.
 3. Run `./scripts/check-automation.sh` before changing application code.
 4. Continue the current hypothesis when evidence still supports it; otherwise record a new focused hypothesis.

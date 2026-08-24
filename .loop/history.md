@@ -302,3 +302,38 @@ PASSED. All Loop 002 success criteria are satisfied with fresh automated and emu
 ### Queue Transition
 
 Marked Loop 002 `COMPLETE`, set `Active Loop: NONE`, and stopped at `HUMAN_REVIEW_AFTER_LOOP_002`.
+
+## Child Usability QA Policy — 2026-08-24
+
+### User Priority
+
+QA must prioritize whether a five-year-old child can understand and use the screen, and whether the handwriting surface is large enough for comfortable input.
+
+### Change
+
+- Added separate `AUTOMATED`, `EMULATOR`, `CHILD_PROXY`, and `OBSERVED_CHILD` evidence levels.
+- Added a five-year-old comprehension checklist and a privacy-preserving observed-child protocol.
+- Set the interactive drawable-area minimum to 1170 × 378 px at the 2340 × 1080 reference viewport.
+- Set child control targets to at least 64 × 64 dp with 12 dp spacing.
+- Added the QA contract to automation resume instructions and self-check scripts.
+
+### Current-screen Audit
+
+- Loop 002 preview Canvas bounds from the verified UI hierarchy: `[820,447][2214,632]`
+- Measured active preview size: 1394 × 185 px
+- Width: 59.6% of app width, passes the future input width minimum
+- Height: 17.1% of app height, fails the future input height minimum of 35%
+- `CHILD_PROXY`: the start point and unavailable controls are visually identifiable, but the drawable height is not comfortable enough for future handwriting input
+- `OBSERVED_CHILD: NOT RUN`
+
+### Result
+
+The completed non-interactive preview remains valid. Any next loop that enables input must enlarge the drawable interior before touch capture can be considered complete.
+
+## Child Usability QA Policy — Verification
+
+- `bash -n scripts/check-automation.sh`: passed
+- `./scripts/check-automation.sh`: passed with the new child-QA contract required
+- `./scripts/verify.sh`: passed automation contract, 4 unit tests, Android lint, and debug assembly
+- `git diff --check`: passed
+- Application code and APK contents were unchanged by this policy update

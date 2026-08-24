@@ -10,6 +10,7 @@ fail() {
 required_files=(
     "AGENTS.md"
     "APP_AUTOMATION.md"
+    "QA_CHECKLIST.md"
     "LOOP_GOAL.md"
     ".loop/queue.md"
     ".loop/state.md"
@@ -24,6 +25,9 @@ grep -q '^Stage: `CODEX_APP`$' APP_AUTOMATION.md || fail "Codex App stage is not
 grep -q '^Execution Stage: CODEX_APP$' .loop/queue.md || fail "queue stage does not match"
 grep -q '2340 × 1080' AGENTS.md || fail "reference viewport missing from AGENTS.md"
 grep -q '2340 × 1080' LOOP_GOAL.md || fail "reference viewport missing from LOOP_GOAL.md"
+grep -q '1170 px' QA_CHECKLIST.md || fail "minimum writing width missing from QA_CHECKLIST.md"
+grep -q '378 px' QA_CHECKLIST.md || fail "minimum writing height missing from QA_CHECKLIST.md"
+grep -q 'OBSERVED_CHILD' QA_CHECKLIST.md || fail "observed-child evidence boundary missing"
 
 goal_loop="$(sed -n 's/^# Loop Goal \([0-9][0-9][0-9]\).*/\1/p' LOOP_GOAL.md)"
 state_loop="$(sed -n 's/^Loop: \([0-9][0-9][0-9]\).*/\1/p' .loop/state.md)"
