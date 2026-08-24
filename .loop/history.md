@@ -2136,3 +2136,55 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 검증·비교: 반복 1은 `IDLE` 복원과 첫 성공을 확인했지만 실제 다시 듣기·지우기 callback이 남아 있었다. 이번에는 같은 저장·새 PID 계약에서 두 조작과 이어지는 첫 성공까지 연속 검증해 가설을 채택했다. `./scripts/verify.sh`의 자동화 계약·전체 단위 테스트·Android lint·debug build와 `git diff --check`가 모두 통과했다.
 - 최종 아이 대리 QA: 복원 화면에서도 글을 읽지 않고 큰 흰 `ㄱ`, 초록 시작점, 오른쪽·아래 방향 화살표, 주황 끝점으로 과제·위치·시작·방향을 구분한다. 큰 스피커와 지우개 아이콘, 회색 비활성 다음이 다시 듣기·초기화·사용 불가 동작을 구분하고, 성공 뒤 굵은 파란 완료 획·`★ ✓`·성공 음성·소방차 한 칸 이동이 결과를 일관되게 알린다. 차량은 글자 길과 단서를 가리지 않는다. `아이 대리 점검: 통과`, `실제 아이 관찰: 실행 안 함`.
 - 완료·다음 루프: 루프 060 성공 조건 1~6을 모두 새 근거로 통과했다. 새 제품 불편은 발견하지 못해 직접 경계인 복원된 `IDLE`의 다시 듣기 `INITIAL` 재생 중 재차 프로세스 복원을 `QA-057`, 루프 061로 준비했으며 이번 작업자는 구현하지 않는다.
+## 루프 061 반복 1 — 가설
+
+- 우선 미충족 조건: 새 PID로 복원된 소방차 `IDLE`에서 다시 듣기 `INITIAL` 재생 중 다시 상태를 `mHaveState=true`로 저장하고 두 번째 새 PID로 복원하는 흐름의 음성 pending·차량·빈 획·입력 가능 상태와 복원 뒤 첫 정상 입력의 단일 성공·차량 이동을 해지하지 않한다.
+- 가설: 복원된 소방차 `IDLE`의 다시 듣기로 `INITIAL` 재생 시작·pending을 만든 직후 HOME에서 `mHaveState=true` Bundle을 확인하고 PID만 종료후 기존 task를 전면화하면, 새 PID에서도 소방차와 시작 bounds·빈 획·무표식·입력 가능 상태가 유지될 것이다. 끊긴 `INITIAL`은 새 TTS 준비 뒤 중복 없이 한 번만 마무리되고, 복원 뒤 첫 정상 입력은 `SUCCESS` 시작·완료를 각 1회만 남기고 소방차를 `[99,62][435,288]`에서 `[225,62][561,288]`로 126 px 한 칸만 이동시킬 것이다.
+
+### 반복 1 — 결과 및 인계
+
+- 변경·환경: 제품 코드와 자산은 바꾸지 않았다. `alarmquest-qa`의 물리 1080 × 2340, `user_rotation=1`, 앱 화면 2340 × 1080에서 독립 앱 데이터로 경찰차 성공·지우기 뒤 소방차 `IDLE`을 만들었고, 첫 저장은 `mHaveState=true`, `mIcicle=Bundle[mParcelledData.dataSize=2904]`, `state=STOPPED`를 남겼다. PID `19593→19740`, 다음 독립 수집의 PID도 새 PID로 교체되었고 소방차는 `[99,62][435,288]` 시작 위치와 빈 획·무표식을 유지했다.
+- 무효 탐색 1: `captures/loop061/iteration1/initial-process-restore/`는 다시 듣기 `INITIAL` 시작과 두 번째 `mHaveState=true` Bundle을 얻었지만, PID를 종료하기 전 기존 PID `19740`의 `재생 완료:INITIAL`이 남았다. 따라서 재생 중 종료·복원 근거로 쓰지 않는다. 이 무효 흐름의 새 PID `19839`는 소방차 시작 bounds·빈 획·무표식을 유지했고 첫 정상 입력에서 `SUCCESS` 시작·완료 각 1회와 `[225,62][561,288]` 126 px 이동을 남겼지만 성공 조건 3의 근거에서 제외한다.
+- 무효 탐색 2: `initial-process-restore-valid/`의 빠른 종료 시도는 `재생 중:INITIAL`을 남긴 채 PID `20335`를 종료했지만, HOME 0.7초 뒤 Activity가 `state=PAUSED`, `mHaveState=false`, `mIcicle=null`이어서 저장 Bundle 복원이 아니다. 느린 시도는 `mHaveState=true`에 도달했지만 음성이 먼저 완료되어 같은 이유로 제외했다.
+- 비교·판정: 루프 060은 재생을 끝낸 뒤의 `IDLE` 복원과 첫 성공을 통과했지만, 이번 반복은 재생 중과 saved-state 생성 시점을 동시에 충족하지 못했다. 제품 실패는 확인되지 않아 가설은 미판정이며 성공 조건 1~7은 모두 남는다.
+- 검증·다음 작업: 제품 코드 미변경으로 `./scripts/verify.sh`는 실행하지 않았다. `git diff --check`와 종료 `./scripts/check-automation.sh`를 실행한다. 다음 새 세션은 HOME 후 `STOPPED` 전환을 짧게 polling하고 `mHaveState=true`가 나오는 즉시 같은 shell 흐름에서 PID를 종료하도록 QA 절차를 보정한다. 최종 아이 대리 QA는 실행하지 않았고, `실제 아이 관찰: 실행 안 함`이다.
+
+## 루프 061 반복 2 — 가설
+
+- 우선 미충족 조건: 복원된 소방차 `IDLE`의 다시 듣기 `INITIAL` 재생 중 상태와 `mHaveState=true` saved-state를 동시에 확보해 두 번째 새 PID 복원 및 후속 첫 성공을 판정하지 못했다.
+- 가설: 소방차 `IDLE`에서 다시 듣기를 누른 직후 HOME으로 전환하고 Activity가 `STOPPED`, `mHaveState=true`가 되는 순간을 짧게 polling해 즉시 PID를 종료하면, `INITIAL` 완료 callback보다 먼저 유효한 Bundle을 저장한 채 프로세스가 끝난다. 기존 task를 전면화한 새 PID에서는 소방차·시작 bounds·빈 획·결과 표식 없음·입력 가능 상태를 유지하고, 끊긴 `INITIAL`을 중복 없이 한 번 마무리한 뒤 첫 정상 입력이 `SUCCESS` 한 번과 126 px 한 칸 이동만 만들 것이다.
+
+### 반복 2 — 결과 및 인계
+
+- QA 절차 원인 보정: 이전 탐색 task에는 `MainActivity` 레코드가 둘 있어 전역 `mHaveState=true` 검색이 아래쪽의 오래된 레코드를 잡았다. `am force-stop`으로 task만 정리하고 앱 데이터를 지우지 않은 뒤, 최상단 `Hist #0` Activity 블록의 `mHaveState`와 `state`만 polling하는 독립 흐름으로 다시 수집했다. 이는 제품 변경이 아니며 기존 반복 1 문서 변경도 보존했다.
+- 유효한 재생 중 저장·PID 근거: 정확한 2340 × 1080 앱 화면에서 경찰차 성공·지우기로 소방차 `IDLE`을 만들고 첫 `mHaveState=true`, `state=STOPPED` 저장 뒤 PID `20977→21159` 복원을 확정했다. 복원된 소방차에서 다시 듣기를 눌러 PID `21159`의 `재생 중:INITIAL`을 확인한 직후 HOME으로 전환했고, polling 6회째 최상단 Activity의 `mHaveState=true`, `mIcicle=Bundle[mParcelledData.dataSize=2904]`, `state=STOPPED`를 확보한 즉시 PID를 종료했다. 종료 전 로그에는 `재생 완료:INITIAL`이 없다. 기존 task 전면화는 새 PID `21276`을 남겼다.
+- 복원 상태·첫 입력: `02-valid-restored-firetruck-idle`과 `03-second-restored-idle` hierarchy는 모두 소방차 `[99,62][435,288]`, WritingCanvas `[189,63][2151,838]` = 1962 × 775 px, 빈 획·결과 표식 없음, 활성 다시 듣기·지우기와 회색 비활성 다음을 유지했다. 차량은 쓰기판 밖에서 `clickable=false`, `focusable=false`다. 새 PID의 첫 정상 입력은 `SUCCESS` 시작·완료를 각 1회만 만들고 소방차를 `[225,62][561,288]`로 x축 126 px 한 칸 이동시켰다.
+- 반증된 음성 조건: 새 PID `21276`은 `준비 완료`만 기록했고 끊긴 `INITIAL`의 재생 재요청이나 완료 callback은 없었다. `initialSpeechRequested`는 저장하지만 수동 다시 듣기의 pending cue는 저장하지 않는 현재 구현과 일치한다. 다시 듣기 버튼이 활성화되기는 하나, 프로세스 복원 시 끊긴 안내를 버리는 동작은 제품이나 자동 계약에 명시된 대체 동작이 아니므로 성공 조건 3을 실패로 판정하고 가설을 부분 반증했다.
+- 비교·검증: 반복 1은 중복 Activity 판별 때문에 재생 중과 saved-state 교집이 미판정이었지만, 이번에는 최상단 단일 Activity에서 교집과 두 PID 교체를 확정해 실제 제품 실패를 분리했다. 제품 코드는 바꾸지 않아 `./scripts/verify.sh`는 실행하지 않았다. `git diff --check`와 종료 `./scripts/check-automation.sh`를 실행한다. 화면 SHA-256과 물리 1080 × 2340, `user_rotation=1`도 `captures/loop061/iteration2/single-activity-flow/`에 저장했다.
+- 남은 조건·다음 작업: 성공 조건 1·2·4·5의 핵심 상태는 통과했고 조건 3은 실패했다. 다음 반복은 수동 `INITIAL` pending을 `rememberSaveable` 상태로 최소 저장해 새 TTS가 `Ready`가 되었을 때 정확히 한 번 재요청하고 완료 시 해제하는 상태 계약과 자동 회귀를 추가한 뒤, 같은 새 PID 흐름과 `./scripts/verify.sh`로 조건 3·6·7을 검증한다. 최종 아이 대리 QA는 루프 미완료로 수행하지 않았고 `실제 아이 관찰: 실행 안 함`이다.
+
+## 루프 061 반복 3 — 가설
+
+- 우선 미충족 조건: 수동 다시 듣기 `INITIAL` 재생 중 saved-state로 새 PID 복원하면 끊긴 안내가 재요청·완료 없이 사라지는 성공 조건 3의 실패다.
+- 가설: 수동 다시 듣기 직전에 `INITIAL` pending을 `rememberSaveable`로 저장하고, 복원된 새 TTS가 `Ready`가 되면 복원 세션당 정확히 한 번 재요청하며 완료·실패·지우기에서 pending을 해제하면, 기존 최초 안내와 `SUCCESS` 복원 계약을 바꾸지 않고 끊긴 `INITIAL`이 중복 없이 한 번 마무리될 것이다.
+
+### 반복 3 — 결과 및 인계
+
+- 최소 변경: `LearningShell`에 수동 `INITIAL` 전용 `initialSpeechPending` 저장 상태와 저장하지 않는 복원 세션 1회 처리 플래그를 추가했다. 다시 듣기 직전에 pending을 세우고 새 TTS `Ready`에서 한 번만 재요청하며 `Completed(INITIAL)`, `Error(INITIAL)`, 재생 요청 실패, 지우기에서 해제한다. 자동 최초 안내와 기존 `SUCCESS` pending 계약은 분리해 유지했다.
+- 자동 회귀: `shouldResumeInitialCue`를 순수 상태 계약으로 분리하고 `Initializing`에서는 대기, `Ready + pending + 미처리`에서만 재개, 처리 완료·pending 없음·완료·오류에서는 재개하지 않는 단위 테스트를 추가했다. 이는 반복 2에서 확인한 “새 PID의 `Ready` 뒤 cue가 사라짐”과 달리 복원 세션당 정확히 한 번 재요청하는 경계를 고정한다.
+- 검증·비교: `./scripts/verify.sh`가 자동화 계약, 전체 단위 테스트, Android lint, debug build를 모두 통과했다. 반복 2는 saved-state와 PID 교체에서 실제 음성 소실을 확정했고, 이번 반복은 그 원인에 맞는 제품 보정과 자동 계약을 통과해 가설을 자동 수준에서 채택했다. `git diff --check`와 종료 `./scripts/check-automation.sh`도 실행한다.
+- 남은 조건·다음 작업: 정확한 2340 × 1080에서 반복 2와 같은 단일 최상단 Activity 흐름으로 소방차 `IDLE`의 수동 `INITIAL` 재생 중 `mHaveState=true` 저장, 새 PID 복원, `INITIAL` 재요청·완료 각 1회, 빈 획·입력 가능 상태와 첫 `SUCCESS`·126 px 이동을 새 APK에서 확인해야 한다. 에뮬레이터 최종 근거 전이므로 성공 조건 3과 7은 미완료이며 최종 아이 대리 QA는 실행하지 않았다. `실제 아이 관찰: 실행 안 함`.
+
+## 루프 061 반복 4 — 가설
+
+- 우선 미충족 조건: 수동 `INITIAL` pending 복원 보정을 포함한 새 APK에서, 재생 중 `mHaveState=true` 저장과 새 PID 복원 뒤 `INITIAL` 재요청·완료가 각 1회인지 실증하지 못했다.
+- 가설: 반복 3 APK에서 복원된 소방차 `IDLE`의 다시 듣기 `INITIAL` 재생 중 최상단 Activity가 `STOPPED`, `mHaveState=true`가 되는 즉시 PID를 종료하면, 두 번째 새 PID의 TTS `Ready` 뒤 `INITIAL` 시작·완료는 각 1회만 남을 것이다. 복원 전후 소방차·시작 bounds·빈 획·무표식·입력 가능 상태는 같고, 첫 정상 입력은 `SUCCESS` 시작·완료 각 1회와 소방차 126 px 한 칸 이동만 만들 것이다.
+
+### 반복 4 — 결과 및 인계
+
+- 무효 탐색: 첫 HOME 후 저장을 1초만 기다린 흐름은 최상단 Activity가 `PAUSED`, `mHaveState=false`였고 복원 화면도 경찰차로 돌아와 성공 근거에서 제외했다.
+- 유효한 saved-state·PID: task를 단일 Activity로 정리하고 소방차 `IDLE`을 만든 뒤 `STOPPED`, `mHaveState=true`를 polling해 PID `21878→22033`으로 1차 복원했다. 다시 듣기 `INITIAL` 시작 후 같은 saved-state 교집을 확인한 즉시 PID `22033`을 종료했고 기존 task는 새 PID `22150`, `LaunchState: COLD`로 복원됐다.
+- 음성·상태: 기존 PID는 `INITIAL` 시작만 남기고 완료 전 종료됐다. 새 PID의 TTS `준비 완료` 뒤 `INITIAL` 재생 시작 `03:45:14.041`, 완료 `03:45:17.811`이 각 1회만 남았다. 복원 전후 소방차 `[99,62][435,288]`, WritingCanvas `[189,63][2151,838]` = 1962 × 775 px, 빈 획·무표식·활성 조작이 일치했다.
+- 첫 성공·회귀: 복원 뒤 첫 정상 획은 `SUCCESS` 시작 `03:45:39.051`, 완료 `03:45:42.342`를 각 1회만 남기고 소방차를 `[225,62][561,288]`로 x축 126 px 한 칸만 이동시켰다. `./scripts/verify.sh`의 자동화 계약·전체 단위 테스트·Android lint·debug build, `git diff --check`, `./scripts/check-automation.sh`가 통과했다. 반복 2의 음성 소실과 달리 반복 3 보정 APK는 중복 없이 한 번 마무리해 가설을 채택했다.
+- 최종 아이 대리 QA: 새 2340 × 1080 화면에서 글을 읽지 않고도 큰 흰 `ㄱ`, 초록 시작점, 우측·하향 동적 화살표, 주황 끝점으로 과제·시작·방향을 구분한다. 큰 스피커·지우개와 회색 비활성 다음, 성공 뒤 굵은 파란 획·`★ ✓`·성공 음성·소방차 한 칸 이동이 재시도·사용 불가·결과를 일관되게 보여 준다. 차량은 쓰기 길을 가리지 않고 `clickable=false`, `focusable=false`다. `아이 대리 점검: 통과`, `실제 아이 관찰: 실행 안 함`.
+- 완료·다음 루프: 루프 061 성공 조건 1~7을 모두 새 근거로 통과했다. 새 제품 불편은 발견하지 못해 복원 대기 `INITIAL`을 TTS `Ready` 전 지우기로 취소하는 구체적 미검증 흐름을 `QA-058`, 루프 062로 준비했으며 이번 작업자는 구현하지 않는다.

@@ -136,7 +136,11 @@ private fun LearningShell(
     }
     val rewardOffset = rememberSaveable(saver = RewardOffsetSaver) { Animatable(0f) }
     var initialSpeechRequested by rememberSaveable { mutableStateOf(false) }
+    var initialSpeechPending by rememberSaveable { mutableStateOf(false) }
     var successSpeechPending by rememberSaveable { mutableStateOf(false) }
+    var restoredInitialSpeechHandled by remember {
+        mutableStateOf(!initialSpeechPending)
+    }
     var restoredSuccessSpeechHandled by remember {
         mutableStateOf(traceResult != GieokTraceResult.SUCCESS)
     }
@@ -163,6 +167,22 @@ private fun LearningShell(
         if (speechState == SpeechPlaybackState.Ready && !initialSpeechRequested) {
             initialSpeechRequested = true
             speak(SpokenCue.INITIAL)
+        }
+    }
+
+    LaunchedEffect(speechState, initialSpeechPending, restoredInitialSpeechHandled) {
+        if (speechState == SpeechPlaybackState.Completed(SpokenCue.INITIAL) ||
+            speechState == SpeechPlaybackState.Error(SpokenCue.INITIAL)
+        ) {
+            initialSpeechPending = false
+        } else if (shouldResumeInitialCue(
+                speechState = speechState,
+                initialSpeechPending = initialSpeechPending,
+                alreadyHandled = restoredInitialSpeechHandled,
+            )
+        ) {
+            restoredInitialSpeechHandled = true
+            if (!speak(SpokenCue.INITIAL)) initialSpeechPending = false
         }
     }
 
@@ -250,8 +270,13 @@ private fun LearningShell(
 
         ActionShelf(
             speechAvailable = speechState.canReplay,
-            onReplay = { speak(currentCue) },
+            onReplay = {
+                restoredInitialSpeechHandled = true
+                initialSpeechPending = currentCue == SpokenCue.INITIAL
+                if (!speak(currentCue)) initialSpeechPending = false
+            },
             onClear = {
+                initialSpeechPending = false
                 restoredSuccessSpeechHandled = true
                 successSpeechPending = false
                 stopSpeech()

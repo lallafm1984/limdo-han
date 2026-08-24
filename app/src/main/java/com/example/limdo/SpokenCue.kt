@@ -29,3 +29,11 @@ internal fun shouldResumeSuccessCue(
     traceResult == GieokTraceResult.SUCCESS &&
     successSpeechPending &&
     !alreadyHandled
+
+internal fun shouldResumeInitialCue(
+    speechState: SpeechPlaybackState,
+    initialSpeechPending: Boolean,
+    alreadyHandled: Boolean,
+): Boolean = speechState == SpeechPlaybackState.Ready &&
+    initialSpeechPending &&
+    !alreadyHandled

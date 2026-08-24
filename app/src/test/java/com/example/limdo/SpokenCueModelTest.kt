@@ -43,4 +43,14 @@ class SpokenCueModelTest {
         assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, null, true, false))
         assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, GieokTraceResult.OFF_GUIDE, true, false))
     }
+
+    @Test
+    fun restoredManualInitialResumesOnlyOnceWhenNewSpeechEngineIsReady() {
+        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Initializing, true, false))
+        assertTrue(shouldResumeInitialCue(SpeechPlaybackState.Ready, true, false))
+        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Ready, true, true))
+        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Ready, false, false))
+        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Completed(SpokenCue.INITIAL), true, false))
+        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Error(SpokenCue.INITIAL), true, false))
+    }
 }
