@@ -32,6 +32,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private lateinit var localSpeech: LocalKoreanSpeech
@@ -106,9 +109,23 @@ private fun LearningShell(
     var traceResult by remember { mutableStateOf<GieokTraceResult?>(null) }
     var vehicleIndex by rememberSaveable { mutableIntStateOf(0) }
     var vehicleSuccessArmed by rememberSaveable { mutableStateOf(true) }
+    var rewardState by remember { mutableStateOf(LessonRewardState()) }
+    val rewardOffset = remember { Animatable(0f) }
     var initialSpeechRequested by rememberSaveable { mutableStateOf(false) }
     val currentCue = SpokenCueModel.forResult(traceResult)
     val currentVehicle = VehicleCarousel.vehicles[vehicleIndex]
+
+    LaunchedEffect(rewardState.targetSteps) {
+        if (rewardState.phase == RewardMovePhase.START) {
+            delay(120)
+            rewardState = rewardState.moving()
+            rewardOffset.animateTo(
+                targetValue = rewardState.targetSteps.toFloat(),
+                animationSpec = tween(durationMillis = 650),
+            )
+            rewardState = rewardState.complete()
+        }
+    }
 
     LaunchedEffect(speechState, initialSpeechRequested) {
         if (speechState == SpeechPlaybackState.Ready && !initialSpeechRequested) {
@@ -133,6 +150,7 @@ private fun LearningShell(
 
         WritingBoardPreview(
             clearRequest = clearRequest,
+            inputEnabled = !rewardState.inputLocked,
             onTraceResult = { result ->
                 val vehicleState = VehicleCarouselState(
                     index = vehicleIndex,
@@ -141,6 +159,7 @@ private fun LearningShell(
                 vehicleIndex = vehicleState.index
                 vehicleSuccessArmed = vehicleState.successArmed
                 traceResult = result
+                rewardState = rewardState.onTraceResult(result, GieokLesson)
                 if (result != null) speak(SpokenCueModel.forResult(result))
             },
             modifier = Modifier
@@ -153,7 +172,7 @@ private fun LearningShell(
             contentDescription = "${currentVehicle.koreanName} 안내",
             modifier = Modifier
                 .align(Alignment.Center)
-                .offset(x = (-344).dp, y = (-139).dp)
+                .offset(x = (-344 + (rewardOffset.value * 48f)).dp, y = (-139).dp)
                 .size(width = 128.dp, height = 86.dp),
             contentScale = ContentScale.Fit,
         )
@@ -185,6 +204,7 @@ private fun LearningShell(
                 stopSpeech()
                 clearRequest += 1
                 vehicleSuccessArmed = true
+                rewardState = rewardState.onTraceResult(null, GieokLesson)
                 traceResult = null
             },
             modifier = Modifier
@@ -326,6 +346,7 @@ private fun GuideCharacterCard(
 @Composable
 private fun WritingBoardPreview(
     clearRequest: Int,
+    inputEnabled: Boolean,
     onTraceResult: (GieokTraceResult?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -336,6 +357,7 @@ private fun WritingBoardPreview(
         WritingCanvas(
             contentDescription = stringResource(R.string.writing_canvas_description),
             clearRequest = clearRequest,
+            inputEnabled = inputEnabled,
             onTraceResult = onTraceResult,
             modifier = Modifier.fillMaxSize(),
         )

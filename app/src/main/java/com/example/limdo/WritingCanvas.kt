@@ -45,6 +45,7 @@ private val DemonstrationMarker = Color(0xFF0B6F88)
 internal fun WritingCanvas(
     contentDescription: String,
     clearRequest: Int,
+    inputEnabled: Boolean,
     onTraceResult: (GieokTraceResult?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -99,7 +100,8 @@ internal fun WritingCanvas(
         modifier = modifier
             .background(PracticeSurface, shape)
             .border(2.dp, PracticeBorder, shape)
-            .pointerInput(Unit) {
+            .pointerInput(inputEnabled) {
+                if (!inputEnabled) return@pointerInput
                 val safeInset = 24.dp.toPx()
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
