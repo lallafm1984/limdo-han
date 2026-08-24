@@ -140,7 +140,7 @@ private fun LearningShell(
         )
 
         Image(
-            painter = painterResource(R.drawable.limdo_gecko_guide),
+            painter = painterResource(R.drawable.limdo_vehicle_police),
             contentDescription = stringResource(R.string.guide_character),
             modifier = Modifier
                 .align(Alignment.Center)
