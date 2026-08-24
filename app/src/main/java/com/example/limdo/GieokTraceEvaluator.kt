@@ -22,6 +22,7 @@ internal object GieokTraceEvaluator {
     private const val MAX_OFF_GUIDE_FRACTION = 0.25f
     private const val MAX_CONSECUTIVE_OFF_GUIDE_FRACTION = 0.12f
     private const val MAX_BACKTRACK_FRACTION = 0.20f
+    private const val BACKTRACK_COMPARISON_EPSILON_FRACTION = 0.0001f
     private const val CORNER_PROGRESS = 0.72f
     private const val FINISH_PROGRESS = 1.78f
 
@@ -93,7 +94,10 @@ internal object GieokTraceEvaluator {
                 0.0
             }
         }.toFloat()
-        if (backtrack > shortestSide * MAX_BACKTRACK_FRACTION) {
+        if (
+            backtrack > shortestSide *
+            (MAX_BACKTRACK_FRACTION + BACKTRACK_COMPARISON_EPSILON_FRACTION)
+        ) {
             return GieokTraceResult.WRONG_DIRECTION
         }
 

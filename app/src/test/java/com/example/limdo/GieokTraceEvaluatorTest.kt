@@ -135,6 +135,30 @@ class GieokTraceEvaluatorTest {
     }
 
     @Test
+    fun exactBacktrackBoundarySucceedsAcrossDifferentSampleSpacing() {
+        listOf(350f, 550f).forEach { penultimateY ->
+            assertActualCanvasResult(
+                GieokTraceResult.SUCCESS,
+                listOf(
+                    879f to 159f, 1100f to 159f, 1300f to 159f, 1461f to 159f,
+                    1461f to penultimateY, 1461f to 742f, 1461f to 587f,
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun onePixelBeyondBacktrackBoundaryRequestsDirectionRetry() {
+        assertActualCanvasResult(
+            GieokTraceResult.WRONG_DIRECTION,
+            listOf(
+                879f to 159f, 1100f to 159f, 1300f to 159f, 1461f to 159f,
+                1461f to 350f, 1461f to 550f, 1461f to 742f, 1461f to 586f,
+            ),
+        )
+    }
+
+    @Test
     fun traceCanBeEvaluatedAtAnotherCanvasSize() {
         val scaledGuide = WritingCanvasGeometry.gieokPoints(width = 2_000f, height = 1_000f)
 
