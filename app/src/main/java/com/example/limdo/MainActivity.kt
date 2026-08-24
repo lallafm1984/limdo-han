@@ -84,7 +84,7 @@ private fun LearningShell() {
                     .weight(LearningShellSpec.GUIDE_WEIGHT)
                     .fillMaxHeight(),
             )
-            WritingBoardPlaceholder(
+            WritingBoardPreview(
                 modifier = Modifier
                     .weight(LearningShellSpec.WRITING_BOARD_WEIGHT)
                     .fillMaxHeight(),
@@ -170,7 +170,7 @@ private fun GuideCharacterCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun WritingBoardPlaceholder(modifier: Modifier = Modifier) {
+private fun WritingBoardPreview(modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier.border(
             width = 3.dp,
@@ -191,11 +191,12 @@ private fun WritingBoardPlaceholder(modifier: Modifier = Modifier) {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
             )
-            Text(
-                modifier = Modifier.padding(vertical = 8.dp),
-                text = "✦",
-                color = MaterialTheme.colorScheme.secondary,
-                fontSize = 56.sp,
+            WritingCanvas(
+                contentDescription = stringResource(R.string.writing_canvas_description),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(vertical = 12.dp),
             )
             Text(
                 text = stringResource(R.string.writing_board_placeholder),

@@ -239,3 +239,66 @@ PASSED. The repository has a deterministic resume path, explicit local-only boun
 ### Next Action
 
 Create a local setup checkpoint and activate the Codex App Goal for verified completion of Loop 002.
+
+## Loop 002 — Iteration 1
+
+### Hypothesis
+
+A normalized two-segment `ㄱ` geometry model can drive a size-responsive non-interactive Compose Canvas without adding dependencies or input behavior.
+
+### Change
+
+- Added a pure Kotlin geometry model that centers a padded two-segment `ㄱ` path within any positive canvas size.
+- Added a dedicated non-interactive Compose `WritingCanvas` with practice guides, a preview path, and a start marker.
+- Replaced placeholder artwork while preserving the existing 30/70 learning-area layout.
+- Updated visible and accessibility copy to identify the surface as a preview.
+- Added unit coverage for path shape, bounds, and invalid empty dimensions.
+
+### Verification
+
+- `./scripts/verify.sh`: passed all four stages
+- Automation contract: Loop 002 `IN_PROGRESS`, iteration 1, active Loop 002
+- Unit tests: passed with the new geometry tests compiled and executed
+- Android lint: passed
+- Debug APK assembly: passed
+
+### Result
+
+PASSED. The code-level hypothesis is confirmed with no new dependency or input behavior.
+
+### Failure / Improvement
+
+Visual criteria still require a fresh emulator install, launch, exact-bounds check, and screenshot inspection.
+
+### Next Action
+
+Install the new APK on `alarmquest-qa` and verify the 2340 × 1080 landscape rendering.
+
+## Loop 002 — Completion Verification
+
+### Verification
+
+- Installed `app-debug.apk` successfully on `alarmquest-qa`
+- Cold launch succeeded for `com.example.limdo/.MainActivity` in 1541 ms
+- Confirmed focused activity `com.example.limdo/.MainActivity`
+- Confirmed fullscreen app bounds `Rect(0, 0 - 2340, 1080)` and `ROTATION_90`
+- Captured and inspected `captures/loop002-iteration1-2340x1080.png` at exactly 2340 × 1080
+- Confirmed no clipping, overlap, illegible guide path, or surrounding-shell regression
+- Confirmed accessibility content description `손가락 입력 전 단계인 기역 쓰기 길 미리보기` in the UI hierarchy
+- Confirmed 4 unit tests, 0 failures, 0 errors
+- Inspected the 8.7 MB APK with SHA-256 `f585651a1406759fc51f63e653624aa5b847115be4e6689176169dd5d6655e10`
+- Confirmed package `com.example.limdo`, version `0.1.0`, min SDK 26, and target SDK 36
+
+### Result
+
+PASSED. All Loop 002 success criteria are satisfied with fresh automated and emulator evidence.
+
+### Remaining Risk
+
+- Android 16 may ignore fixed orientation on some large-screen devices; the exact reference emulator remains verified.
+- The Windows PowerShell automation check was not run on this Mac.
+- The Canvas is intentionally non-interactive; touch behavior remains out of scope.
+
+### Queue Transition
+
+Marked Loop 002 `COMPLETE`, set `Active Loop: NONE`, and stopped at `HUMAN_REVIEW_AFTER_LOOP_002`.
