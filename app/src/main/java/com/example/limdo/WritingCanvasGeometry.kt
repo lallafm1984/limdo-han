@@ -15,7 +15,7 @@ internal data class GlyphGeometry(
 
 internal object WritingCanvasGeometry {
     private const val EM_CANVAS_FRACTION = 0.80f
-    private const val GUIDE_STROKE_EM_FRACTION = 0.15f
+    private const val GUIDE_STROKE_EM_FRACTION = 0.20f
 
     private val gieokTemplate = listOf(
         listOf(

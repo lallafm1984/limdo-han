@@ -1246,3 +1246,37 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 새 검증·비교: 반복 시작 전 `./scripts/check-automation.sh`가 통과했다. `./scripts/verify.sh`의 전체 단위 테스트 35개, Android lint, debug build와 `git diff --check`가 통과했다. 루프 035는 밀집 분포의 규칙적인 빠름·느림 총 시간만 확인했지만, 이번에는 서로 다른 짧음·길음 교차 패턴과 비슷한 총 시간에서도 같은 경계가 유지되어 가설을 채택했다.
 - 최종 아이 대리 QA: 새 2340 × 1080 성공·재시도 화면에서 글을 읽지 않아도 큰 쓰기판·초록 시작점·화살표로 과제·위치·시작·방향을 알 수 있다. 순간적인 짧은·긴 입력 지연이 섞여도 155 px에는 별·확인과 성공 음성, 156 px에는 회전 화살표와 방향 재시도 음성이 일관됐다. 다시 듣기·지우기와 비활성 다음도 시각 상태를 유지했다. 새 제품 불편은 확인하지 못했다. `아이 대리 점검: 통과`, `실제 아이 관찰: 실행 안 함`.
 - 완료·다음 루프: 루프 036 성공 조건 1~8을 모두 새 근거로 통과했다. 새 QA 불편은 없었으며 최신 미완료 사용자 지시인 참고 화면 수준의 더 굵은 한글 획을 루프 037로 준비했다. 이번 작업자는 루프 037을 구현하지 않는다.
+
+## 루프 037 — 참고 화면 수준의 더 굵은 한글 획
+
+### 반복 1 — 가설
+
+- 우선 미충족 조건: `WritingCanvasGeometry`의 흰색 guide 굵기가 아직 em의 15%이며, em 20%와 정확한 1962 × 775 px Canvas에서의 124 px 굵기를 고정하는 새 단위 테스트 근거가 없다.
+- 가설: `GUIDE_STROKE_EM_FRACTION`만 `0.15f`에서 `0.20f`로 바꾸고 기존 geometry 테스트에 20%와 124 px 기대값을 추가하면, 중심선·정사각형 em·균일 배율과 `GieokTraceEvaluator`의 판정 허용 폭은 바뀌지 않은 채 시각 guide만 약 33% 굵어지고 기존 정상 입력 및 155/156 px 경계 테스트가 모두 통과할 것이다.
+
+### 반복 1 — 결과
+
+- 변경: `WritingCanvasGeometry.GUIDE_STROKE_EM_FRACTION`만 `0.15f`에서 `0.20f`로 바꿨다. `BootstrapTest.gieokGuideUsesSquareEmUniformScaleAndEducationalStrokeWidth`에 em 비율 `0.20`과 정확한 1962 × 775 px Canvas에서의 굵기 `124 px` 기대값을 추가했다. 중심선 template, em 크기, origin, `GieokTraceEvaluator`는 바꾸지 않았다.
+- 새 검증: 반복 시작 전 `./scripts/check-automation.sh`가 통과했다. 변경 뒤 `./scripts/verify.sh`의 전체 단위 테스트 35개, Android lint, debug build가 모두 통과했고 `git diff --check`도 통과했다.
+- geometry·판정 근거: 기존 테스트가 실제 Canvas에서 가로·세로 중심선 길이 각각 `582.8 px`, 가로/세로 비 `1.0`, em `620 px`를 계속 통과했다. `GieokTraceEvaluatorTest`의 정상 중심선 입력, 155 px `SUCCESS`, 156 px `WRONG_DIRECTION` 회귀도 같은 전체 테스트에서 통과했으므로 시각 굵기 변경이 중심선과 판정 허용 폭을 바꾸지 않았다는 자동 근거를 확보했다.
+- 이전 반복 비교·가설 판정: 변경 전 guide는 em 15%인 `93 px`였고 이번에는 같은 em에서 20%인 `124 px`로 `31 px`, 약 33.3% 굵어졌다. 중심선·bounds·판정 회귀가 유지되어 자동 검증 범위에서는 가설을 채택했다.
+- 미완료 근거: 정확한 `alarmquest-qa`의 물리 1080 × 2340, 앱 2340 × 1080, `ROTATION_90`에서 초기·진행 중·재시도·성공 화면과 callback을 아직 새로 수집하지 않았다. 참고 이미지 비교, 화면 중심 정렬·표식 가독성 실측, 새 화면 기반 아이 대리 QA도 남았다.
+- 실제 아이 관찰: 실행 안 함.
+- 다음 작업: 검증된 새 debug APK를 정확한 에뮬레이터에 설치하고 초기·진행 중·재시도·성공 화면, hierarchy, callback 및 정상 입력·155/156 px 경계를 새로 수집해 124 px guide와 시작점·방향·끝점 가독성을 비교한다.
+
+### 반복 2 — 가설
+
+- 우선 미충족 조건: em 20% guide를 적용한 새 APK에서 정확한 2340 × 1080 초기·진행 중·재시도·성공 화면과 정상 입력 및 155/156 px callback 근거가 아직 없다.
+- 가설: 반복 1에서 자동 검증한 APK를 `alarmquest-qa`의 물리 1080 × 2340, 앱 2340 × 1080, `ROTATION_90`에 설치하면 Canvas 1962 × 775 px와 같은 중심선·중앙 정렬을 유지하면서 guide가 실측 124 px로 보이고, 초기·진행 중·재시도·성공 네 상태에서 시작점·화살표·끝점이 가려지지 않으며 정상 입력과 155 px는 `SUCCESS`, 156 px는 `RETRY_DIRECTION` callback으로 유지될 것이다.
+
+### 반복 2 — 결과 및 완료
+
+- 변경: 제품 코드는 더 바꾸지 않았다. 반복 1의 debug APK를 설치하고 `captures/loop037/iteration2/`에 초기·진행 중·정상 성공·156 px 방향 재시도·155 px 성공 화면, hierarchy, 음성 callback과 환경 근거를 수집했다. APK SHA-256은 `7f49ca2eac37f4ec16354f518efa1f71d02b37b30a73b2f87e06a28713405335`이다.
+- 환경·geometry: 모든 화면은 `alarmquest-qa`의 물리 1080 × 2340, 앱 캡처 2340 × 1080, `user_rotation=1`(`ROTATION_90`), `topResumedActivity=com.example.limdo/.MainActivity`에서 수집했다. 다섯 hierarchy의 WritingCanvas는 `[189,63][2151,838]` = 1962 × 775 px였다. 중심선 `(879,159)→(1461,159)→(1461,742)`는 가로·세로 각각 582 px로 정사각형이고 Canvas 중앙에 유지됐다.
+- guide 실측·비교: em `620 px`의 20% 설계값은 `124 px`다. 초기 화면의 가로 guide 중심부 `x=1100`에서 완전 불투명 흰색은 `y=98~220`의 123 px이고 양쪽 안티앨리어싱 가장자리를 포함하면 124 px와 일치했다. 이전 93 px보다 31 px, 약 33.3% 굵으며 참고 이미지와 비교해 흰색 쓰기 길이 화면의 가장 큰 단일 과제로 보였다. 20%에서도 명확히 가늘지 않아 추가 확대하지 않았다.
+- 상태·표식: `01-initial/screen.png`에서 초록 시작점, 오른쪽·아래 방향 화살표와 주황 끝점이 흰 guide 위에서 분리되어 보였다. `02-progress/screen.png`의 진한 파란 획은 흰 guide 안에 남았고, `03-normal-success/screen.png`와 `05-155px-success/screen.png`에는 `★  ✓`, `04-156px-retry/screen.png`에는 `↻`가 나타났다. 굵어진 guide가 시작점·방향·끝점이나 결과 표식을 가리지 않았다.
+- 판정·음성: 정상 중심선과 끝점 도달 뒤 155 px 되돌림은 각각 한 번의 `재생 중:SUCCESS`→`재생 완료:SUCCESS`, 156 px 되돌림은 한 번의 `재생 중:RETRY_DIRECTION`→`재생 완료:RETRY_DIRECTION`으로 이어졌다. 표시 굵기 변경 뒤에도 기존 155/156 px 경계가 유지됐다.
+- 수집 보정: 최초 앱 실행에 사용한 `monkey`가 `SYS_KEYS has no physical keys`로 중단되어 화면을 만들지 못했다. 제품 실패가 아닌 수집 명령 오류로 판정하고 `am start -n com.example.limdo/.MainActivity`로 다시 실행해 위 다섯 유효 근거를 새로 수집했다.
+- 새 검증: 종료 전 `./scripts/verify.sh`의 전체 단위 테스트 35개, Android lint, debug build가 모두 통과했고 `git diff --check`도 통과했다. 반복 1의 자동 geometry 근거에 정확한 화면·callback 근거를 추가했으므로 가설을 채택했다.
+- 최종 아이 대리 QA: 글을 읽지 않아도 화면에서 가장 큰 흰색 `ㄱ`, 초록 시작점, 두 방향 화살표와 주황 끝점으로 무엇을 어디서 어느 방향으로 써야 하는지 알 수 있다. 성공은 별·확인과 성공 음성, 156 px 방향 재시도는 회전 화살표와 방향 음성으로 구분되며 다시 듣기·지우기는 각각 373 × 168 px, 간격 37 px이고 다음은 회색 비활성이다. 다만 진행 중 진한 파란 획은 약 35 px로 124 px guide의 약 28%에 불과해 손가락 아래에서 내가 채운 구간을 넓은 통로와 대응시키기 어렵다는 새 불편을 확인했다. `아이 대리 점검: 조건부 통과`, `실제 아이 관찰: 실행 안 함`.
+- 완료·다음 루프: 루프 037 성공 조건 1~8을 모두 새 근거로 통과했다. 새 화면 근거의 가장 중요한 미해결 불편인 진행 중 아이 획의 상대적 가늘기를 `QA-034`, 루프 038로 준비했다. 이번 작업자는 루프 038을 구현하지 않는다.

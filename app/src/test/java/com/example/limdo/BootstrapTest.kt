@@ -39,7 +39,8 @@ class BootstrapTest {
         assertEquals(582.8f, horizontal, 0.01f)
         assertEquals(582.8f, vertical, 0.01f)
         assertTrue(horizontal >= 580f && vertical >= 580f)
-        assertEquals(0.15f, glyph.strokeWidth / glyph.emSize, 0.001f)
+        assertEquals(0.20f, glyph.strokeWidth / glyph.emSize, 0.001f)
+        assertEquals(124f, glyph.strokeWidth, 0.001f)
         assertEquals(horizontal / vertical, 1f, 0.001f)
     }
 
