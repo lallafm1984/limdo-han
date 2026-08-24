@@ -35,6 +35,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -83,6 +85,25 @@ private val LimDoColorScheme = lightColorScheme(
     onSurface = Color(0xFF26332D),
 )
 
+private val LessonRewardStateSaver = listSaver<LessonRewardState, Any>(
+    save = {
+        listOf(it.completedSteps, it.targetSteps, it.successConsumed, it.phase.name)
+    },
+    restore = {
+        LessonRewardState(
+            completedSteps = it[0] as Int,
+            targetSteps = it[1] as Int,
+            successConsumed = it[2] as Boolean,
+            phase = RewardMovePhase.valueOf(it[3] as String),
+        )
+    },
+)
+
+private val RewardOffsetSaver = Saver<Animatable<Float, *>, Float>(
+    save = { it.value },
+    restore = { Animatable(it) },
+)
+
 @Composable
 private fun LimDoApp(
     speechState: SpeechPlaybackState,
@@ -105,14 +126,20 @@ private fun LearningShell(
     speak: (SpokenCue) -> Boolean,
     stopSpeech: () -> Unit,
 ) {
-    var clearRequest by remember { mutableIntStateOf(0) }
-    var traceResult by remember { mutableStateOf<GieokTraceResult?>(null) }
+    var clearRequest by rememberSaveable { mutableIntStateOf(0) }
+    var traceResult by rememberSaveable { mutableStateOf<GieokTraceResult?>(null) }
     var vehicleIndex by rememberSaveable { mutableIntStateOf(0) }
     var vehicleSuccessArmed by rememberSaveable { mutableStateOf(true) }
     var nextVehiclePending by rememberSaveable { mutableStateOf(false) }
-    var rewardState by remember { mutableStateOf(LessonRewardState()) }
-    val rewardOffset = remember { Animatable(0f) }
+    var rewardState by rememberSaveable(stateSaver = LessonRewardStateSaver) {
+        mutableStateOf(LessonRewardState())
+    }
+    val rewardOffset = rememberSaveable(saver = RewardOffsetSaver) { Animatable(0f) }
     var initialSpeechRequested by rememberSaveable { mutableStateOf(false) }
+    var successSpeechPending by rememberSaveable { mutableStateOf(false) }
+    var restoredSuccessSpeechHandled by remember {
+        mutableStateOf(traceResult != GieokTraceResult.SUCCESS)
+    }
     val currentCue = SpokenCueModel.forResult(traceResult)
     val currentVehicle = VehicleCarousel.vehicles[vehicleIndex]
 
@@ -120,6 +147,8 @@ private fun LearningShell(
         if (rewardState.phase == RewardMovePhase.START) {
             delay(120)
             rewardState = rewardState.moving()
+        }
+        if (rewardState.phase == RewardMovePhase.MOVING) {
             rewardOffset.animateTo(
                 targetValue = rewardState.targetSteps.toFloat(),
                 animationSpec = tween(durationMillis = 650),
@@ -134,6 +163,21 @@ private fun LearningShell(
         if (speechState == SpeechPlaybackState.Ready && !initialSpeechRequested) {
             initialSpeechRequested = true
             speak(SpokenCue.INITIAL)
+        }
+    }
+
+    LaunchedEffect(speechState, traceResult, successSpeechPending, restoredSuccessSpeechHandled) {
+        if (speechState == SpeechPlaybackState.Completed(SpokenCue.SUCCESS)) {
+            successSpeechPending = false
+        } else if (shouldResumeSuccessCue(
+                speechState = speechState,
+                traceResult = traceResult,
+                successSpeechPending = successSpeechPending,
+                alreadyHandled = restoredSuccessSpeechHandled,
+            )
+        ) {
+            restoredSuccessSpeechHandled = true
+            if (!speak(SpokenCue.SUCCESS)) successSpeechPending = false
         }
     }
 
@@ -155,6 +199,8 @@ private fun LearningShell(
             clearRequest = clearRequest,
             inputEnabled = !rewardState.inputLocked,
             onTraceResult = { result ->
+                restoredSuccessSpeechHandled = true
+                successSpeechPending = result == GieokTraceResult.SUCCESS
                 val vehicleState = VehicleCarouselState(
                     index = vehicleIndex,
                     successArmed = vehicleSuccessArmed,
@@ -206,6 +252,8 @@ private fun LearningShell(
             speechAvailable = speechState.canReplay,
             onReplay = { speak(currentCue) },
             onClear = {
+                restoredSuccessSpeechHandled = true
+                successSpeechPending = false
                 stopSpeech()
                 clearRequest += 1
                 val vehicleState = VehicleCarouselState(

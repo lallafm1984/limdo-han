@@ -18,6 +18,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -41,6 +44,30 @@ private val ChildStroke = Color(0xFF174F73)
 private val DirectionArrow = Color(0xFF176B52)
 private val DemonstrationMarker = Color(0xFF0B6F88)
 
+private val TraceAttemptSaver = listSaver<TraceAttempt, Any>(
+    save = { attempt ->
+        buildList {
+            add(attempt.result?.name.orEmpty())
+            attempt.stroke.points.forEach { point ->
+                add(point.x)
+                add(point.y)
+            }
+        }
+    },
+    restore = { saved ->
+        TraceAttempt(
+            stroke = StrokePath(
+                saved.drop(1).chunked(2).map { point ->
+                    CanvasPoint((point[0] as Number).toFloat(), (point[1] as Number).toFloat())
+                },
+            ),
+            result = (saved[0] as String).takeIf(String::isNotEmpty)?.let(
+                GieokTraceResult::valueOf,
+            ),
+        )
+    },
+)
+
 @Composable
 internal fun WritingCanvas(
     contentDescription: String,
@@ -50,7 +77,10 @@ internal fun WritingCanvas(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(24.dp)
-    var attempt by remember { mutableStateOf(TraceAttempt()) }
+    var attempt by rememberSaveable(stateSaver = TraceAttemptSaver) {
+        mutableStateOf(TraceAttempt())
+    }
+    var handledClearRequest by rememberSaveable { mutableIntStateOf(clearRequest) }
     val currentOnTraceResult by rememberUpdatedState(onTraceResult)
     val emptyStateDescription = "아직 그린 선이 없어요"
     val drawingStateDescription = "선을 그리고 있어요"
@@ -92,8 +122,11 @@ internal fun WritingCanvas(
     }
 
     LaunchedEffect(clearRequest) {
-        attempt = attempt.clear()
-        currentOnTraceResult(null)
+        if (clearRequest != handledClearRequest) {
+            handledClearRequest = clearRequest
+            attempt = attempt.clear()
+            currentOnTraceResult(null)
+        }
     }
 
     Canvas(

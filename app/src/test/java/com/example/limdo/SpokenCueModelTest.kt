@@ -2,6 +2,7 @@ package com.example.limdo
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SpokenCueModelTest {
@@ -31,5 +32,15 @@ class SpokenCueModelTest {
             assertFalse(cue.utterance.contains('\n'))
             assertFalse(cue.utterance.length > 40)
         }
+    }
+
+    @Test
+    fun restoredSuccessResumesOnlyOnceWhenNewSpeechEngineIsReady() {
+        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Initializing, GieokTraceResult.SUCCESS, true, false))
+        assertTrue(shouldResumeSuccessCue(SpeechPlaybackState.Ready, GieokTraceResult.SUCCESS, true, false))
+        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, GieokTraceResult.SUCCESS, true, true))
+        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, GieokTraceResult.SUCCESS, false, false))
+        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, null, true, false))
+        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, GieokTraceResult.OFF_GUIDE, true, false))
     }
 }

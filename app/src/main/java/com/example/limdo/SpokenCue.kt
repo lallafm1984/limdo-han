@@ -19,3 +19,13 @@ internal object SpokenCueModel {
         GieokTraceResult.INCOMPLETE -> SpokenCue.RETRY_FINISH
     }
 }
+
+internal fun shouldResumeSuccessCue(
+    speechState: SpeechPlaybackState,
+    traceResult: GieokTraceResult?,
+    successSpeechPending: Boolean,
+    alreadyHandled: Boolean,
+): Boolean = speechState == SpeechPlaybackState.Ready &&
+    traceResult == GieokTraceResult.SUCCESS &&
+    successSpeechPending &&
+    !alreadyHandled

@@ -578,11 +578,40 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 우선 미충족 조건: 이동 완료 전 지우기와 실패·다시 듣기·중복 성공 callback이 실제 앱에서도 활성 차량 종류를 바꾸지 않는다는 정확한 2340 × 1080 연속 화면·hierarchy 근거가 없다.
 - 가설: 반복 2의 보정 APK에서 각 비성공 경로를 독립적으로 실행하면 이동 완료 전 지우기·실패·다시 듣기 뒤 차량은 경찰차로 유지되고, 한 성공 흐름의 중복 callback 동안에도 완료까지 경찰차 하나만 유지될 것이다. 조기 지우기는 예약과 offset을 초기화해 다음 정상 성공에서도 경찰차가 시작 위치에서 한 번만 126 px 이동할 것이다.
 
+## 루프 057 — 성공 보상 중 Activity 재생성 QA 탐색
+
+### 반복 1 — 가설
+
+- 우선 미충족 조건: `START`·`MOVING`·`COMPLETE` 각 시점의 Activity 재생성 전후에 활성 차량, 이동 예약, 보상 offset, 입력 잠금이 일관되게 복원된다는 새 근거가 없다.
+- 가설: 현재 차량 순환 필드는 `rememberSaveable`이지만 `LessonRewardState`와 `rewardOffset`은 `remember`이므로, 성공 이동 중 Activity를 재생성하면 차량 종류는 유지되어도 보상 단계·offset·입력 잠금이 초기화되어 이동 중에는 시작 위치로 되돌아가고 입력이 조기에 다시 허용될 것이다. `COMPLETE` 재생성 후 지우기는 이동 완료를 잃어 예약된 다음 차량을 순환하지 못할 것이다.
+
+### 반복 1 — 결과
+
+- 변경: 제품 코드는 바꾸지 않았다. 실제 Activity 재생성을 입증하지 못한 경로를 제품 실패로 오판하지 않고 수집 근거만 보존했다.
+- 환경: `alarmquest-qa`는 물리 1080 × 2340, `user_rotation=1`, focus `com.example.limdo/.MainActivity`였고 `moving/`·`complete/`의 모든 앱 화면은 정확히 2340 × 1080이었다.
+- 수집 결과: `moving/01-before-recreate.png`은 경찰차 `[99,62][435,288]`와 `★ ✓`, `moving/02-after-recreate.png`은 `[225,62][561,288]`의 126 px 완료 위치를 보였다. `font_scale` 변경은 프레임 사이에 Activity 재생성을 증명할 identity 근거를 남기지 못해 판정에서 제외했다.
+- 재시작 경로 한계: 완료 후 HOME→`am kill`→`am start` 경로는 `restart.txt`에 `Activity not started`, `LaunchState: HOT`를 남겼고, `dumpsys activity exit-info` 최신 항목에도 해당 kill이 없어 재생성이 아니었다. 따라서 `complete/02-after-recreate.png`의 경찰차 완료 위치와 지우기 후 소방차 순환은 기존 프로세스 회귀 근거로만 보존하고 Activity 재생성 통과 근거로 쓰지 않는다.
+- 비교·판정: 루프 056의 정상 이동·지우기 결과는 재현됐지만, 반복 1은 `START`·`MOVING`·`COMPLETE` 재생성 중 어느 하나도 유효하게 반증하지 못했다. 가설은 미판정이며 성공 조건 1~5·7은 남았다.
+- 검증: 시작 전 `./scripts/check-automation.sh`는 통과했고 종료 시 `git diff --check`도 통과했다. 제품 코드를 바꾸지 않아 `./scripts/verify.sh`는 실행하지 않았다. 아이 대리 QA와 실제 아이 관찰은 실행하지 않았다.
+- 다음 작업: Activity identity 또는 프로세스 PID 변경을 전·후로 기록하는 확정적 재생성 방법을 먼저 마련한 뒤, 우선 `MOVING`과 `COMPLETE`를 독립 수집한다. 실패가 확인될 때만 보상 상태·offset 복원을 최소 보정한다.
+
 ### 반복 3 — 가설 (루프 056 문서 끝 기록)
 
 - 기록 정정: 이번 가설을 처음 덧붙일 때 과거의 동일 종료 문구가 문맥으로 선택되어 과거 구간에도 사본이 추가됐다. 덧붙이기 전용 계약에 따라 그 기록을 삭제·수정하지 않고, 루프 056의 올바른 위치인 현재 문서 끝에 다시 기록한다.
 - 우선 미충족 조건: 이동 완료 전 지우기와 실패·다시 듣기·중복 성공 callback이 실제 앱에서도 활성 차량 종류를 바꾸지 않는다는 정확한 2340 × 1080 연속 화면·hierarchy 근거가 없다.
 - 가설: 반복 2의 보정 APK에서 각 비성공 경로를 독립적으로 실행하면 이동 완료 전 지우기·실패·다시 듣기 뒤 차량은 경찰차로 유지되고, 한 성공 흐름의 중복 callback 동안에도 완료까지 경찰차 하나만 유지될 것이다. 조기 지우기는 예약과 offset을 초기화해 다음 정상 성공에서도 경찰차가 시작 위치에서 한 번만 126 px 이동할 것이다.
+
+## 루프 057 — 성공 보상 중 Activity 재생성 QA 탐색 (문서 끝 정정 기록)
+
+### 반복 1 — 가설·결과
+
+- 기록 정정: 반복 1 기록을 처음 덧붙일 때 과거의 동일한 루프 056 문장이 문맥으로 선택되어 과거 구간에 기록됐다. 덧붙이기 전용 계약에 따라 그 기록을 삭제·수정하지 않고, 현재 문서 끝에 요지를 다시 기록한다.
+- 우선 미충족 조건·가설: `START`·`MOVING`·`COMPLETE` 재생성 전후 상태 복원 근거가 없다. 차량 필드는 `rememberSaveable`이지만 `LessonRewardState`·`rewardOffset`은 `remember`이므로 재생성 시 보상 단계·offset·입력 잠금이 소실될 것이라고 가설했다.
+- 변경·환경: 제품 코드는 바꾸지 않았다. `alarmquest-qa`는 물리 1080 × 2340, `user_rotation=1`, focus `com.example.limdo/.MainActivity`였고 수집한 앱 화면은 정확히 2340 × 1080이었다.
+- 근거·한계: `moving/01-before-recreate.png`의 경찰차 시작 bounds `[99,62][435,288]`와 `moving/02-after-recreate.png`의 완료 bounds `[225,62][561,288]`를 수집했지만 `font_scale` 변경은 Activity identity 변경을 입증하지 못했다. HOME→`am kill`→`am start`도 `Activity not started`, `LaunchState: HOT`이었고 `exit-info`에 해당 kill이 없어 Activity 재생성 근거에서 제외했다. 재생성이 아닌 기존 프로세스의 경찰차 126 px 이동과 지우기 후 소방차 순환만 재확인했다.
+- 비교·판정: 루프 056 정상 흐름은 재현됐지만 재생성 가설은 미판정이다. 루프 057 성공 조건 1~5·7은 남았다. 아이 대리 QA와 `실제 아이 관찰`은 실행하지 않았다.
+- 검증: 시작·종료 `./scripts/check-automation.sh`와 `git diff --check`가 통과했다. 제품 코드를 바꾸지 않아 `./scripts/verify.sh`는 실행하지 않았다.
+- 다음 작업: Activity identity 또는 PID 변경을 전·후로 남기는 확정적 재생성 방법을 먼저 확보한 뒤 `MOVING`·`COMPLETE`를 독립 수집한다. 실패가 입증될 때만 최소 보정한다.
 
 ### 반복 3 — 결과 및 완료 (루프 056 문서 끝 기록)
 
@@ -1900,3 +1929,65 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 기록 정정: 이번 가설을 처음 덧붙일 때 과거의 동일 종료 문구가 문맥으로 선택되어 과거 구간에도 사본이 추가됐다. 덧붙이기 전용 계약에 따라 그 기록을 삭제·수정하지 않고, 루프 056의 올바른 위치인 현재 문서 끝에 다시 기록한다.
 - 우선 미충족 조건: 이동 완료 전 지우기와 실패·다시 듣기·중복 성공 callback이 실제 앱에서도 활성 차량 종류를 바꾸지 않는다는 정확한 2340 × 1080 연속 화면·hierarchy 근거가 없다.
 - 가설: 반복 2의 보정 APK에서 각 비성공 경로를 독립적으로 실행하면 이동 완료 전 지우기·실패·다시 듣기 뒤 차량은 경찰차로 유지되고, 한 성공 흐름의 중복 callback 동안에도 완료까지 경찰차 하나만 유지될 것이다. 조기 지우기는 예약과 offset을 초기화해 다음 정상 성공에서도 경찰차가 시작 위치에서 한 번만 126 px 이동할 것이다.
+
+## 루프 057 반복 1 — 문서 끝 인계
+
+- 가설: `rememberSaveable`인 차량 필드와 달리 `remember`인 `LessonRewardState`·`rewardOffset`은 Activity 재생성 시 소실되어 이동 위치·입력 잠금·완료 후 순환을 어긋나게 할 것이다.
+- 결과: 제품 코드는 변경하지 않았다. 정확한 2340 × 1080에서 경찰차 126 px 이동과 지우기 후 소방차 순환은 재현했으나, `font_scale` 경로는 Activity identity 변경 근거가 없고 HOME→`am kill`→`am start`는 `LaunchState: HOT`이어서 재생성 근거에서 제외했다. 가설은 미판정이고 성공 조건 1~7 전체가 남았다.
+- 검증·다음: `./scripts/check-automation.sh`와 `git diff --check`가 통과했다. 코드 변경이 없어 `./scripts/verify.sh`는 실행하지 않았다. Activity identity 또는 PID 변경을 전·후로 남기는 확정적 방법으로 `MOVING`·`COMPLETE`를 다시 독립 수집하고, 실패가 입증될 때만 최소 보정한다. 아이 대리 QA와 `실제 아이 관찰`은 실행하지 않았다.
+
+## 루프 057 반복 2 — 가설
+
+- 우선 미충족 조건: `MOVING` Activity 재생성 전후 활성 차량·보상 offset·입력 잠금이 유지된다는 확정적 근거가 없다.
+- 가설: 에뮬레이터의 `uiMode`를 전환하고 시스템 relaunch 로그와 Activity instance 식별 근거를 함께 남기면 실제 Activity 재생성을 확정할 수 있으며, 이를 성공 이동 중 실행했을 때 `remember`인 `LessonRewardState`와 `rewardOffset`이 초기화되어 경찰차가 시작 위치로 되돌아가고 입력 잠금이 조기에 풀릴 것이다.
+
+### 반복 2 — 결과 및 인계
+
+- 확정적 재생성 근거: `uiMode` 전환은 `ActivityTaskManager: Config changes=200`, 기존 Window 폐기, 서로 다른 신규 Window ID와 `WindowManager: finishDrawing of relaunch`를 함께 남겼다. 반복 1의 identity 근거 없는 `font_scale`·HOT 재시작과 달리 실제 Activity relaunch로 판정했다. 모든 앱 화면은 2340 × 1080이다.
+- 보정 전 반증: `moving-recreate-before-fix/`의 정상 `SUCCESS` 직후 재생성 전 화면에는 같은 경찰차·굵은 완료 획·`★ ✓`가 있었지만, 재생성 후에는 완료 획과 성공 표시가 사라지고 경찰차가 시작 위치로 돌아갔다. 시스템 로그는 기존 Window `27ea305` 폐기와 신규 Window `736baa4` relaunch를 기록했다. 따라서 보상 단계·offset·입력 잠금이 소실된다는 가설을 채택했다.
+- 최소 변경: `LessonRewardState`, `rewardOffset`, `traceResult`, `TraceAttempt`, `clearRequest`와 마지막 처리 지우기 요청을 `rememberSaveable`로 복원했다. 재생성 직후 초기 효과가 복원 획을 지우지 않게 했고, 복원 단계가 이미 `MOVING`이면 저장된 중간 offset부터 `animateTo`를 계속하도록 했다.
+- 중간 반증과 보정: 첫 보정 APK는 완료 획·`★ ✓`와 경찰차 종류를 복원했지만 차량이 `[131,62][467,288]`의 중간 위치에 멈췄다. `MOVING` 복원 시 애니메이션을 재개하지 않는 조건을 한 곳 보정한 뒤 다시 검증했다.
+- 최종 에뮬레이터 근거: `moving-recreate-fixed-resume/`에서 `SUCCESS` 뒤 기존 Window `2483c72`가 폐기되고 신규 Window `92f635a`가 relaunch됐다. 재생성 전후 같은 경찰차, 굵은 완료 획과 `★ ✓`가 유지됐고, 1초 뒤 hierarchy의 경찰차는 `[225,62][561,288]`로 초기 `[99,62][435,288]` 대비 x축 126 px 한 칸을 정확히 완료했다. WritingCanvas는 `[189,63][2151,838]` = 1962 × 775 px이고 차량은 `clickable=false`, `focusable=false`다.
+- 자동 검증·비교: 최종 변경 후 `./scripts/verify.sh`의 자동화 계약·전체 단위 테스트·Android lint·debug build와 `git diff --check`가 모두 통과했다. 반복 1은 재생성 자체가 미확정이었고 이번 보정 전은 상태 소실, 첫 보정은 중간 정지였지만 최종 APK는 실제 `MOVING` relaunch 뒤 완료 위치까지 수렴했다.
+- 남은 조건·다음 작업: 성공 조건 1·2·4·5 중 `MOVING`의 차량 종류·단일 이동·완료 획·표시·비가림은 통과했다. 다음 반복은 `START`와 `COMPLETE` 재생성을 독립 수집하고, 재생성으로 끊긴 `SUCCESS` 음성의 예상 동작, 이동 중 입력 잠금, 완료/조기 지우기의 차량 순환·재무장을 검증한다. 전체 조건이 남아 최종 아이 대리 QA와 커밋·push는 수행하지 않았다. `실제 아이 관찰: 실행 안 함`.
+
+## 루프 057 반복 3 — 가설
+
+- 우선 미충족 조건: `START`·`COMPLETE` Activity 재생성 전후 활성 차량·예약·offset과 완료/조기 지우기의 차량 순환·재무장이 일관된다는 확정적 근거가 없다.
+- 가설: 반복 2의 저장 복원 보정 APK에서 `START`와 `COMPLETE` 각각 `uiMode` relaunch를 유도하면 경찰차와 보상 단계가 유지되고, 재생성 후 지우기는 `START`에서 경찰차를 유지한 채 다음 성공을 한 번만 재무장하고, `COMPLETE`에서는 소방차로 한 번만 순환하며 모두 시작 위치로 복원할 것이다.
+
+### 반복 3 — 결과 및 인계
+
+- 수집 환경·제외 근거: `alarmquest-qa`는 물리 1080 × 2340, `ROTATION_90`, 모든 앱 캡처는 정확히 2340 × 1080이었다. 첫 `start-recreate/`는 재생성 전 화면 캡처 지연으로 이미 완료 위치에 도달해 `START` 근거에서 제외했다.
+- `START` 재생성·조기 지우기: `start-recreate-valid/` 로그에서 `Config changes=200`은 `SUCCESS` 시작 callback보다 132 ms 먼저 시작됐고 `finishDrawing of relaunch`가 실제 Activity relaunch를 확정했다. 조기 지우기는 경찰차를 `[99,62][435,288]` 시작 위치에 유지했고, 후속 정상 성공은 같은 경찰차를 `[225,62][561,288]`로 x축 126 px 한 번만 이동시켰다. 후속 `SUCCESS` 시작·완료도 각 1회였다.
+- `COMPLETE` 재생성·완료 지우기: `complete-recreate/`에서 `SUCCESS` 후 1초 뒤 `Config changes=200`, 자원 해제, 신규 Window `baa2ba0`의 `finishDrawing of relaunch`를 수집했다. 재생성 후도 경찰차는 `[225,62][561,288]`에 유지됐고, 지우기 한 번 후에만 소방차가 `[99,62][435,288]`에 준비됐다. 차량 node는 `clickable=false`, `focusable=false`였다.
+- 실패·가설 판정: 차량 유지·조기 재무장·완료 순환 가설은 채택했다. 그러나 `START`와 `COMPLETE` 모두 재생성이 진행 중 `SUCCESS` 음성을 `자원 해제`로 끊은 뒤 새 TTS는 `준비 완료`로만 전환하고 성공 안내를 재개하지 않았다. 따라서 성공 조건 5의 성공 음성 유지는 실패했고 루프는 완료하지 않는다.
+- 검증·비교: 반복 2는 `MOVING` 상태 복원을 입증했고, 이번은 `START`·`COMPLETE` 재생성과 두 지우기 분기를 추가로 입증했지만 음성 소실을 새로 확정했다. `./scripts/verify.sh`의 자동화 계약·전체 단위 테스트·Android lint·debug build, `git diff --check`, 종료 `./scripts/check-automation.sh`가 모두 통과했다. 이번 반복에서 제품 코드는 추가로 변경하지 않았다.
+- 다음 작업: 재생성 전 재생 중이던 `SpokenCue.SUCCESS`를 복원 가능한 상태로 저장하고, 새 TTS가 `Ready`가 될 때 한 번만 재요청하는 최소 보정과 중복·지우기 취소 회귀를 추가한다. 그 후 이동 중 입력 잠금을 실제 포인터 주입으로 확인한다. 최종 아이 대리 QA와 커밋·push는 아직 수행하지 않았다. `실제 아이 관찰: 실행 안 함`.
+
+## 루프 057 반복 4 — 가설
+
+- 우선 미충족 조건: Activity 재생성으로 끊긴 `SpokenCue.SUCCESS`가 새 TTS의 `Ready` 전환 뒤 재개되지 않아 성공 조건 5를 충족하지 못한다.
+- 가설: 새 Activity의 비저장 1회 관문을 두고, 복원된 결과가 `SUCCESS`이며 새 TTS가 `Ready`가 된 경우에만 성공 안내를 한 번 재요청하면 정상 성공의 기존 음성과 지우기 취소는 중복되지 않고, `START`·`MOVING`·`COMPLETE` 복원 모두에서 `SUCCESS` 시작·완료가 정확히 한 번씩 남을 것이다.
+
+### 반복 4 — 결과 및 인계
+
+- 최소 변경: 성공 음성의 재생 중 여부를 `successSpeechPending`으로 `rememberSaveable`하고, 새 Activity의 비저장 `restoredSuccessSpeechHandled` 관문이 복원된 `SUCCESS`·음성 pending·새 TTS `Ready`를 모두 확인할 때만 한 번 재요청하게 했다. `Completed(SUCCESS)`와 지우기는 pending을 해제한다.
+- 1차 반증과 추가 보정: `complete-recreate-speech-resume/`에서 초기 비저장 관문만 적용한 APK는 재생성 전 `SUCCESS` 완료 뒤에도 다시 `SUCCESS` 시작·완료를 남겼다. 이는 끊긴 음성만 복원한다는 가설을 반증해 위 pending 상태를 추가했다.
+- 이동 중 재생성 음성 근거: `moving-recreate-final/`의 `SUCCESS` 시작 `02:01:49.658` 후 89 ms에 `Config changes=200`이 발생했고 `자원 해제`, 새 Window `4d6434` relaunch를 남겼다. 새 TTS가 `준비 완료`된 뒤 `SUCCESS` 재생은 `02:01:50.186`에 한 번 시작해 `02:01:53.055`에 한 번 완료됐다.
+- 완료 후 중복 방지: 같은 성공 음성이 완료된 후 `complete-no-duplicate-final/`에서 다시 `Config changes=200`과 실제 relaunch를 유도했다. 로그는 `자원 해제`→`준비 완료`만 남기고 `SUCCESS` 재생을 다시 시작하지 않았다. 두 유효 화면은 모두 정확히 2340 × 1080이다.
+- 자동 검증·비교: 최종 변경 후 `./scripts/verify.sh`의 자동화 계약·전체 단위 테스트·Android lint·debug build와 `git diff --check`가 통과했다. 반복 3은 끊긴 성공 음성이 소실됐고 이번 1차 보정은 완료 음성까지 중복했지만, 최종 보정은 끊긴 음성만 1회 복원하고 완료 음성은 복제하지 않아 가설을 최종 채택했다.
+- 남은 조건·다음 작업: 성공 조건 5의 재생성 후 성공 음성은 통과했다. 다음 반복은 `START`·`MOVING` 중 실제 포인터를 주입해 입력 잠금을 확정하고, 지우기 취소에서 pending 음성이 느지게 복원되지 않는지 확인한 뒤 전체 최종 아이 대리 QA를 수행한다. 이번 반복에서는 커밋·push하지 않았다. `실제 아이 관찰: 실행 안 함`.
+## 루프 057 반복 5 — 가설
+
+- 우선 미충족 조건: `START`·`MOVING` 재생성 중 실제 포인터 입력이 차단되고, 재생성 직후 조기 지우기가 복원 대기 중인 `SUCCESS` 음성을 취소한다는 정확한 2340 × 1080 근거가 없다.
+- 가설: 반복 4 APK에서 실제 Activity relaunch 직후 쓰기 영역에 새 포인터 획을 주입해도 저장된 성공 획·`★ ✓`·경찰차 이동은 변하지 않고 추가 결과 callback도 발생하지 않을 것이다. 같은 relaunch 직후 새 TTS가 `Ready`가 되기 전에 지우기를 누르면 `successSpeechPending`이 해제되어 늦은 `SUCCESS` 재생 없이 경찰차가 시작 위치에서 다음 정상 성공을 정확히 한 번 수행할 것이다.
+
+### 반복 5 — 결과 및 인계
+
+- 입력 잠금 근거: `input-lock/03-success-lock-valid.*`에서 정상 한 획의 `SUCCESS` 시작 29 ms 뒤 `Config changes=200`, 기존 자원 해제, 신규 Window `fa44df2`의 `finishDrawing of relaunch`를 확인했다. 신규 Window 직후 쓰기판에 별도 포인터를 주입했지만 추가 실패·성공 callback 없이 굵은 완료 획과 `★ ✓`, 경찰차가 유지됐고 경찰차는 `[225,62][561,288]`의 126 px 완료 위치에 정확히 한 번만 도달했다. 끊긴 성공 음성도 새 TTS 준비 뒤 시작·완료 각 1회였다.
+- 조기 지우기·음성 취소 근거: `clear-cancels-speech/02-valid-clear-cancel.*`에서 `SUCCESS` 시작 39 ms 뒤 실제 relaunch가 시작됐고 신규 Window가 그려진 직후 지우기를 눌렀다. 로그는 `자원 해제` 뒤 `초기화 중`→`준비 완료`만 남기고 늦은 `SUCCESS` 재생을 0회로 유지했다. 경찰차는 `[99,62][435,288]` 시작 위치, 초기 guide·시작점·방향·끝점으로 복원됐다.
+- 재무장 근거: 같은 세션의 `03-followup-success.*`에서 추가 초기화 없이 다음 정상 한 획이 `SUCCESS` 시작·완료 각 1회, 경찰차 `[225,62][561,288]`, `★ ✓`로 완료됐다. 조기 지우기가 차량을 바꾸거나 다음 성공을 누락·중복하지 않았다.
+- 자동 검증·비교: `./scripts/verify.sh`의 자동화 계약·전체 단위 테스트·Android lint·debug build와 `git diff --check`가 모두 통과했다. 반복 4는 음성 재개와 완료 후 중복 방지만 입증했지만, 이번에는 실제 포인터 입력 잠금·pending 음성 취소·후속 단일 성공까지 추가해 가설을 채택했다.
+- 최종 아이 대리 QA: 모든 새 화면은 정확히 2340 × 1080이고 WritingCanvas는 `[189,63][2151,838]` = 1962 × 775 px로 화면 최대 아이 상호작용 영역이다. 글을 읽지 않아도 큰 흰 `ㄱ`, 초록 시작점, 움직이는 방향 안내, 주황 끝점으로 과제·시작·진행을 알 수 있고, 성공 뒤 굵은 파란 획·`★ ✓`·성공 음성·같은 경찰차 한 칸 이동으로 결과를 구분한다. 큰 스피커·지우기 아이콘과 회색 비활성 다음도 유지된다. Activity relaunch 중 포인터는 결과를 훼손하지 않고 조기 지우기는 시각·음성을 함께 초기화했다. 새 제품 불편은 확인하지 못했다. `아이 대리 점검: 통과`, `실제 아이 관찰: 실행 안 함`.
+- 완료·다음 루프: 성공 조건 1~7을 모두 새 근거로 통과해 루프 057을 완료했다. 새 불편이 없어 아직 검증하지 않은 성공 보상 중 프로세스 종료·저장 상태 복원 흐름을 `QA-054`와 루프 058로 준비했다. 이번 작업자는 루프 058을 구현하지 않는다.
