@@ -37,7 +37,7 @@ grep -q 'Never invoke `codex exec`' .loop/cli-worker-prompt.md || fail "nested C
 grep -q -- '--ephemeral' scripts/run-cli-loop.sh || fail "ephemeral CLI flag missing"
 grep -q -- '--sandbox workspace-write' scripts/run-cli-loop.sh || fail "workspace sandbox flag missing"
 grep -q 'env -u CODEX_SESSION_ID' scripts/run-cli-loop.sh || fail "fresh-session environment isolation missing"
-grep -q 'launchctl submit' scripts/start-cli-loop.sh || fail "detached macOS launch service missing"
+grep -q 'screen -dmS' scripts/start-cli-loop.sh || fail "detached CLI session host missing"
 grep -q '2340 × 1080' AGENTS.md || fail "reference viewport missing from AGENTS.md"
 grep -q '2340 × 1080' LOOP_GOAL.md || fail "reference viewport missing from LOOP_GOAL.md"
 grep -q '1170 px' QA_CHECKLIST.md || fail "minimum writing width missing from QA_CHECKLIST.md"

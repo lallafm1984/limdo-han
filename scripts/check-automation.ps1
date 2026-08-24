@@ -49,7 +49,7 @@ if ($WorkerPrompt -notmatch 'Never invoke `codex exec`') { Stop-AutomationCheck 
 if ($Runner -notmatch '--ephemeral') { Stop-AutomationCheck "ephemeral CLI flag missing" }
 if ($Runner -notmatch '--sandbox workspace-write') { Stop-AutomationCheck "workspace sandbox flag missing" }
 if ($Runner -notmatch 'env -u CODEX_SESSION_ID') { Stop-AutomationCheck "fresh-session environment isolation missing" }
-if ($Starter -notmatch 'launchctl submit') { Stop-AutomationCheck "detached macOS launch service missing" }
+if ($Starter -notmatch 'screen -dmS') { Stop-AutomationCheck "detached CLI session host missing" }
 if ($Agents -notmatch '2340 × 1080') { Stop-AutomationCheck "reference viewport missing from AGENTS.md" }
 if ($Goal -notmatch '2340 × 1080') { Stop-AutomationCheck "reference viewport missing from LOOP_GOAL.md" }
 if ($QaChecklist -notmatch '1170 px') { Stop-AutomationCheck "minimum writing width missing from QA_CHECKLIST.md" }

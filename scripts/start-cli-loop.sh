@@ -5,8 +5,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd -P)"
 runtime_dir="$repo_root/.loop/runtime"
 lock_pid_file="$runtime_dir/supervisor.lock/pid"
-service_label="com.limdo.cli-loop"
-service_target="gui/$(id -u)/$service_label"
+screen_name="limdo_cli_loop"
 
 if [[ -r "$lock_pid_file" ]]; then
     running_pid="$(sed -n '1p' "$lock_pid_file")"
@@ -17,15 +16,13 @@ if [[ -r "$lock_pid_file" ]]; then
 fi
 
 mkdir -p "$runtime_dir"
-if launchctl print "$service_target" >/dev/null 2>&1; then
-    launchctl remove "$service_label" >/dev/null 2>&1 || true
+if screen -ls 2>/dev/null | grep -Eq "[0-9]+\.${screen_name}[[:space:]]"; then
+    screen -S "$screen_name" -X quit >/dev/null 2>&1 || true
 fi
 
-launchctl submit \
-    -l "$service_label" \
-    -o "$runtime_dir/supervisor.log" \
-    -e "$runtime_dir/supervisor.log" \
-    -- "$repo_root/scripts/run-cli-loop.sh"
+screen -dmS "$screen_name" /bin/bash -lc \
+    'exec "$1" >> "$2" 2>&1' \
+    _ "$repo_root/scripts/run-cli-loop.sh" "$runtime_dir/supervisor.log"
 
 sleep 1
 if [[ -r "$lock_pid_file" ]]; then
@@ -34,7 +31,7 @@ else
     launched_pid=""
 fi
 if [[ "$launched_pid" =~ ^[0-9]+$ ]] && kill -0 "$launched_pid" 2>/dev/null; then
-    echo "CLI LOOP STARTED: launchd service=$service_label pid=$launched_pid"
+    echo "CLI LOOP STARTED: screen=$screen_name pid=$launched_pid"
     echo "Status: $repo_root/scripts/cli-loop-status.sh"
     exit 0
 fi

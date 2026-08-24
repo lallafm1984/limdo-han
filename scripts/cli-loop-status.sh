@@ -6,7 +6,7 @@ set -o pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd -P)"
 runtime_dir="$repo_root/.loop/runtime"
 lock_pid_file="$runtime_dir/supervisor.lock/pid"
-service_target="gui/$(id -u)/com.limdo.cli-loop"
+screen_name="limdo_cli_loop"
 
 echo "LimDo CLI Loop Status"
 if [[ -r "$lock_pid_file" ]]; then
@@ -19,10 +19,10 @@ if [[ -r "$lock_pid_file" ]]; then
 else
     echo "Supervisor: STOPPED"
 fi
-if launchctl print "$service_target" >/dev/null 2>&1; then
-    echo "Launch service: LOADED"
+if screen -ls 2>/dev/null | grep -Eq "[0-9]+\.${screen_name}[[:space:]]"; then
+    echo "Detached CLI session: RUNNING ($screen_name)"
 else
-    echo "Launch service: NOT LOADED"
+    echo "Detached CLI session: STOPPED"
 fi
 
 sed -n '/^Execution Stage:/p;/^Active Loop:/p;/^Review Gate:/p' "$repo_root/.loop/queue.md"

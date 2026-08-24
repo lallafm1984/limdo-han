@@ -810,3 +810,9 @@ Moved execution stage to `CLI`, authorized Loop 005 as `ACTIVE`, and set the nex
 The first background launch proved that a plain `nohup` child is terminated when the Codex App command host closes. Two ephemeral sessions reached `thread.started` but were terminated before a worker turn, so neither changed durable loop state and neither counts as a Loop 005 iteration.
 
 Changed only the launcher to submit the supervisor to the current macOS launchd user domain. The repository lock remains authoritative for duplicate prevention, and the stop signal remains graceful after the current worker session.
+
+### Launch Host Correction
+
+The launchd submission registered but macOS denied its background process access to the project under Desktop with `Operation not permitted`; granting broader system privacy access would have required user intervention. No worker iteration ran and durable loop state remained unchanged.
+
+Replaced launchd with the built-in detached `screen` host. A cross-command smoke test confirmed that the detached screen process remained alive after its initiating Codex App shell command ended. The repository PID lock and graceful stop signal remain authoritative.

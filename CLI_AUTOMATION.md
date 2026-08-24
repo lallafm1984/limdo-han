@@ -4,7 +4,7 @@
 
 Stage: `CLI`
 
-`scripts/run-cli-loop.sh` is the only session supervisor. `scripts/start-cli-loop.sh` submits it to the current macOS launchd user domain so it survives the terminal or Codex App command that started it. Each worker is a brand-new, ephemeral `codex exec` session; no session is resumed or forked.
+`scripts/run-cli-loop.sh` is the only session supervisor. `scripts/start-cli-loop.sh` hosts it in a detached local `screen` session so it survives the terminal or Codex App command that started it without requiring extra macOS privacy permissions. Each worker is a brand-new, ephemeral `codex exec` session; no session is resumed or forked.
 
 ## Durable Objective
 
