@@ -71,6 +71,31 @@ class GieokTraceEvaluatorTest {
     }
 
     @Test
+    fun sparseDiagonalOutsideVisibleCorridorRequestsRetry() {
+        val actualWidth = 1_962f
+        val actualHeight = 775f
+
+        assertEquals(
+            GieokTraceResult.OFF_GUIDE,
+            GieokTraceEvaluator.evaluate(
+                width = actualWidth,
+                height = actualHeight,
+                stroke = StrokePath(
+                    listOf(
+                        CanvasPoint(690f, 96f),
+                        CanvasPoint(861f, 96f),
+                        CanvasPoint(1_011f, 246f),
+                        CanvasPoint(1_161f, 246f),
+                        CanvasPoint(1_272f, 246f),
+                        CanvasPoint(1_272f, 387f),
+                        CanvasPoint(1_272f, 679f),
+                    ),
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun traceCanBeEvaluatedAtAnotherCanvasSize() {
         val scaledGuide = WritingCanvasGeometry.gieokPoints(width = 2_000f, height = 1_000f)
 

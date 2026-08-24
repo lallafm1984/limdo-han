@@ -1,6 +1,7 @@
 package com.example.limdo
 
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.hypot
 import kotlin.math.min
 
@@ -19,6 +20,7 @@ internal object GieokTraceEvaluator {
     private const val FINISH_TOLERANCE_FRACTION = 0.20f
     private const val MEANINGFUL_MOVEMENT_FRACTION = 0.12f
     private const val MAX_OFF_GUIDE_FRACTION = 0.25f
+    private const val MAX_CONSECUTIVE_OFF_GUIDE_FRACTION = 0.12f
     private const val MAX_BACKTRACK_FRACTION = 0.20f
     private const val CORNER_PROGRESS = 0.72f
     private const val FINISH_PROGRESS = 1.78f
@@ -57,7 +59,9 @@ internal object GieokTraceEvaluator {
             }
         }
 
-        val projections = points.map { point ->
+        val corridorTolerance = shortestSide * CORRIDOR_TOLERANCE_FRACTION
+        val sampledPoints = sampleSegments(points, corridorTolerance / 2f)
+        val projections = sampledPoints.map { point ->
             projectOntoGuide(point, start, corner, end, horizontalLength, verticalLength)
         }
         val backtrack = projections.zipWithNext().sumOf { (first, second) ->
@@ -67,10 +71,25 @@ internal object GieokTraceEvaluator {
             return GieokTraceResult.WRONG_DIRECTION
         }
 
-        val corridorTolerance = shortestSide * CORRIDOR_TOLERANCE_FRACTION
         val offGuideFraction = projections.count { it.distance > corridorTolerance }.toFloat() /
             projections.size
         if (offGuideFraction > MAX_OFF_GUIDE_FRACTION) {
+            return GieokTraceResult.OFF_GUIDE
+        }
+        val maximumConsecutiveOffGuideDistance = projections.zipWithNext()
+            .fold(0f to 0f) { (currentDistance, maximumDistance), (first, second) ->
+                val nextDistance = if (
+                    first.distance > corridorTolerance && second.distance > corridorTolerance
+                ) {
+                    currentDistance + first.point.distanceTo(second.point)
+                } else {
+                    0f
+                }
+                nextDistance to maxOf(maximumDistance, nextDistance)
+            }.second
+        if (maximumConsecutiveOffGuideDistance >
+            shortestSide * MAX_CONSECUTIVE_OFF_GUIDE_FRACTION
+        ) {
             return GieokTraceResult.OFF_GUIDE
         }
 
@@ -86,6 +105,26 @@ internal object GieokTraceEvaluator {
             GieokTraceResult.SUCCESS
         } else {
             GieokTraceResult.INCOMPLETE
+        }
+    }
+
+    private fun sampleSegments(points: List<CanvasPoint>, maximumSpacing: Float): List<CanvasPoint> {
+        if (points.size < 2) return points
+
+        return buildList {
+            add(points.first())
+            points.zipWithNext().forEach { (start, end) ->
+                val steps = ceil(start.distanceTo(end) / maximumSpacing).toInt().coerceAtLeast(1)
+                for (step in 1..steps) {
+                    val ratio = step.toFloat() / steps
+                    add(
+                        CanvasPoint(
+                            x = start.x + ((end.x - start.x) * ratio),
+                            y = start.y + ((end.y - start.y) * ratio),
+                        ),
+                    )
+                }
+            }
         }
     }
 
@@ -112,11 +151,13 @@ internal object GieokTraceEvaluator {
 
         return if (horizontalDistance <= verticalDistance) {
             GuideProjection(
+                point = point,
                 progress = horizontalLength * horizontalRatio,
                 distance = horizontalDistance,
             )
         } else {
             GuideProjection(
+                point = point,
                 progress = horizontalLength + (verticalLength * verticalRatio),
                 distance = verticalDistance,
             )
@@ -125,6 +166,7 @@ internal object GieokTraceEvaluator {
 }
 
 private data class GuideProjection(
+    val point: CanvasPoint,
     val progress: Float,
     val distance: Float,
 )
