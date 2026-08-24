@@ -37,6 +37,7 @@ $Queue = Get-Content .loop/queue.md -Raw
 $State = Get-Content .loop/state.md -Raw
 $WorkerPrompt = Get-Content .loop/cli-worker-prompt.md -Raw
 $Runner = Get-Content scripts/run-cli-loop.sh -Raw
+$Starter = Get-Content scripts/start-cli-loop.sh -Raw
 
 if ($Automation -notmatch '(?m)^Stage: `CLI`$') { Stop-AutomationCheck "Codex App handoff does not select CLI" }
 if ($CliAutomation -notmatch '(?m)^Stage: `CLI`$') { Stop-AutomationCheck "CLI stage is not selected" }
@@ -48,6 +49,7 @@ if ($WorkerPrompt -notmatch 'Never invoke `codex exec`') { Stop-AutomationCheck 
 if ($Runner -notmatch '--ephemeral') { Stop-AutomationCheck "ephemeral CLI flag missing" }
 if ($Runner -notmatch '--sandbox workspace-write') { Stop-AutomationCheck "workspace sandbox flag missing" }
 if ($Runner -notmatch 'env -u CODEX_SESSION_ID') { Stop-AutomationCheck "fresh-session environment isolation missing" }
+if ($Starter -notmatch 'launchctl submit') { Stop-AutomationCheck "detached macOS launch service missing" }
 if ($Agents -notmatch '2340 × 1080') { Stop-AutomationCheck "reference viewport missing from AGENTS.md" }
 if ($Goal -notmatch '2340 × 1080') { Stop-AutomationCheck "reference viewport missing from LOOP_GOAL.md" }
 if ($QaChecklist -notmatch '1170 px') { Stop-AutomationCheck "minimum writing width missing from QA_CHECKLIST.md" }

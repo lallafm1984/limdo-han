@@ -4,7 +4,7 @@
 
 Stage: `CLI`
 
-`scripts/run-cli-loop.sh` is the only session supervisor. Each worker is a brand-new, ephemeral `codex exec` session; no session is resumed or forked.
+`scripts/run-cli-loop.sh` is the only session supervisor. `scripts/start-cli-loop.sh` submits it to the current macOS launchd user domain so it survives the terminal or Codex App command that started it. Each worker is a brand-new, ephemeral `codex exec` session; no session is resumed or forked.
 
 ## Durable Objective
 
@@ -44,9 +44,9 @@ The worker marks the loop `BLOCKED` and exits when any `AGENTS.md` stop conditio
 ## Operator Commands
 
 ```bash
-./scripts/run-cli-loop.sh
+./scripts/start-cli-loop.sh
 ./scripts/cli-loop-status.sh
 ./scripts/stop-cli-loop.sh
 ```
 
-Use `./scripts/run-cli-loop.sh --once` only to execute one fresh worker session. Runtime logs, lock files, and stop signals are intentionally ignored by Git.
+Use `./scripts/run-cli-loop.sh` for a foreground supervisor or `./scripts/run-cli-loop.sh --once` for one fresh worker session. Runtime logs, lock files, and stop signals are intentionally ignored by Git.

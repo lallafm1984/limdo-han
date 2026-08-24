@@ -804,3 +804,9 @@ Moved execution stage to `CLI`, authorized Loop 005 as `ACTIVE`, and set the nex
 - Shell syntax and automation contract: passed.
 - `./scripts/verify.sh`: passed 17 unit tests, Android lint, and debug assembly.
 - Runtime files are ignored by Git; no remote state was changed.
+
+### Startup Hardening
+
+The first background launch proved that a plain `nohup` child is terminated when the Codex App command host closes. Two ephemeral sessions reached `thread.started` but were terminated before a worker turn, so neither changed durable loop state and neither counts as a Loop 005 iteration.
+
+Changed only the launcher to submit the supervisor to the current macOS launchd user domain. The repository lock remains authoritative for duplicate prevention, and the stop signal remains graceful after the current worker session.
