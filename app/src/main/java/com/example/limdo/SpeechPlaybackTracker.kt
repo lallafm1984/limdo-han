@@ -60,7 +60,7 @@ internal class SpeechPlaybackTracker {
     }
 
     fun stop() {
-        if (state is SpeechPlaybackState.Playing) {
+        if (state is SpeechPlaybackState.Playing || state is SpeechPlaybackState.Completed) {
             activeRequestId = null
             state = SpeechPlaybackState.Ready
         }

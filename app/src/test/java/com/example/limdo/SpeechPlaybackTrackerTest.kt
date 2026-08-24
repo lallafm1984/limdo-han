@@ -93,4 +93,16 @@ class SpeechPlaybackTrackerTest {
         tracker.completed(request)
         assertEquals(SpeechPlaybackState.Ready, tracker.state)
     }
+
+    @Test
+    fun stopReturnsCompletedPlaybackToReady() {
+        val tracker = SpeechPlaybackTracker()
+        tracker.ready()
+        val request = tracker.start(SpokenCue.SUCCESS)!!
+        tracker.completed(request)
+
+        tracker.stop()
+
+        assertEquals(SpeechPlaybackState.Ready, tracker.state)
+    }
 }
