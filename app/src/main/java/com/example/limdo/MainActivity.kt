@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
             LimDoApp(
                 speechState = speechState,
                 speak = localSpeech::speakLatest,
+                stopSpeech = localSpeech::stop,
             )
         }
     }
@@ -83,13 +84,14 @@ private val LimDoColorScheme = lightColorScheme(
 private fun LimDoApp(
     speechState: SpeechPlaybackState,
     speak: (SpokenCue) -> Boolean,
+    stopSpeech: () -> Unit,
 ) {
     MaterialTheme(colorScheme = LimDoColorScheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            LearningShell(speechState = speechState, speak = speak)
+            LearningShell(speechState = speechState, speak = speak, stopSpeech = stopSpeech)
         }
     }
 }
@@ -98,6 +100,7 @@ private fun LimDoApp(
 private fun LearningShell(
     speechState: SpeechPlaybackState,
     speak: (SpokenCue) -> Boolean,
+    stopSpeech: () -> Unit,
 ) {
     var clearRequest by remember { mutableIntStateOf(0) }
     var traceResult by remember { mutableStateOf<GieokTraceResult?>(null) }
@@ -170,6 +173,7 @@ private fun LearningShell(
             speechAvailable = speechState.canReplay,
             onReplay = { speak(currentCue) },
             onClear = {
+                stopSpeech()
                 clearRequest += 1
                 traceResult = null
             },

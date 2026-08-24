@@ -59,6 +59,13 @@ internal class SpeechPlaybackTracker {
         }
     }
 
+    fun stop() {
+        if (state is SpeechPlaybackState.Playing) {
+            activeRequestId = null
+            state = SpeechPlaybackState.Ready
+        }
+    }
+
     fun release() {
         activeRequestId = null
         state = SpeechPlaybackState.Released

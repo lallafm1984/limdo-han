@@ -80,6 +80,11 @@ internal class LocalKoreanSpeech(
         return result != TextToSpeech.ERROR
     }
 
+    fun stop() {
+        engine?.stop()
+        update { stop() }
+    }
+
     fun release() {
         engine?.stop()
         engine?.shutdown()

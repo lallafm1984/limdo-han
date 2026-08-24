@@ -80,4 +80,17 @@ class SpeechPlaybackTrackerTest {
 
         assertEquals(SpeechPlaybackState.Error(SpokenCue.RETRY_GUIDE), tracker.state)
     }
+
+    @Test
+    fun stopCancelsCurrentPlaybackAndIgnoresItsLateCompletion() {
+        val tracker = SpeechPlaybackTracker()
+        tracker.ready()
+        val request = tracker.start(SpokenCue.SUCCESS)!!
+
+        tracker.stop()
+
+        assertEquals(SpeechPlaybackState.Ready, tracker.state)
+        tracker.completed(request)
+        assertEquals(SpeechPlaybackState.Ready, tracker.state)
+    }
 }
