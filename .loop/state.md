@@ -1,37 +1,29 @@
 # Current Loop State
 
-Loop: 001 — Landscape Application Shell
+Loop: 002 — Non-interactive Writing Canvas
 
-Status: COMPLETE
+Status: READY
 
-Iteration: 4
+Iteration: 0
 
-Last Verification: Loop 001 iteration 4 passed `./scripts/verify.sh` and confirmed APK install, cold launch, focus, rotation, and an exact 2340 × 1080 screenshot on 2026-08-24.
+Last Verification: The Codex App automation contract and full `./scripts/verify.sh` suite passed on 2026-08-24. The latest emulator application evidence remains Loop 001 iteration 4; Loop 002 application work has not started.
 
 Current Failure: None.
 
-Non-blocking Notes: Lint reports four available version updates and the expected Android 16 fixed-orientation warning. No lint error is present.
+Non-blocking Notes: Codex App Goal mode and prevent-sleep are enabled. PowerShell is not installed on this Mac, so the Windows parity check is present but was not executed locally.
 
-Current Hypothesis: Confirmed. The responsive shell preserves its layout at the 2340 × 1080 reference resolution.
+Current Hypothesis: A normalized two-segment `ㄱ` geometry model can drive a size-responsive non-interactive Compose Canvas without adding dependencies or input behavior.
 
-Next Action: Define Loop 002 for an isolated, non-interactive Writing Canvas prototype.
+Next Action: Inspect the current writing-board implementation and begin Loop 002 iteration 1 under the active Codex App Goal.
 
 Completed Criteria:
 
-- Loop 000 baseline committed and pushed
-- Main activity locked to landscape
-- Header, learning area, and action shelf implemented
-- Guide-character and 70% writing-board regions implemented
-- Placeholder copy clearly marks unavailable behavior
-- 56dp minimum action placeholders implemented
-- Launcher icon declared
-- Unit tests passed
-- Android lint passed
-- Debug APK built
-- Emulator install, cold launch, landscape orientation, focus, and screenshot verified
-- Reference emulator permanently configured for 1080 × 2340 device resolution
-- Exact 2340 × 1080 landscape screenshot inspected without clipping or overlap
+- Loop 001 landscape shell completed and emulator-verified
+- Loop 002 objective, boundaries, verification, and review gate defined
+- Codex App execution stage selected
+- Automation contract check passed
+- Unit tests, Android lint, and debug assembly passed after automation setup
 
 Remaining Criteria:
 
-- None
+- All Loop 002 success criteria 1–10

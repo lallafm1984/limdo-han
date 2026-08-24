@@ -34,6 +34,18 @@ For every iteration:
 11. Update `.loop/state.md`.
 12. Continue until the loop succeeds or a stop condition is met.
 
+## Codex App Automation
+
+During the initial development stage, automation runs in Codex App Goal mode. Read `APP_AUTOMATION.md` and `.loop/queue.md` before starting or resuming work.
+
+- Work only on the single active loop named in `.loop/queue.md`.
+- Resume from `.loop/state.md`; never restart a partially completed loop from memory.
+- Keep `.loop/history.md` append-only and record every fresh verification result.
+- When a loop completes, update the queue and state, create one local checkpoint commit, and stop at the declared review gate.
+- Do not start a nested Codex CLI process while the execution stage is `CODEX_APP`.
+- Do not push, publish, deploy, send external messages, or change remote state without explicit user authorization.
+- Do not invent a next loop when the queue has no `READY` item.
+
 ## Verification Rules
 
 Never claim completion from code inspection alone. Android changes normally require fresh unit-test, lint, and debug-build results through `./scripts/verify.sh` on macOS/Linux or `scripts/verify.ps1` on Windows.
@@ -58,7 +70,9 @@ Stop and report when:
 - 15 iterations have been reached;
 - a destructive operation is required;
 - a major architectural choice cannot be inferred from the goal; or
-- required Android tooling is unavailable.
+- required Android tooling is unavailable;
+- the active queue reaches its human-review gate; or
+- continuation would require remote mutation or permission beyond local development.
 
 ## Completion Report
 

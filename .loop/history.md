@@ -209,3 +209,33 @@ No blocking issue remains.
 ### Next Action
 
 Use 2340 × 1080 landscape for subsequent visual loops, beginning with Loop 002.
+
+## Codex App Automation Bootstrap — 2026-08-24
+
+### Objective
+
+Prepare the repository and current Codex task for unattended Goal-mode execution before any CLI automation is introduced.
+
+### Change
+
+- Selected `CODEX_APP` as the explicit execution stage.
+- Added a durable local-only automation contract and a single-active-loop queue.
+- Defined Loop 002 as a bounded non-interactive Writing Canvas goal with a human-review gate.
+- Added cross-platform automation-contract checks and connected them to the normal verification scripts.
+- Reset the durable loop state to Loop 002 iteration 0 so an interrupted Goal can resume deterministically.
+
+### Verification
+
+- `bash -n scripts/check-automation.sh`: passed
+- `./scripts/check-automation.sh`: passed with `CODEX_APP`, Loop 002, `READY`, iteration 0, and active Loop 002 aligned
+- `./scripts/verify.sh`: passed automation contract, unit tests, Android lint, and debug assembly
+- `git diff --check`: passed
+- Windows automation check: not run because PowerShell is not installed on this Mac
+
+### Result
+
+PASSED. The repository has a deterministic resume path, explicit local-only boundaries, a bounded next loop, and a human-review stopping condition.
+
+### Next Action
+
+Create a local setup checkpoint and activate the Codex App Goal for verified completion of Loop 002.
