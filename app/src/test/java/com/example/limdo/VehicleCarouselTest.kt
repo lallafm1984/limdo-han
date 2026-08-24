@@ -16,25 +16,32 @@ class VehicleCarouselTest {
     }
 
     @Test
-    fun oneSuccessAdvancesOnceAndDuplicateSuccessDoesNotSkip() {
-        val advanced = VehicleCarouselState().onTraceResult(GieokTraceResult.SUCCESS)
-        val duplicate = advanced.onTraceResult(GieokTraceResult.SUCCESS)
+    fun successKeepsActiveVehicleUntilCompletedMovePreparesNextInput() {
+        val pending = VehicleCarouselState().onTraceResult(GieokTraceResult.SUCCESS)
+        val duplicate = pending.onTraceResult(GieokTraceResult.SUCCESS)
+        val advanced = duplicate.prepareNextInput(moveCompleted = true)
 
+        assertEquals("경찰차", pending.current.koreanName)
         assertEquals("소방차", advanced.current.koreanName)
-        assertEquals(advanced, duplicate)
-        assertFalse(advanced.successArmed)
+        assertEquals(pending, duplicate)
+        assertFalse(pending.successArmed)
+        assertTrue(pending.nextVehiclePending)
+        assertTrue(advanced.successArmed)
+        assertFalse(advanced.nextVehiclePending)
     }
 
     @Test
-    fun retryClearAndReplayDoNotAdvanceAndAllowTheNextSuccess() {
+    fun failureReplayAndClearBeforeMoveCompletionDoNotAdvance() {
         val afterSuccess = VehicleCarouselState().onTraceResult(GieokTraceResult.SUCCESS)
         val afterRetry = afterSuccess.onTraceResult(GieokTraceResult.OFF_GUIDE)
-        val afterClear = afterRetry.onTraceResult(null)
+        val afterReplay = afterRetry.onTraceResult(null)
+        val earlyClear = afterReplay.prepareNextInput(moveCompleted = false)
 
-        assertEquals("소방차", afterRetry.current.koreanName)
-        assertEquals("소방차", afterClear.current.koreanName)
-        assertTrue(afterClear.successArmed)
-        assertEquals("구급차", afterClear.onTraceResult(GieokTraceResult.SUCCESS).current.koreanName)
+        assertEquals("경찰차", afterRetry.current.koreanName)
+        assertEquals(afterRetry, afterReplay)
+        assertEquals("경찰차", earlyClear.current.koreanName)
+        assertTrue(earlyClear.successArmed)
+        assertFalse(earlyClear.nextVehiclePending)
     }
 
     @Test
@@ -42,7 +49,7 @@ class VehicleCarouselTest {
         var state = VehicleCarouselState()
         repeat(9) {
             state = state.onTraceResult(GieokTraceResult.SUCCESS)
-            state = state.onTraceResult(null)
+            state = state.prepareNextInput(moveCompleted = true)
         }
 
         assertEquals("경찰차", state.current.koreanName)

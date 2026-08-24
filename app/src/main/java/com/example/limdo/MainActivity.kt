@@ -109,6 +109,7 @@ private fun LearningShell(
     var traceResult by remember { mutableStateOf<GieokTraceResult?>(null) }
     var vehicleIndex by rememberSaveable { mutableIntStateOf(0) }
     var vehicleSuccessArmed by rememberSaveable { mutableStateOf(true) }
+    var nextVehiclePending by rememberSaveable { mutableStateOf(false) }
     var rewardState by remember { mutableStateOf(LessonRewardState()) }
     val rewardOffset = remember { Animatable(0f) }
     var initialSpeechRequested by rememberSaveable { mutableStateOf(false) }
@@ -124,6 +125,8 @@ private fun LearningShell(
                 animationSpec = tween(durationMillis = 650),
             )
             rewardState = rewardState.complete()
+        } else if (rewardState.targetSteps == 0) {
+            rewardOffset.snapTo(0f)
         }
     }
 
@@ -155,9 +158,11 @@ private fun LearningShell(
                 val vehicleState = VehicleCarouselState(
                     index = vehicleIndex,
                     successArmed = vehicleSuccessArmed,
+                    nextVehiclePending = nextVehiclePending,
                 ).onTraceResult(result)
                 vehicleIndex = vehicleState.index
                 vehicleSuccessArmed = vehicleState.successArmed
+                nextVehiclePending = vehicleState.nextVehiclePending
                 traceResult = result
                 rewardState = rewardState.onTraceResult(result, GieokLesson)
                 if (result != null) speak(SpokenCueModel.forResult(result))
@@ -203,8 +208,15 @@ private fun LearningShell(
             onClear = {
                 stopSpeech()
                 clearRequest += 1
-                vehicleSuccessArmed = true
-                rewardState = rewardState.onTraceResult(null, GieokLesson)
+                val vehicleState = VehicleCarouselState(
+                    index = vehicleIndex,
+                    successArmed = vehicleSuccessArmed,
+                    nextVehiclePending = nextVehiclePending,
+                ).prepareNextInput(moveCompleted = rewardState.phase == RewardMovePhase.COMPLETE)
+                vehicleIndex = vehicleState.index
+                vehicleSuccessArmed = vehicleState.successArmed
+                nextVehiclePending = vehicleState.nextVehiclePending
+                rewardState = LessonRewardState()
                 traceResult = null
             },
             modifier = Modifier

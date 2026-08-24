@@ -10,18 +10,28 @@ internal data class VehicleSpec(
 internal data class VehicleCarouselState(
     val index: Int = 0,
     val successArmed: Boolean = true,
+    val nextVehiclePending: Boolean = false,
 ) {
     val current: VehicleSpec
         get() = VehicleCarousel.vehicles[index]
 
     fun onTraceResult(result: GieokTraceResult?): VehicleCarouselState = when {
         result == GieokTraceResult.SUCCESS && successArmed -> copy(
-            index = (index + 1) % VehicleCarousel.vehicles.size,
             successArmed = false,
+            nextVehiclePending = true,
         )
-        result == GieokTraceResult.SUCCESS -> this
-        else -> copy(successArmed = true)
+        else -> this
     }
+
+    fun prepareNextInput(moveCompleted: Boolean): VehicleCarouselState = copy(
+        index = if (nextVehiclePending && moveCompleted) {
+            (index + 1) % VehicleCarousel.vehicles.size
+        } else {
+            index
+        },
+        successArmed = true,
+        nextVehiclePending = false,
+    )
 }
 
 internal object VehicleCarousel {
