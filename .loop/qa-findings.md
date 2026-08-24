@@ -787,3 +787,21 @@
 - 제안 탐색: 성공 `MOVING`과 `COMPLETE` 상태를 각각 저장한 뒤 프로세스 종료·복원을 확정하는 PID·saved-state 근거와 함께 차량 종류·offset·음성·지우기 전환을 좁게 검증하고, 실제 실패가 확인될 때만 최소 보정한다.
 - 연결 루프: 058
 - 실제 아이 관찰: 실행 안 함
+
+## QA-054 결과 — 성공 보상 중 프로세스 복원 확인
+
+- 상태: 루프 058에서 해결
+- 근거: `captures/loop058/iteration1/`, `iteration2/`, `iteration4/moving-process-input-lock-valid/`에서 `MOVING`·`COMPLETE` 저장 Bundle, PID 교체, 같은 경찰차, 126 px 단일 이동, `MOVING` 입력 잠금, `COMPLETE` 후 지우기의 단일 소방차 전환을 확인했다.
+- 적용 수정: 제품 실패가 없어 코드를 바꾸지 않았다.
+- 실제 아이 관찰: 실행 안 함
+
+## QA-055 — `COMPLETE` 복원 후 지우기 전 재입력이 보상을 추가 이동함
+
+- 상태: 루프 059에서 작업 예정
+- 우선순위: 높음
+- 발견일: 2026-08-25
+- 근거: `captures/loop058/iteration4/moving-process-input-lock/02-restored-moving-before-input.xml`은 경찰차 `[225,62][561,288]` `COMPLETE`를 보여 준다. 지우기 전 정상 횟 주입 후 `04-restored-settled.xml`에서 같은 경찰차가 `[351,62][687,288]`로 추가 126 px 이동했고 `process-and-callback.txt`에는 새 PID의 `SUCCESS` 재생이 두 번 남았다.
+- 아이 영향: 정답 한 번과 보상 한 칸의 인과관계가 깨져 다음 시도를 예측하기 어렵다.
+- 제안 수정: 1배와 지연 이동에서 독립 재현해 저장 offset 중복 합산인지 새 성공 소비인지 구분하고, 실패를 확정하면 지우기 전까지 포인터를 잠그거나 offset을 한 번만 적용하는 최소 보정을 한다.
+- 연결 루프: 059
+- 실제 아이 관찰: 실행 안 함
