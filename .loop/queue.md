@@ -2,7 +2,7 @@
 
 실행 단계: CLI
 
-활성 루프: 052
+활성 루프: 053
 
 검토 관문: AUTO_CHILD_PROXY_QA
 
@@ -58,7 +58,8 @@
 | 049 | 완료 | `QA-045` | 최신 사용자 지시로 050 생성 |
 | 050 | 완료 | `.loop/user-directives.md` | `QA-047`로 051 생성 |
 | 051 | 완료 | `QA-047`, `.loop/user-directives.md` | `QA-048`로 052 생성 |
-| 052 | 준비 | `QA-048`, `.loop/user-directives.md` | 완료 뒤 `AUTO_CHILD_PROXY_QA` |
+| 052 | 완료 | `QA-048`, `.loop/user-directives.md` | `QA-049`로 053 생성 |
+| 053 | 활성 | `QA-049`, `.loop/user-directives.md` | 완료 뒤 `AUTO_CHILD_PROXY_QA` |
 
 큐 규칙:
 

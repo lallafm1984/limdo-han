@@ -74,6 +74,21 @@ internal fun WritingCanvas(
     } else {
         null
     }
+    val inputGuideMotion = if (attempt.stroke.points.isNotEmpty() && attempt.result == null) {
+        val transition = rememberInfiniteTransition(label = "입력 중 다음 방향")
+        val progress by transition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = keyframes { durationMillis = 650 },
+                repeatMode = RepeatMode.Reverse,
+            ),
+            label = "손가락 앞 짧은 움직임",
+        )
+        progress
+    } else {
+        null
+    }
 
     LaunchedEffect(clearRequest) {
         attempt = attempt.clear()
@@ -190,24 +205,20 @@ internal fun WritingCanvas(
         }
         val arrowLength = min(size.width, size.height) * 0.10f
         val arrowStroke = pathStroke * 0.18f
-        drawDirectionArrow(
-            center = Offset(
-                x = (points[0].x + points[1].x) / 2f,
-                y = points[0].y,
-            ),
-            direction = Offset(1f, 0f),
-            length = arrowLength,
-            strokeWidth = arrowStroke,
-        )
-        drawDirectionArrow(
-            center = Offset(
-                x = points[1].x,
-                y = (points[1].y + points[2].y) / 2f,
-            ),
-            direction = Offset(0f, 1f),
-            length = arrowLength,
-            strokeWidth = arrowStroke,
-        )
+        if (attempt.stroke.points.isEmpty()) {
+            drawDirectionArrow(
+                center = Offset((points[0].x + points[1].x) / 2f, points[0].y),
+                direction = Offset(1f, 0f),
+                length = arrowLength,
+                strokeWidth = arrowStroke,
+            )
+            drawDirectionArrow(
+                center = Offset(points[1].x, (points[1].y + points[2].y) / 2f),
+                direction = Offset(0f, 1f),
+                length = arrowLength,
+                strokeWidth = arrowStroke,
+            )
+        }
         drawCircle(
             color = StartMarker,
             radius = pathStroke * 0.62f,
@@ -246,6 +257,21 @@ internal fun WritingCanvas(
                 radius = pathStroke * 0.20f,
                 center = Offset(marker.x, marker.y),
                 style = Stroke(width = pathStroke * 0.08f),
+            )
+        }
+
+        inputGuideMotion?.let { motion ->
+            val guide = WritingCanvasGeometry.gieokInputDirectionGuide(
+                width = size.width,
+                height = size.height,
+                input = attempt.stroke.points.last(),
+                motionProgress = motion,
+            )
+            drawDirectionArrow(
+                center = Offset(guide.center.x, guide.center.y),
+                direction = Offset(guide.direction.x, guide.direction.y),
+                length = arrowLength * 0.58f,
+                strokeWidth = arrowStroke,
             )
         }
 

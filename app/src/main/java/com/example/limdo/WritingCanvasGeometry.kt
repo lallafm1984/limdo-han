@@ -23,6 +23,11 @@ internal data class LearningBoardBounds(
     val height: Float get() = bottom - top
 }
 
+internal data class InputDirectionGuide(
+    val center: CanvasPoint,
+    val direction: CanvasPoint,
+)
+
 internal object WritingCanvasGeometry {
     private const val EM_CANVAS_FRACTION = 0.80f
     private const val GUIDE_STROKE_EM_FRACTION = 0.20f
@@ -63,6 +68,32 @@ internal object WritingCanvasGeometry {
         return CanvasPoint(
             x = start.x + ((end.x - start.x) * fraction),
             y = start.y + ((end.y - start.y) * fraction),
+        )
+    }
+
+    fun gieokInputDirectionGuide(
+        width: Float,
+        height: Float,
+        input: CanvasPoint,
+        motionProgress: Float,
+    ): InputDirectionGuide {
+        require(motionProgress in 0f..1f) { "motionProgress must be between 0 and 1" }
+        val points = gieokPoints(width, height)
+        val horizontalProgress = ((input.x - points[0].x) / (points[1].x - points[0].x))
+            .coerceIn(0f, 1f)
+        val verticalProgress = ((input.y - points[1].y) / (points[2].y - points[1].y))
+            .coerceIn(0f, 1f)
+        val horizontalDistance = kotlin.math.abs(input.y - points[0].y)
+        val verticalDistance = kotlin.math.abs(input.x - points[1].x)
+        val inputProgress = if (horizontalDistance <= verticalDistance) {
+            horizontalProgress * 0.5f
+        } else {
+            0.5f + (verticalProgress * 0.5f)
+        }
+        val guideProgress = (inputProgress + 0.06f + (motionProgress * 0.06f)).coerceAtMost(1f)
+        return InputDirectionGuide(
+            center = gieokDemonstrationPoint(width, height, guideProgress),
+            direction = if (guideProgress < 0.5f) CanvasPoint(1f, 0f) else CanvasPoint(0f, 1f),
         )
     }
 

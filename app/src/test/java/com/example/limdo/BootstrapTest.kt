@@ -82,6 +82,35 @@ class BootstrapTest {
     }
 
     @Test
+    fun inputDirectionGuideStaysAheadAndSwitchesAtCorner() {
+        val points = WritingCanvasGeometry.gieokPoints(width = 1_962f, height = 775f)
+        val horizontal = WritingCanvasGeometry.gieokInputDirectionGuide(
+            width = 1_962f,
+            height = 775f,
+            input = CanvasPoint((points[0].x + points[1].x) / 2f, points[0].y),
+            motionProgress = 0f,
+        )
+        val horizontalMoved = WritingCanvasGeometry.gieokInputDirectionGuide(
+            width = 1_962f,
+            height = 775f,
+            input = CanvasPoint((points[0].x + points[1].x) / 2f, points[0].y),
+            motionProgress = 1f,
+        )
+        assertTrue(horizontal.center.x > (points[0].x + points[1].x) / 2f)
+        assertTrue(horizontalMoved.center.x > horizontal.center.x)
+        assertEquals(CanvasPoint(1f, 0f), horizontal.direction)
+
+        val vertical = WritingCanvasGeometry.gieokInputDirectionGuide(
+            width = 1_962f,
+            height = 775f,
+            input = CanvasPoint(points[1].x, (points[1].y + points[2].y) / 2f),
+            motionProgress = 0f,
+        )
+        assertTrue(vertical.center.y > (points[1].y + points[2].y) / 2f)
+        assertEquals(CanvasPoint(0f, 1f), vertical.direction)
+    }
+
+    @Test
     fun childStrokeUsesSixtyPercentOfGuideWidth() {
         val glyph = WritingCanvasGeometry.gieok(width = 1_962f, height = 775f)
         val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(width = 1_962f, height = 775f)
