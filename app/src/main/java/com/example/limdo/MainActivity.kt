@@ -104,8 +104,11 @@ private fun LearningShell(
 ) {
     var clearRequest by remember { mutableIntStateOf(0) }
     var traceResult by remember { mutableStateOf<GieokTraceResult?>(null) }
+    var vehicleIndex by rememberSaveable { mutableIntStateOf(0) }
+    var vehicleSuccessArmed by rememberSaveable { mutableStateOf(true) }
     var initialSpeechRequested by rememberSaveable { mutableStateOf(false) }
     val currentCue = SpokenCueModel.forResult(traceResult)
+    val currentVehicle = VehicleCarousel.vehicles[vehicleIndex]
 
     LaunchedEffect(speechState, initialSpeechRequested) {
         if (speechState == SpeechPlaybackState.Ready && !initialSpeechRequested) {
@@ -131,6 +134,12 @@ private fun LearningShell(
         WritingBoardPreview(
             clearRequest = clearRequest,
             onTraceResult = { result ->
+                val vehicleState = VehicleCarouselState(
+                    index = vehicleIndex,
+                    successArmed = vehicleSuccessArmed,
+                ).onTraceResult(result)
+                vehicleIndex = vehicleState.index
+                vehicleSuccessArmed = vehicleState.successArmed
                 traceResult = result
                 if (result != null) speak(SpokenCueModel.forResult(result))
             },
@@ -140,8 +149,8 @@ private fun LearningShell(
         )
 
         Image(
-            painter = painterResource(R.drawable.limdo_vehicle_police),
-            contentDescription = stringResource(R.string.guide_character),
+            painter = painterResource(currentVehicle.drawableRes),
+            contentDescription = "${currentVehicle.koreanName} 안내",
             modifier = Modifier
                 .align(Alignment.Center)
                 .offset(x = (-344).dp, y = (-139).dp)
@@ -175,6 +184,7 @@ private fun LearningShell(
             onClear = {
                 stopSpeech()
                 clearRequest += 1
+                vehicleSuccessArmed = true
                 traceResult = null
             },
             modifier = Modifier
