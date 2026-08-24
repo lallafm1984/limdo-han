@@ -2,7 +2,7 @@
 
 실행 단계: CLI
 
-활성 루프: 009
+활성 루프: 010
 
 검토 관문: AUTO_CHILD_PROXY_QA
 
@@ -15,7 +15,8 @@
 | 006 | 완료 | `.loop/user-directives.md`, `QA-001`, `QA-002` | `QA-004`로 007 생성 |
 | 007 | 완료 | `QA-004` | `QA-005`로 008 생성 |
 | 008 | 완료 | `QA-005` | 최신 사용자 지시와 `QA-006`으로 009 생성 |
-| 009 | 활성 | `.loop/user-directives.md`, `QA-006` | 완료 뒤 `AUTO_CHILD_PROXY_QA` |
+| 009 | 완료 | `.loop/user-directives.md`, `QA-006` | 미검증 부정확 입력 흐름으로 010 생성 |
+| 010 | 활성 | 루프 009 최종 아이 대리 QA | 완료 뒤 `AUTO_CHILD_PROXY_QA` |
 
 큐 규칙:
 

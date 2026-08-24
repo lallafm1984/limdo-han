@@ -129,8 +129,9 @@ internal fun WritingCanvas(
             pathEffect = dashEffect,
         )
 
-        val points = WritingCanvasGeometry.gieokPoints(size.width, size.height)
-        val pathStroke = min(size.width, size.height) * 0.065f
+        val glyph = WritingCanvasGeometry.gieok(size.width, size.height)
+        val points = glyph.strokes.single()
+        val pathStroke = glyph.strokeWidth
         points.zipWithNext().forEach { (start, end) ->
             drawLine(
                 color = GieokGuide,

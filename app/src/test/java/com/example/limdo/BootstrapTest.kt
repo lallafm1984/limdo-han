@@ -29,13 +29,34 @@ class BootstrapTest {
     }
 
     @Test
-    fun gieokGuideUsesWideCanvasAndMeetsChildWritingMinimums() {
-        val points = WritingCanvasGeometry.gieokPoints(width = 1_962f, height = 775f)
+    fun gieokGuideUsesSquareEmUniformScaleAndEducationalStrokeWidth() {
+        val glyph = WritingCanvasGeometry.gieok(width = 1_962f, height = 775f)
+        val points = glyph.strokes.single()
+        val horizontal = points[1].x - points[0].x
+        val vertical = points[2].y - points[1].y
 
-        assertTrue(points[1].x - points[0].x >= 1_170f)
-        assertTrue(points[2].y - points[1].y >= 540f)
-        assertEquals(1_491.12f, points[1].x - points[0].x, 0.01f)
-        assertEquals(620f, points[2].y - points[1].y, 0.01f)
+        assertEquals(620f, glyph.emSize, 0.01f)
+        assertEquals(582.8f, horizontal, 0.01f)
+        assertEquals(582.8f, vertical, 0.01f)
+        assertTrue(horizontal >= 580f && vertical >= 580f)
+        assertEquals(0.15f, glyph.strokeWidth / glyph.emSize, 0.001f)
+        assertEquals(horizontal / vertical, 1f, 0.001f)
+    }
+
+    @Test
+    fun gaFixturePreservesNormalizedJamoLayoutAtUniformScale() {
+        val first = WritingCanvasGeometry.gaFixture(width = 1_962f, height = 775f)
+        val second = WritingCanvasGeometry.gaFixture(width = 1_000f, height = 500f)
+
+        assertEquals(3, first.strokes.size)
+        first.strokes.zip(second.strokes).forEach { (largeStroke, smallStroke) ->
+            val largeDx = largeStroke.last().x - largeStroke.first().x
+            val largeDy = largeStroke.last().y - largeStroke.first().y
+            val smallDx = smallStroke.last().x - smallStroke.first().x
+            val smallDy = smallStroke.last().y - smallStroke.first().y
+            if (smallDx != 0f) assertEquals(1.55f, largeDx / smallDx, 0.001f)
+            if (smallDy != 0f) assertEquals(1.55f, largeDy / smallDy, 0.001f)
+        }
     }
 
     @Test(expected = IllegalArgumentException::class)
