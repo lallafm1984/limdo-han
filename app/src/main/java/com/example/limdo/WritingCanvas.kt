@@ -113,18 +113,19 @@ internal fun WritingCanvas(
         val dashEffect = PathEffect.dashPathEffect(
             intervals = floatArrayOf(guideStroke * 4f, guideStroke * 4f),
         )
+        val learningBoard = WritingCanvasGeometry.learningBoard(size.width, size.height)
 
         drawLine(
             color = PracticeGuide,
-            start = Offset(size.width / 2f, 0f),
-            end = Offset(size.width / 2f, size.height),
+            start = Offset(size.width / 2f, learningBoard.top),
+            end = Offset(size.width / 2f, learningBoard.bottom),
             strokeWidth = guideStroke,
             pathEffect = dashEffect,
         )
         drawLine(
             color = PracticeGuide,
-            start = Offset(0f, size.height / 2f),
-            end = Offset(size.width, size.height / 2f),
+            start = Offset(learningBoard.left, size.height / 2f),
+            end = Offset(learningBoard.right, size.height / 2f),
             strokeWidth = guideStroke,
             pathEffect = dashEffect,
         )

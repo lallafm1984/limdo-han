@@ -45,6 +45,18 @@ class BootstrapTest {
     }
 
     @Test
+    fun visibleLearningBoardUsesCenteredSquareEmBounds() {
+        val board = WritingCanvasGeometry.learningBoard(width = 1_962f, height = 775f)
+
+        assertEquals(620f, board.width, 0.01f)
+        assertEquals(620f, board.height, 0.01f)
+        assertEquals(671f, board.left, 0.01f)
+        assertEquals(77.5f, board.top, 0.01f)
+        assertEquals(671f, 1_962f - board.right, 0.01f)
+        assertEquals(77.5f, 775f - board.bottom, 0.01f)
+    }
+
+    @Test
     fun childStrokeUsesSixtyPercentOfGuideWidth() {
         val glyph = WritingCanvasGeometry.gieok(width = 1_962f, height = 775f)
         val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(width = 1_962f, height = 775f)

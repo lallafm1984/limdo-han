@@ -13,6 +13,16 @@ internal data class GlyphGeometry(
     val strokes: List<List<CanvasPoint>>,
 )
 
+internal data class LearningBoardBounds(
+    val left: Float,
+    val top: Float,
+    val right: Float,
+    val bottom: Float,
+) {
+    val width: Float get() = right - left
+    val height: Float get() = bottom - top
+}
+
 internal object WritingCanvasGeometry {
     private const val EM_CANVAS_FRACTION = 0.80f
     private const val GUIDE_STROKE_EM_FRACTION = 0.20f
@@ -46,6 +56,21 @@ internal object WritingCanvasGeometry {
     fun childStrokeWidth(width: Float, height: Float): Float =
         gieok(width, height).strokeWidth * CHILD_STROKE_GUIDE_FRACTION
 
+    fun learningBoard(width: Float, height: Float): LearningBoardBounds {
+        require(width > 0f) { "width must be positive" }
+        require(height > 0f) { "height must be positive" }
+
+        val emSize = min(width, height) * EM_CANVAS_FRACTION
+        val originX = (width - emSize) / 2f
+        val originY = (height - emSize) / 2f
+        return LearningBoardBounds(
+            left = originX,
+            top = originY,
+            right = originX + emSize,
+            bottom = originY + emSize,
+        )
+    }
+
     internal fun gaFixture(width: Float, height: Float): GlyphGeometry =
         transform(gaTemplate, width, height)
 
@@ -57,9 +82,10 @@ internal object WritingCanvasGeometry {
         require(width > 0f) { "width must be positive" }
         require(height > 0f) { "height must be positive" }
 
-        val emSize = min(width, height) * EM_CANVAS_FRACTION
-        val originX = (width - emSize) / 2f
-        val originY = (height - emSize) / 2f
+        val board = learningBoard(width, height)
+        val emSize = board.width
+        val originX = board.left
+        val originY = board.top
         return GlyphGeometry(
             emSize = emSize,
             strokeWidth = emSize * GUIDE_STROKE_EM_FRACTION,
