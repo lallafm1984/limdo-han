@@ -1,33 +1,27 @@
 # Current Loop State
 
-Loop: 004 — Guided ㄱ Tracing Lesson
+Loop: 005 — Local Spoken Guidance and Replay
 
-Status: COMPLETE
+Status: READY
 
-Iteration: 8
+Iteration: 0
 
-Last Verification: Loop 004 iteration 8 passed 17 unit tests, Android lint, debug assembly, fresh APK install, cold launch, exact 2340 × 1080 focus, valid success, invalid retry, success Clear restoration, UI-bound measurement, and non-reading child-proxy review on 2026-08-24.
+Last Verification: Fresh-session CLI isolation smoke test, shell syntax, automation contract, 17 unit tests, Android lint, and debug assembly passed on 2026-08-24; Loop 004 remains the most recent emulator-verified product checkpoint.
 
 Current Failure: None.
 
-Non-blocking Notes: `OBSERVED_CHILD: NOT RUN`; emulator and child-proxy evidence do not replace a supervised five-year-old test. Replay, audio, persistence, and lesson navigation remain out of scope.
+Non-blocking Notes: `OBSERVED_CHILD: NOT RUN`; technical playback callbacks never prove that a child heard or understood guidance.
 
-Current Hypothesis: Confirmed. Compact guide-card content restores the adult/accessibility copy while keeping the large reading-independent direction and result cues clear.
+Current Hypothesis: A lifecycle-safe, offline-capable Korean speech controller plus one large speaker-symbol Replay control can add listening support without shrinking or destabilizing the completed writing interaction.
 
-Next Action: Stop at `HUMAN_REVIEW_AFTER_LOOP_004`. A future explicitly authorized loop should add and verify local spoken guidance and replay for the listening-but-not-reading child profile.
+Next Action: Run the CLI automation contract, inspect installed offline Korean speech capability, and make exactly one smallest implementation change for the highest-priority unmet criterion.
 
 Completed Criteria:
 
-- Loops 001–003 complete
-- Large bounded one-finger writing surface complete
-- Clear and unavailable-action hierarchy complete
-- Loop 004 objective and thirteen measurable success criteria defined
-- Pure normalized `ㄱ` evaluator covers six named outcomes
-- Release-only feedback, stroke replacement, and Clear lifecycle pass 17 tests
-- Reading-independent start, direction, success, retry, and Clear cues implemented
-- Exact emulator valid, invalid, and cleared flows verified
-- Non-reading `CHILD_PROXY` passed
+- Loops 001–004 complete
+- Fresh-session CLI stage explicitly authorized
+- Loop 005 objective and thirteen measurable success criteria defined
 
 Remaining Criteria:
 
-- None
+- All Loop 005 success criteria

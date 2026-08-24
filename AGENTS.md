@@ -41,15 +41,16 @@ For every iteration:
 11. Update `.loop/state.md`.
 12. Continue until the loop succeeds or a stop condition is met.
 
-## Codex App Automation
+## Codex CLI Automation
 
-During the initial development stage, automation runs in Codex App Goal mode. Read `APP_AUTOMATION.md` and `.loop/queue.md` before starting or resuming work.
+The project is now in the fresh-session CLI stage. Read `CLI_AUTOMATION.md` and `.loop/queue.md` before starting or resuming work.
 
 - Work only on the single active loop named in `.loop/queue.md`.
 - Resume from `.loop/state.md`; never restart a partially completed loop from memory.
 - Keep `.loop/history.md` append-only and record every fresh verification result.
-- When a loop completes, update the queue and state, create one local checkpoint commit, and stop at the declared review gate.
-- Do not start a nested Codex CLI process while the execution stage is `CODEX_APP`.
+- A `codex exec` worker performs exactly one loop iteration and exits; only `scripts/run-cli-loop.sh` may start the next fresh session.
+- Never run `codex exec resume`, `codex exec fork`, or another nested Codex process from a worker.
+- When a loop completes, update the queue and state, create one local checkpoint commit, and stop at the declared review gate unless another explicitly defined queue item is already `READY`.
 - Do not push, publish, deploy, send external messages, or change remote state without explicit user authorization.
 - Do not invent a next loop when the queue has no `READY` item.
 

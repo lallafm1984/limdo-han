@@ -779,3 +779,28 @@ PASSED. All thirteen Loop 004 success criteria are satisfied within automated, e
 ### Queue Transition
 
 Marked Loop 004 `COMPLETE`, set `Active Loop: NONE`, and stopped at `HUMAN_REVIEW_AFTER_LOOP_004`.
+
+## CLI Stage Transition — Loop 005 Authorization
+
+### User Direction
+
+Move autonomous development from Codex App Goal mode to Codex CLI and continue through a brand-new session on every iteration.
+
+### Automation Decision
+
+- Selected a single repository-local supervisor that starts a new ephemeral `codex exec` worker for exactly one iteration at a time.
+- Explicitly prohibited resume, fork, nested Codex calls, remote mutation, destructive operations, and unqueued scope.
+- Added atomic duplicate-run protection, repository-local runtime evidence, a graceful stop signal, and a three-consecutive-process-failure stop.
+- Preserved durable continuity only through tracked goal, queue, state, and append-only history files.
+
+### Queue Transition
+
+Moved execution stage to `CLI`, authorized Loop 005 as `ACTIVE`, and set the next review gate to `HUMAN_REVIEW_AFTER_LOOP_005`.
+
+### Transition Verification
+
+- Local CLI: `codex-cli 0.149.0-alpha.4.1`, authenticated with ChatGPT.
+- Fresh isolated invocation: passed with ephemeral thread `01a03206-d5f5-7b83-b102-a321f4ef5a4c` and exit 0.
+- Shell syntax and automation contract: passed.
+- `./scripts/verify.sh`: passed 17 unit tests, Android lint, and debug assembly.
+- Runtime files are ignored by Git; no remote state was changed.
