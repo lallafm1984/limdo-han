@@ -1,6 +1,7 @@
 package com.example.limdo
 
 import kotlin.math.min
+import kotlin.math.sqrt
 
 internal data class CanvasPoint(
     val x: Float,
@@ -26,6 +27,13 @@ internal data class LearningBoardBounds(
 internal data class InputDirectionGuide(
     val center: CanvasPoint,
     val direction: CanvasPoint,
+)
+
+internal data class DemonstrationGuide(
+    val center: CanvasPoint,
+    val direction: CanvasPoint,
+    val strokeIndex: Int,
+    val segmentIndex: Int,
 )
 
 internal object WritingCanvasGeometry {
@@ -120,6 +128,42 @@ internal object WritingCanvasGeometry {
     fun visibleLessonGlyph(width: Float, height: Float): GlyphGeometry =
         ga(width, height)
 
+    fun gaDemonstrationGuide(width: Float, height: Float, progress: Float): DemonstrationGuide {
+        require(progress in 0f..1f) { "progress must be between 0 and 1" }
+        val segments = ga(width, height).strokes.flatMapIndexed { strokeIndex, stroke ->
+            stroke.zipWithNext().mapIndexed { segmentIndex, (start, end) ->
+                val deltaX = end.x - start.x
+                val deltaY = end.y - start.y
+                val length = sqrt((deltaX * deltaX) + (deltaY * deltaY))
+                DemonstrationSegment(strokeIndex, segmentIndex, start, end, deltaX, deltaY, length)
+            }
+        }
+        val targetDistance = segments.sumOf { it.length.toDouble() }.toFloat() * progress
+        var traversed = 0f
+        var segment = segments.last()
+        for (candidate in segments) {
+            if (targetDistance <= traversed + candidate.length) {
+                segment = candidate
+                break
+            }
+            traversed += candidate.length
+        }
+        val segmentProgress = if (segment.length == 0f) {
+            0f
+        } else {
+            ((targetDistance - traversed) / segment.length).coerceIn(0f, 1f)
+        }
+        return DemonstrationGuide(
+            center = CanvasPoint(
+                x = segment.start.x + (segment.deltaX * segmentProgress),
+                y = segment.start.y + (segment.deltaY * segmentProgress),
+            ),
+            direction = CanvasPoint(segment.deltaX / segment.length, segment.deltaY / segment.length),
+            strokeIndex = segment.strokeIndex,
+            segmentIndex = segment.segmentIndex,
+        )
+    }
+
     private fun transform(
         template: List<List<CanvasPoint>>,
         width: Float,
@@ -142,4 +186,14 @@ internal object WritingCanvasGeometry {
             },
         )
     }
+
+    private data class DemonstrationSegment(
+        val strokeIndex: Int,
+        val segmentIndex: Int,
+        val start: CanvasPoint,
+        val end: CanvasPoint,
+        val deltaX: Float,
+        val deltaY: Float,
+        val length: Float,
+    )
 }

@@ -85,7 +85,7 @@ internal fun WritingCanvas(
     val emptyStateDescription = "아직 그린 선이 없어요"
     val drawingStateDescription = "선을 그리고 있어요"
     val demonstrationProgress = if (attempt.stroke.points.isEmpty() && attempt.result == null) {
-        val transition = rememberInfiniteTransition(label = "기역 첫 획 시범")
+        val transition = rememberInfiniteTransition(label = "가 세 획 시범")
         val progress by transition.animateFloat(
             initialValue = 0f,
             targetValue = 1f,
@@ -209,7 +209,7 @@ internal fun WritingCanvas(
         )
 
         val glyph = WritingCanvasGeometry.visibleLessonGlyph(size.width, size.height)
-        val points = WritingCanvasGeometry.gieokPoints(size.width, size.height)
+        val points = glyph.strokes.flatten()
         val pathStroke = glyph.strokeWidth
         glyph.strokes.forEach { stroke ->
             stroke.zipWithNext().forEach { (start, end) ->
@@ -243,18 +243,19 @@ internal fun WritingCanvas(
         val arrowLength = min(size.width, size.height) * 0.10f
         val arrowStroke = pathStroke * 0.18f
         if (attempt.stroke.points.isEmpty()) {
-            drawDirectionArrow(
-                center = Offset((points[0].x + points[1].x) / 2f, points[0].y),
-                direction = Offset(1f, 0f),
-                length = arrowLength,
-                strokeWidth = arrowStroke,
-            )
-            drawDirectionArrow(
-                center = Offset(points[1].x, (points[1].y + points[2].y) / 2f),
-                direction = Offset(0f, 1f),
-                length = arrowLength,
-                strokeWidth = arrowStroke,
-            )
+            glyph.strokes.forEach { stroke ->
+                stroke.zipWithNext().forEach { (start, end) ->
+                    val deltaX = end.x - start.x
+                    val deltaY = end.y - start.y
+                    val length = kotlin.math.sqrt((deltaX * deltaX) + (deltaY * deltaY))
+                    drawDirectionArrow(
+                        center = Offset((start.x + end.x) / 2f, (start.y + end.y) / 2f),
+                        direction = Offset(deltaX / length, deltaY / length),
+                        length = arrowLength,
+                        strokeWidth = arrowStroke,
+                    )
+                }
+            }
         }
         drawCircle(
             color = StartMarker,
@@ -278,7 +279,7 @@ internal fun WritingCanvas(
         )
 
         demonstrationProgress?.let { progress ->
-            val marker = WritingCanvasGeometry.gieokDemonstrationPoint(
+            val marker = WritingCanvasGeometry.gaDemonstrationGuide(
                 width = size.width,
                 height = size.height,
                 progress = progress,
@@ -286,14 +287,20 @@ internal fun WritingCanvas(
             drawCircle(
                 color = GieokGuide,
                 radius = pathStroke * 0.27f,
-                center = Offset(marker.x, marker.y),
+                center = Offset(marker.center.x, marker.center.y),
                 style = Stroke(width = pathStroke * 0.12f),
             )
             drawCircle(
                 color = DemonstrationMarker,
                 radius = pathStroke * 0.20f,
-                center = Offset(marker.x, marker.y),
+                center = Offset(marker.center.x, marker.center.y),
                 style = Stroke(width = pathStroke * 0.08f),
+            )
+            drawDirectionArrow(
+                center = Offset(marker.center.x, marker.center.y),
+                direction = Offset(marker.direction.x, marker.direction.y),
+                length = arrowLength * 0.58f,
+                strokeWidth = arrowStroke,
             )
         }
 

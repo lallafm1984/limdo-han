@@ -159,6 +159,61 @@ class BootstrapTest {
     }
 
     @Test
+    fun gaDemonstrationTraversesEverySegmentInStrokeOrderWithDirection() {
+        val glyph = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
+        val segmentLengths = glyph.strokes.flatMap { stroke ->
+            stroke.zipWithNext().map { (start, end) ->
+                kotlin.math.hypot((end.x - start.x).toDouble(), (end.y - start.y).toDouble()).toFloat()
+            }
+        }
+        val totalLength = segmentLengths.sum()
+        val boundaries = segmentLengths.runningFold(0f) { distance, length -> distance + length }
+            .map { it / totalLength }
+
+        val start = WritingCanvasGeometry.gaDemonstrationGuide(1_962f, 775f, 0f)
+        assertEquals(glyph.strokes[0][0], start.center)
+        assertEquals(CanvasPoint(1f, 0f), start.direction)
+        assertEquals(0, start.strokeIndex)
+        assertEquals(0, start.segmentIndex)
+
+        val firstEnd = WritingCanvasGeometry.gaDemonstrationGuide(1_962f, 775f, boundaries[1])
+        assertEquals(glyph.strokes[0][1].x, firstEnd.center.x, 0.001f)
+        assertEquals(glyph.strokes[0][1].y, firstEnd.center.y, 0.001f)
+        assertEquals(CanvasPoint(1f, 0f), firstEnd.direction)
+
+        val gieokVertical = WritingCanvasGeometry.gaDemonstrationGuide(
+            1_962f,
+            775f,
+            (boundaries[1] + boundaries[2]) / 2f,
+        )
+        assertEquals(0, gieokVertical.strokeIndex)
+        assertEquals(1, gieokVertical.segmentIndex)
+        assertEquals(CanvasPoint(0f, 1f), gieokVertical.direction)
+
+        val aVertical = WritingCanvasGeometry.gaDemonstrationGuide(
+            1_962f,
+            775f,
+            (boundaries[2] + boundaries[3]) / 2f,
+        )
+        assertEquals(1, aVertical.strokeIndex)
+        assertEquals(0, aVertical.segmentIndex)
+        assertEquals(CanvasPoint(0f, 1f), aVertical.direction)
+
+        val aHorizontal = WritingCanvasGeometry.gaDemonstrationGuide(
+            1_962f,
+            775f,
+            (boundaries[3] + boundaries[4]) / 2f,
+        )
+        assertEquals(2, aHorizontal.strokeIndex)
+        assertEquals(0, aHorizontal.segmentIndex)
+        assertEquals(CanvasPoint(1f, 0f), aHorizontal.direction)
+
+        val end = WritingCanvasGeometry.gaDemonstrationGuide(1_962f, 775f, 1f)
+        assertEquals(glyph.strokes[2][1].x, end.center.x, 0.001f)
+        assertEquals(glyph.strokes[2][1].y, end.center.y, 0.001f)
+    }
+
+    @Test
     fun gaPreservesNormalizedJamoLayoutWithUniformScaleAcrossCanvasRatios() {
         val wide = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
         val tall = WritingCanvasGeometry.ga(width = 900f, height = 1_200f)
