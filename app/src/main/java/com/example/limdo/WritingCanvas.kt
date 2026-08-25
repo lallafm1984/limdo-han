@@ -329,6 +329,12 @@ internal fun WritingCanvas(
                 center = Offset(marker.center.x, marker.center.y),
                 direction = Offset(marker.direction.x, marker.direction.y),
                 length = arrowLength * 0.58f * marker.visualScale,
+                headLength = WritingCanvasGeometry.gaDirectionArrowHeadLength(
+                    width = size.width,
+                    height = size.height,
+                    strokeIndex = marker.strokeIndex,
+                    arrowLength = arrowLength * 0.58f * marker.visualScale,
+                ),
                 strokeWidth = arrowStroke * marker.visualScale,
             )
         }
@@ -347,6 +353,14 @@ internal fun WritingCanvas(
                 length = arrowLength * 0.58f * WritingCanvasGeometry.gaStrokeGuideScale(
                     attempt.completedStrokes.size,
                 ),
+                headLength = WritingCanvasGeometry.gaDirectionArrowHeadLength(
+                    width = size.width,
+                    height = size.height,
+                    strokeIndex = attempt.completedStrokes.size,
+                    arrowLength = arrowLength * 0.58f * WritingCanvasGeometry.gaStrokeGuideScale(
+                        attempt.completedStrokes.size,
+                    ),
+                ),
                 strokeWidth = arrowStroke * WritingCanvasGeometry.gaStrokeGuideScale(
                     attempt.completedStrokes.size,
                 ),
@@ -360,6 +374,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawDirectionArrow(
     center: Offset,
     direction: Offset,
     length: Float,
+    headLength: Float,
     strokeWidth: Float,
 ) {
     val halfLength = length / 2f
@@ -371,7 +386,6 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawDirectionArrow(
         x = center.x + (direction.x * halfLength),
         y = center.y + (direction.y * halfLength),
     )
-    val headLength = length * 0.30f
     val perpendicular = Offset(-direction.y, direction.x)
     val headBase = Offset(
         x = tip.x - (direction.x * headLength),

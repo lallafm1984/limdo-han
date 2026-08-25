@@ -267,6 +267,26 @@ internal object WritingCanvasGeometry {
         return (strokeLength / 0.44f).coerceIn(0.5f, 1f)
     }
 
+    fun gaDirectionArrowHeadLength(
+        width: Float,
+        height: Float,
+        strokeIndex: Int,
+        arrowLength: Float,
+    ): Float {
+        require(arrowLength > 0f) { "arrowLength must be positive" }
+        val glyph = ga(width, height)
+        val stroke = glyph.strokes.getOrElse(strokeIndex) {
+            throw IllegalArgumentException("strokeIndex must identify a ga stroke")
+        }
+        val strokeLength = stroke.zipWithNext().sumOf { (start, end) ->
+            kotlin.math.hypot((end.x - start.x).toDouble(), (end.y - start.y).toDouble())
+        }.toFloat()
+        val visualScale = gaStrokeGuideScale(strokeIndex)
+        val scaledStrokeMinimum = strokeLength * (1f - visualScale) * 0.22f
+        return maxOf(arrowLength * 0.30f, scaledStrokeMinimum)
+            .coerceAtMost(arrowLength * 0.75f)
+    }
+
     fun gaCurrentStrokeDemonstrationProgress(
         completedStrokeCount: Int,
         progress: Float,

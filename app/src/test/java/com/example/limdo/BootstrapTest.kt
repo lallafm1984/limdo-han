@@ -349,6 +349,24 @@ class BootstrapTest {
         assertEquals(1f, WritingCanvasGeometry.gaStrokeGuideScale(1), 0.001f)
         assertEquals(0.5f, WritingCanvasGeometry.gaStrokeGuideScale(2), 0.001f)
 
+        val longArrowLength = height * 0.10f * 0.58f
+        val shortArrowLength = longArrowLength * 0.5f
+        assertEquals(
+            longArrowLength * 0.30f,
+            WritingCanvasGeometry.gaDirectionArrowHeadLength(width, height, 0, longArrowLength),
+            0.001f,
+        )
+        assertEquals(
+            longArrowLength * 0.30f,
+            WritingCanvasGeometry.gaDirectionArrowHeadLength(width, height, 1, longArrowLength),
+            0.001f,
+        )
+        assertEquals(
+            (glyph.strokes[2].last().x - glyph.strokes[2].first().x) * 0.5f * 0.22f,
+            WritingCanvasGeometry.gaDirectionArrowHeadLength(width, height, 2, shortArrowLength),
+            0.001f,
+        )
+
         val thirdStart = WritingCanvasGeometry.gaDemonstrationGuide(
             width,
             height,
