@@ -285,6 +285,36 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
+    private val saTemplate = listOf(
+        listOf(CanvasPoint(0.27f, 0.10f), CanvasPoint(0.05f, 0.88f)),
+        listOf(CanvasPoint(0.27f, 0.10f), CanvasPoint(0.49f, 0.88f)),
+        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+        listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
+    )
+
+    private val ahTemplate = listOf(
+        listOf(
+            CanvasPoint(0.05f, 0.22f),
+            CanvasPoint(0.49f, 0.22f),
+            CanvasPoint(0.49f, 0.50f),
+            CanvasPoint(0.42f, 0.82f),
+            CanvasPoint(0.27f, 0.92f),
+            CanvasPoint(0.12f, 0.82f),
+            CanvasPoint(0.05f, 0.50f),
+            CanvasPoint(0.05f, 0.22f),
+        ),
+        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+        listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
+    )
+
+    private val jaTemplate = listOf(
+        listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.49f, 0.12f)),
+        listOf(CanvasPoint(0.27f, 0.20f), CanvasPoint(0.05f, 0.88f)),
+        listOf(CanvasPoint(0.27f, 0.20f), CanvasPoint(0.49f, 0.88f)),
+        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+        listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
+    )
+
     fun gieok(width: Float, height: Float): GlyphGeometry =
         transform(gieokTemplate, width, height)
 
@@ -598,6 +628,9 @@ internal object WritingCanvasGeometry {
         LessonId.RA -> raTemplate
         LessonId.MA -> maTemplate
         LessonId.BA -> baTemplate
+        LessonId.SA -> saTemplate
+        LessonId.AH -> ahTemplate
+        LessonId.JA -> jaTemplate
     }
 
     private fun transform(
