@@ -6,6 +6,7 @@ internal data class LessonSpec(
 )
 
 internal val GieokLesson = LessonSpec(glyph = "ㄱ", strokeCount = 1)
+internal val GaLesson = LessonSpec(glyph = "가", strokeCount = 3)
 
 internal enum class RewardMovePhase { IDLE, START, MOVING, COMPLETE }
 

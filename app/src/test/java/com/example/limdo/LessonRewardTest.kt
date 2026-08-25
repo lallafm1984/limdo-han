@@ -13,6 +13,21 @@ class LessonRewardTest {
     }
 
     @Test
+    fun gaLessonDeclaresThreeEducationalStrokes() {
+        assertEquals("가", GaLesson.glyph)
+        assertEquals(3, GaLesson.strokeCount)
+    }
+
+    @Test
+    fun gaSuccessTargetsExactlyThreeSteps() {
+        val started = LessonRewardState().onTraceResult(GieokTraceResult.SUCCESS, GaLesson)
+
+        assertEquals(3, started.targetSteps)
+        assertEquals(RewardMovePhase.START, started.phase)
+        assertTrue(started.inputLocked)
+    }
+
+    @Test
     fun successMovesExactlyStrokeCountStepsThroughClearPhases() {
         val started = LessonRewardState().onTraceResult(GieokTraceResult.SUCCESS, GieokLesson)
         val moving = started.moving()
@@ -35,6 +50,17 @@ class LessonRewardTest {
 
         val retry = LessonRewardState().onTraceResult(GieokTraceResult.OFF_GUIDE, GieokLesson)
         val clear = LessonRewardState().onTraceResult(null, GieokLesson)
+        assertEquals(0, retry.targetSteps)
+        assertEquals(0, clear.targetSteps)
+    }
+
+    @Test
+    fun gaDuplicateSuccessFailureAndClearDoNotAddMovement() {
+        val started = LessonRewardState().onTraceResult(GieokTraceResult.SUCCESS, GaLesson)
+        assertEquals(started, started.onTraceResult(GieokTraceResult.SUCCESS, GaLesson))
+
+        val retry = LessonRewardState().onTraceResult(GieokTraceResult.OFF_GUIDE, GaLesson)
+        val clear = LessonRewardState().onTraceResult(null, GaLesson)
         assertEquals(0, retry.targetSteps)
         assertEquals(0, clear.targetSteps)
     }

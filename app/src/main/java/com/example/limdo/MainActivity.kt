@@ -153,10 +153,13 @@ private fun LearningShell(
             rewardState = rewardState.moving()
         }
         if (rewardState.phase == RewardMovePhase.MOVING) {
-            rewardOffset.animateTo(
-                targetValue = rewardState.targetSteps.toFloat(),
-                animationSpec = tween(durationMillis = 650),
-            )
+            for (step in (rewardState.completedSteps + 1)..rewardState.targetSteps) {
+                rewardOffset.animateTo(
+                    targetValue = step.toFloat(),
+                    animationSpec = tween(durationMillis = 280),
+                )
+                if (step < rewardState.targetSteps) delay(100)
+            }
             rewardState = rewardState.complete()
         } else if (rewardState.targetSteps == 0) {
             rewardOffset.snapTo(0f)
@@ -230,7 +233,7 @@ private fun LearningShell(
                 vehicleSuccessArmed = vehicleState.successArmed
                 nextVehiclePending = vehicleState.nextVehiclePending
                 traceResult = result
-                rewardState = rewardState.onTraceResult(result, GieokLesson)
+                rewardState = rewardState.onTraceResult(result, GaLesson)
                 if (result != null) speak(SpokenCueModel.forResult(result))
             },
             modifier = Modifier
