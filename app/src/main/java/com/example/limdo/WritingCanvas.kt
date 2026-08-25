@@ -240,7 +240,6 @@ internal fun WritingCanvas(
         )
 
         val glyph = WritingCanvasGeometry.visibleLessonGlyph(size.width, size.height)
-        val points = glyph.strokes.flatten()
         val pathStroke = glyph.strokeWidth
         glyph.strokes.forEach { stroke ->
             stroke.zipWithNext().forEach { (start, end) ->
@@ -286,21 +285,27 @@ internal fun WritingCanvas(
                 center = Offset(currentStart.x, currentStart.y),
             )
         }
-        drawCircle(
-            color = GieokGuide,
-            radius = pathStroke * 0.76f,
-            center = Offset(points.last().x, points.last().y),
-        )
-        drawCircle(
-            color = FinishMarker,
-            radius = pathStroke * 0.48f,
-            center = Offset(points.last().x, points.last().y),
-        )
-        drawCircle(
-            color = GieokGuide,
-            radius = pathStroke * 0.18f,
-            center = Offset(points.last().x, points.last().y),
-        )
+        WritingCanvasGeometry.currentVisibleStrokeEnd(
+            width = size.width,
+            height = size.height,
+            completedStrokeCount = attempt.completedStrokes.size,
+        )?.let { currentEnd ->
+            drawCircle(
+                color = GieokGuide,
+                radius = pathStroke * 0.76f,
+                center = Offset(currentEnd.x, currentEnd.y),
+            )
+            drawCircle(
+                color = FinishMarker,
+                radius = pathStroke * 0.44f,
+                center = Offset(currentEnd.x, currentEnd.y),
+            )
+            drawCircle(
+                color = GieokGuide,
+                radius = pathStroke * 0.18f,
+                center = Offset(currentEnd.x, currentEnd.y),
+            )
+        }
 
         demonstrationProgress?.let { progress ->
             val marker = WritingCanvasGeometry.gaDemonstrationGuide(

@@ -194,6 +194,14 @@ internal object WritingCanvasGeometry {
         .getOrNull(completedStrokeCount)
         ?.first()
 
+    fun currentVisibleStrokeEnd(
+        width: Float,
+        height: Float,
+        completedStrokeCount: Int,
+    ): CanvasPoint? = visibleLessonGlyph(width, height).strokes
+        .getOrNull(completedStrokeCount)
+        ?.last()
+
     fun gaDemonstrationGuide(width: Float, height: Float, progress: Float): DemonstrationGuide {
         require(progress in 0f..1f) { "progress must be between 0 and 1" }
         val segments = ga(width, height).strokes.flatMapIndexed { strokeIndex, stroke ->

@@ -226,6 +226,30 @@ class BootstrapTest {
     }
 
     @Test
+    fun currentEndMarkerUsesProductionGaStrokeOrderAndDisappearsAfterCompletion() {
+        val production = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
+
+        production.strokes.forEachIndexed { completedStrokeCount, stroke ->
+            assertEquals(
+                stroke.last(),
+                WritingCanvasGeometry.currentVisibleStrokeEnd(
+                    width = 1_962f,
+                    height = 775f,
+                    completedStrokeCount = completedStrokeCount,
+                ),
+            )
+        }
+        assertEquals(
+            null,
+            WritingCanvasGeometry.currentVisibleStrokeEnd(
+                width = 1_962f,
+                height = 775f,
+                completedStrokeCount = production.strokes.size,
+            ),
+        )
+    }
+
+    @Test
     fun gaDemonstrationTraversesEverySegmentInStrokeOrderWithDirection() {
         val glyph = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
         val segmentLengths = glyph.strokes.flatMap { stroke ->
