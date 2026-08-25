@@ -79,4 +79,12 @@ class SpokenCueModelTest {
         assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Completed(SpokenCue.INITIAL), true, false))
         assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Error(SpokenCue.INITIAL), true, false))
     }
+
+    @Test
+    fun nextInputStartsInitialCueOnlyForOnePendingCompletedReward() {
+        assertTrue(shouldStartNextInitialCue(moveCompleted = true, nextVehiclePending = true))
+        assertFalse(shouldStartNextInitialCue(moveCompleted = false, nextVehiclePending = true))
+        assertFalse(shouldStartNextInitialCue(moveCompleted = true, nextVehiclePending = false))
+        assertFalse(shouldStartNextInitialCue(moveCompleted = false, nextVehiclePending = false))
+    }
 }

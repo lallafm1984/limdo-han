@@ -313,8 +313,15 @@ private fun LearningShell(
                 traceResult = null
                 traceStrokeIndex = 0
             },
-            onNext = {
-                initialSpeechPending = false
+            onNext = next@{
+                if (!shouldStartNextInitialCue(
+                        moveCompleted = rewardState.phase == RewardMovePhase.COMPLETE,
+                        nextVehiclePending = nextVehiclePending,
+                    )
+                ) return@next
+
+                initialSpeechPending = true
+                restoredInitialSpeechHandled = true
                 restoredSuccessSpeechHandled = true
                 successSpeechPending = false
                 stopSpeech()
@@ -330,6 +337,7 @@ private fun LearningShell(
                 rewardState = LessonRewardState()
                 traceResult = null
                 traceStrokeIndex = 0
+                if (!speak(SpokenCue.INITIAL)) initialSpeechPending = false
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
