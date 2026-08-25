@@ -125,6 +125,64 @@ internal object WritingCanvasGeometry {
     fun ga(width: Float, height: Float): GlyphGeometry =
         transform(gaTemplate, width, height)
 
+    fun gaInputDirectionGuide(
+        width: Float,
+        height: Float,
+        strokeIndex: Int,
+        input: CanvasPoint,
+        motionProgress: Float,
+    ): InputDirectionGuide {
+        require(motionProgress in 0f..1f) { "motionProgress must be between 0 and 1" }
+        val stroke = ga(width, height).strokes.getOrElse(strokeIndex) {
+            throw IllegalArgumentException("strokeIndex must identify a ga stroke")
+        }
+        val segments = stroke.zipWithNext().map { (start, end) ->
+            val deltaX = end.x - start.x
+            val deltaY = end.y - start.y
+            val length = sqrt((deltaX * deltaX) + (deltaY * deltaY))
+            DemonstrationSegment(0, 0, start, end, deltaX, deltaY, length)
+        }
+        val totalLength = segments.sumOf { it.length.toDouble() }.toFloat()
+        var traversed = 0f
+        var nearestDistanceSquared = Float.POSITIVE_INFINITY
+        var inputDistance = 0f
+        segments.forEach { segment ->
+            val projection = (
+                ((input.x - segment.start.x) * segment.deltaX) +
+                    ((input.y - segment.start.y) * segment.deltaY)
+                ) / (segment.length * segment.length)
+            val fraction = projection.coerceIn(0f, 1f)
+            val projectedX = segment.start.x + (segment.deltaX * fraction)
+            val projectedY = segment.start.y + (segment.deltaY * fraction)
+            val distanceSquared =
+                ((input.x - projectedX) * (input.x - projectedX)) +
+                    ((input.y - projectedY) * (input.y - projectedY))
+            if (distanceSquared < nearestDistanceSquared) {
+                nearestDistanceSquared = distanceSquared
+                inputDistance = traversed + (segment.length * fraction)
+            }
+            traversed += segment.length
+        }
+
+        val guideDistance = (
+            inputDistance + totalLength * (0.06f + (motionProgress * 0.06f))
+            ).coerceAtMost(totalLength)
+        traversed = 0f
+        val segment = segments.firstOrNull { candidate ->
+            val containsGuide = guideDistance <= traversed + candidate.length
+            if (!containsGuide) traversed += candidate.length
+            containsGuide
+        } ?: segments.last()
+        val fraction = ((guideDistance - traversed) / segment.length).coerceIn(0f, 1f)
+        return InputDirectionGuide(
+            center = CanvasPoint(
+                x = segment.start.x + (segment.deltaX * fraction),
+                y = segment.start.y + (segment.deltaY * fraction),
+            ),
+            direction = CanvasPoint(segment.deltaX / segment.length, segment.deltaY / segment.length),
+        )
+    }
+
     fun visibleLessonGlyph(width: Float, height: Float): GlyphGeometry =
         ga(width, height)
 

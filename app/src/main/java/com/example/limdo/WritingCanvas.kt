@@ -332,9 +332,10 @@ internal fun WritingCanvas(
         }
 
         inputGuideMotion?.let { motion ->
-            val guide = WritingCanvasGeometry.gieokInputDirectionGuide(
+            val guide = WritingCanvasGeometry.gaInputDirectionGuide(
                 width = size.width,
                 height = size.height,
+                strokeIndex = attempt.completedStrokes.size,
                 input = attempt.stroke.points.last(),
                 motionProgress = motion,
             )

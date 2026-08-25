@@ -111,6 +111,49 @@ class BootstrapTest {
     }
 
     @Test
+    fun gaInputDirectionGuideUsesCurrentProductionStroke() {
+        val strokes = WritingCanvasGeometry.ga(width = 1_962f, height = 775f).strokes
+        val gieokHorizontalInput = CanvasPoint(
+            x = (strokes[0][0].x + strokes[0][1].x) / 2f,
+            y = strokes[0][0].y,
+        )
+        val gieokHorizontal = WritingCanvasGeometry.gaInputDirectionGuide(
+            1_962f, 775f, 0, gieokHorizontalInput, 0f,
+        )
+        assertTrue(gieokHorizontal.center.x > gieokHorizontalInput.x)
+        assertEquals(CanvasPoint(1f, 0f), gieokHorizontal.direction)
+
+        val gieokVerticalInput = CanvasPoint(
+            x = strokes[0][1].x,
+            y = (strokes[0][1].y + strokes[0][2].y) / 2f,
+        )
+        val gieokVertical = WritingCanvasGeometry.gaInputDirectionGuide(
+            1_962f, 775f, 0, gieokVerticalInput, 0f,
+        )
+        assertTrue(gieokVertical.center.y > gieokVerticalInput.y)
+        assertEquals(CanvasPoint(0f, 1f), gieokVertical.direction)
+
+        val aVerticalInput = midpoint(strokes[1])
+        val aVertical = WritingCanvasGeometry.gaInputDirectionGuide(
+            1_962f, 775f, 1, aVerticalInput, 0f,
+        )
+        assertTrue(aVertical.center.y > aVerticalInput.y)
+        assertEquals(CanvasPoint(0f, 1f), aVertical.direction)
+
+        val aHorizontalInput = midpoint(strokes[2])
+        val aHorizontal = WritingCanvasGeometry.gaInputDirectionGuide(
+            1_962f, 775f, 2, aHorizontalInput, 0f,
+        )
+        assertTrue(aHorizontal.center.x > aHorizontalInput.x)
+        assertEquals(CanvasPoint(1f, 0f), aHorizontal.direction)
+    }
+
+    private fun midpoint(stroke: List<CanvasPoint>) = CanvasPoint(
+        x = (stroke[0].x + stroke[1].x) / 2f,
+        y = (stroke[0].y + stroke[1].y) / 2f,
+    )
+
+    @Test
     fun childStrokeUsesSixtyPercentOfGuideWidth() {
         val glyph = WritingCanvasGeometry.gieok(width = 1_962f, height = 775f)
         val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(width = 1_962f, height = 775f)
