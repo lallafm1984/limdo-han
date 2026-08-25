@@ -13,10 +13,10 @@ internal data class LessonSpec(
 internal enum class LessonId {
     GIEOK, NIEUN, DIGEUT, RIEUL, MIEUM, BIEUP, SIOT, IEUNG, JIEUT, CHIEUT, KIEUK, TIEUT,
     PIEUP, HIEUH,
-    A, YA, EO, YEO, GA, NA, DA,
+    A, YA, EO, YEO, O, YO, U, GA, NA, DA,
 }
 
-internal enum class StrokeDirection { RIGHT, LEFT, DOWN }
+internal enum class StrokeDirection { RIGHT, LEFT, UP, DOWN }
 
 internal enum class CurriculumStage {
     PENCIL_PREPARATION,
@@ -210,6 +210,33 @@ internal object KoreanCurriculum {
             strokeDirections = listOf(StrokeDirection.DOWN, StrokeDirection.LEFT, StrokeDirection.LEFT),
         ),
         LessonSpec(
+            id = LessonId.O,
+            stage = CurriculumStage.VOWELS,
+            glyph = "ㅗ",
+            strokeCount = 2,
+            initialCue = SpokenCue.INITIAL_O,
+            successCue = SpokenCue.SUCCESS_O,
+            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.UP),
+        ),
+        LessonSpec(
+            id = LessonId.YO,
+            stage = CurriculumStage.VOWELS,
+            glyph = "ㅛ",
+            strokeCount = 3,
+            initialCue = SpokenCue.INITIAL_YO,
+            successCue = SpokenCue.SUCCESS_YO,
+            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.UP, StrokeDirection.UP),
+        ),
+        LessonSpec(
+            id = LessonId.U,
+            stage = CurriculumStage.VOWELS,
+            glyph = "ㅜ",
+            strokeCount = 2,
+            initialCue = SpokenCue.INITIAL_U,
+            successCue = SpokenCue.SUCCESS_U,
+            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN),
+        ),
+        LessonSpec(
             id = LessonId.GA,
             stage = CurriculumStage.SYLLABLE_STRUCTURE,
             glyph = "가",
@@ -264,6 +291,9 @@ internal val ALesson = KoreanCurriculum.lessons.first { it.id == LessonId.A }
 internal val YaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.YA }
 internal val EoLesson = KoreanCurriculum.lessons.first { it.id == LessonId.EO }
 internal val YeoLesson = KoreanCurriculum.lessons.first { it.id == LessonId.YEO }
+internal val OLesson = KoreanCurriculum.lessons.first { it.id == LessonId.O }
+internal val YoLesson = KoreanCurriculum.lessons.first { it.id == LessonId.YO }
+internal val ULesson = KoreanCurriculum.lessons.first { it.id == LessonId.U }
 internal val GaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.GA }
 internal val NaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.NA }
 internal val DaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.DA }

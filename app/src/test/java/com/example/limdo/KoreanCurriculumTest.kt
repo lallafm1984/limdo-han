@@ -45,6 +45,9 @@ class KoreanCurriculumTest {
                 CurriculumStage.VOWELS,
                 CurriculumStage.VOWELS,
                 CurriculumStage.VOWELS,
+                CurriculumStage.VOWELS,
+                CurriculumStage.VOWELS,
+                CurriculumStage.VOWELS,
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
@@ -56,7 +59,7 @@ class KoreanCurriculumTest {
     @Test
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         assertEquals(
-            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅑ", "ㅓ", "ㅕ", "가", "나", "다"),
+            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "가", "나", "다"),
             KoreanCurriculum.lessons.map(LessonSpec::glyph),
         )
         assertEquals(0, KoreanCurriculum.nextIndex(KoreanCurriculum.lessons.lastIndex))
@@ -77,6 +80,7 @@ class KoreanCurriculumTest {
                 when (direction) {
                     StrokeDirection.RIGHT -> assertTrue(dx > 0f && abs(dx) > abs(dy))
                     StrokeDirection.LEFT -> assertTrue(dx < 0f && abs(dx) > abs(dy))
+                    StrokeDirection.UP -> assertTrue(dy < 0f && abs(dy) > abs(dx))
                     StrokeDirection.DOWN -> assertTrue(dy > 0f && abs(dy) > abs(dx))
                 }
             }
@@ -150,6 +154,9 @@ class KoreanCurriculumTest {
                 LessonId.YA,
                 LessonId.EO,
                 LessonId.YEO,
+                LessonId.O,
+                LessonId.YO,
+                LessonId.U,
             ))
 
             val demonstrated = lesson.initialCue.utterance.indices
