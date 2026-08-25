@@ -11,7 +11,7 @@
     <string name="trace_retry_direction">괜찮아! 오른쪽, 아래로 그려보자!</string>
     <string name="trace_retry_guide">괜찮아! 초록 길을 따라가보자!</string>
     <string name="trace_retry_finish">조금만 더! 끝까지 이어보자!</string>
-    <string name="writing_canvas_description">큰 쓰기판. 초록 점에서 시작해 기역을 손가락으로 그려요</string>
+    <string name="writing_canvas_description">큰 쓰기판. 초록 점에서 시작해 가를 세 획으로 그려요</string>
     <string name="action_replay">다시 듣기</string>
     <string name="action_replay_description">현재 안내 다시 듣기</string>
     <string name="action_clear">지우기</string>

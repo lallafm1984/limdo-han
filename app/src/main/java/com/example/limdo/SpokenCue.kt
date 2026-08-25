@@ -2,7 +2,7 @@ package com.example.limdo
 
 internal enum class SpokenCue(val utterance: String) {
     INITIAL("초록점에서 시작해 오른쪽, 아래로 그려봐."),
-    SUCCESS("잘했어! 기역을 완성했어."),
+    SUCCESS("잘했어! 가를 완성했어."),
     RETRY_START("초록점에서 다시 시작해보자."),
     RETRY_DIRECTION("오른쪽으로 가고, 아래로 내려가보자."),
     RETRY_GUIDE("선을 따라 다시 그려보자."),

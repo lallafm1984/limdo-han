@@ -48,6 +48,15 @@ private val TraceAttemptSaver = listSaver<TraceAttempt, Any>(
     save = { attempt ->
         buildList {
             add(attempt.result?.name.orEmpty())
+            add(attempt.completedStrokes.size)
+            attempt.completedStrokes.forEach { stroke ->
+                add(stroke.points.size)
+                stroke.points.forEach { point ->
+                    add(point.x)
+                    add(point.y)
+                }
+            }
+            add(attempt.stroke.points.size)
             attempt.stroke.points.forEach { point ->
                 add(point.x)
                 add(point.y)
@@ -55,12 +64,28 @@ private val TraceAttemptSaver = listSaver<TraceAttempt, Any>(
         }
     },
     restore = { saved ->
+        var index = 1
+        val completedCount = (saved[index++] as Number).toInt()
+        val completed = List(completedCount) {
+            val pointCount = (saved[index++] as Number).toInt()
+            StrokePath(List(pointCount) {
+                CanvasPoint(
+                    (saved[index++] as Number).toFloat(),
+                    (saved[index++] as Number).toFloat(),
+                )
+            })
+        }
+        val currentPointCount = (saved[index++] as Number).toInt()
         TraceAttempt(
             stroke = StrokePath(
-                saved.drop(1).chunked(2).map { point ->
-                    CanvasPoint((point[0] as Number).toFloat(), (point[1] as Number).toFloat())
+                List(currentPointCount) {
+                    CanvasPoint(
+                        (saved[index++] as Number).toFloat(),
+                        (saved[index++] as Number).toFloat(),
+                    )
                 },
             ),
+            completedStrokes = completed,
             result = (saved[0] as String).takeIf(String::isNotEmpty)?.let(
                 GieokTraceResult::valueOf,
             ),
@@ -172,7 +197,7 @@ internal fun WritingCanvas(
             .semantics {
                 this.contentDescription = contentDescription
                 stateDescription = when (attempt.result) {
-                    GieokTraceResult.SUCCESS -> "기역을 완성했어요"
+                    GieokTraceResult.SUCCESS -> "가를 완성했어요"
                     GieokTraceResult.WRONG_START,
                     GieokTraceResult.WRONG_DIRECTION,
                     GieokTraceResult.OFF_GUIDE,
@@ -223,14 +248,16 @@ internal fun WritingCanvas(
             }
         }
         val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(size.width, size.height)
-        if (attempt.stroke.points.size == 1) {
+        val childStrokes = attempt.completedStrokes + listOf(attempt.stroke)
+        childStrokes.filter { it.points.size == 1 }.forEach { childStroke ->
             drawCircle(
                 color = ChildStroke,
                 radius = childStrokeWidth / 2f,
-                center = Offset(attempt.stroke.points.first().x, attempt.stroke.points.first().y),
+                center = Offset(childStroke.points.first().x, childStroke.points.first().y),
             )
-        } else {
-            attempt.stroke.points.zipWithNext().forEach { (start, end) ->
+        }
+        childStrokes.forEach { childStroke ->
+            childStroke.points.zipWithNext().forEach { (start, end) ->
                 drawLine(
                     color = ChildStroke,
                     start = Offset(start.x, start.y),

@@ -1,19 +1,19 @@
 # 현재 루프 상태
 
-루프: 120 — `가` 3획 입력 판정 연결
+루프: 121 — `가` 입력 중 다음 방향 안내 일치
 
 상태: 준비
 
 반복: 0
 
-마지막 검증: 루프 119 반복 1에서 `gaDemonstrationGuide`가 production `ga(width, height)`의 선분 길이로 현재 획·선분·방향을 파생하고, 시범과 정적 화살표를 연결했다. `./scripts/verify.sh`, `./scripts/check-automation.sh`, `git diff --check`가 통과했다.
+마지막 검증: 루프 120 반복 1에서 production `ga`의 세 획을 순차 판정하는 `GaTraceEvaluator`와 다중 획 `TraceAttempt`를 연결했다. 정확한 2340 × 1080에서 잘못된 첫 획 재시도·지우기·정상 3획·`★  ✓`·경찰차 126 px 한 칸 이동을 확인했고 `./scripts/verify.sh`가 통과했다.
 
-완료한 조건: 루프 119 성공 조건 1~7 전체. 정확한 2340 × 1080의 16개 연속 프레임에서 `ㄱ` 가로→세로, `ㅏ` 세로, `ㅏ` 가로 안내와 화살표촉을 확인했다.
+완료한 조건: 루프 120 성공 조건 1~7 전체.
 
-현재 실패: 화면에는 `가` 3획이 보이고 동적 안내도 세 획을 따르지만, pointer 입력과 결과는 여전히 `GieokTraceEvaluator`의 단일 `ㄱ` 경로로 판정된다.
+현재 실패: `WritingCanvas`의 입력 중 앞쪽 화살표는 여전히 `gieokInputDirectionGuide`를 사용해 `가` 2·3획의 현재 위치·방향과 일치하지 않는다.
 
-현재 가설: production `ga`의 세 획을 순차적으로 받는 입력 상태와 evaluator를 추가하면 표시·안내·판정을 같은 geometry로 일치시킬 수 있다.
+현재 가설: production `ga` 획과 `completedStrokes.size`를 입력 중 안내에 연결하면 각 획에서 손가락 앞의 올바른 위치·방향을 보여 줄 수 있다.
 
-다음 작업: `GieokTraceEvaluator`와 `TraceAttempt`의 단일 획 가정을 조사하고 production `ga` 3획의 정상·잘못된 획순·방향·이탈 테스트를 먼저 추가한다.
+다음 작업: `gieokInputDirectionGuide`의 단일 획 가정을 production `ga` 획 index API로 교체하는 테스트부터 추가한다.
 
-남은 조건: 루프 120 성공 조건 1~7 전체.
+남은 조건: 루프 121 성공 조건 1~7 전체.
