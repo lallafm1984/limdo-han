@@ -340,6 +340,53 @@ class BootstrapTest {
     }
 
     @Test
+    fun shortThirdStrokeScalesAndInsetsItsDirectionGuideWithoutChangingLongStrokes() {
+        val width = 1_962f
+        val height = 775f
+        val glyph = WritingCanvasGeometry.ga(width, height)
+
+        assertEquals(1f, WritingCanvasGeometry.gaStrokeGuideScale(0), 0.001f)
+        assertEquals(1f, WritingCanvasGeometry.gaStrokeGuideScale(1), 0.001f)
+        assertEquals(0.5f, WritingCanvasGeometry.gaStrokeGuideScale(2), 0.001f)
+
+        val thirdStart = WritingCanvasGeometry.gaDemonstrationGuide(
+            width,
+            height,
+            WritingCanvasGeometry.gaCurrentStrokeDemonstrationProgress(2, 0f),
+        )
+        val thirdEnd = WritingCanvasGeometry.gaDemonstrationGuide(
+            width,
+            height,
+            WritingCanvasGeometry.gaCurrentStrokeDemonstrationProgress(2, 1f),
+        )
+        val stroke = glyph.strokes[2]
+        val strokeLength = stroke.last().x - stroke.first().x
+
+        assertEquals(0.5f, thirdStart.visualScale, 0.001f)
+        assertEquals(CanvasPoint(1f, 0f), thirdStart.direction)
+        assertEquals(stroke.first().x + strokeLength * 0.25f, thirdStart.center.x, 0.01f)
+        assertEquals(stroke.last().x - strokeLength * 0.25f, thirdEnd.center.x, 0.01f)
+        assertEquals(stroke.first().y, thirdStart.center.y, 0.01f)
+        assertEquals(stroke.last().y, thirdEnd.center.y, 0.01f)
+
+        val firstStart = WritingCanvasGeometry.gaDemonstrationGuide(
+            width,
+            height,
+            WritingCanvasGeometry.gaCurrentStrokeDemonstrationProgress(0, 0f),
+        )
+        val secondStart = WritingCanvasGeometry.gaDemonstrationGuide(
+            width,
+            height,
+            WritingCanvasGeometry.gaCurrentStrokeDemonstrationProgress(1, 0f),
+        )
+        assertEquals(glyph.strokes[0].first(), firstStart.center)
+        assertEquals(glyph.strokes[1].first().x, secondStart.center.x, 0.01f)
+        assertEquals(glyph.strokes[1].first().y, secondStart.center.y, 0.01f)
+        assertEquals(1f, firstStart.visualScale, 0.001f)
+        assertEquals(1f, secondStart.visualScale, 0.001f)
+    }
+
+    @Test
     fun gaPreservesNormalizedJamoLayoutWithUniformScaleAcrossCanvasRatios() {
         val wide = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
         val tall = WritingCanvasGeometry.ga(width = 900f, height = 1_200f)

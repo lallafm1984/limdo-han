@@ -315,21 +315,21 @@ internal fun WritingCanvas(
             )
             drawCircle(
                 color = GieokGuide,
-                radius = pathStroke * 0.27f,
+                radius = pathStroke * 0.27f * marker.visualScale,
                 center = Offset(marker.center.x, marker.center.y),
-                style = Stroke(width = pathStroke * 0.12f),
+                style = Stroke(width = pathStroke * 0.12f * marker.visualScale),
             )
             drawCircle(
                 color = DemonstrationMarker,
-                radius = pathStroke * 0.20f,
+                radius = pathStroke * 0.20f * marker.visualScale,
                 center = Offset(marker.center.x, marker.center.y),
-                style = Stroke(width = pathStroke * 0.08f),
+                style = Stroke(width = pathStroke * 0.08f * marker.visualScale),
             )
             drawDirectionArrow(
                 center = Offset(marker.center.x, marker.center.y),
                 direction = Offset(marker.direction.x, marker.direction.y),
-                length = arrowLength * 0.58f,
-                strokeWidth = arrowStroke,
+                length = arrowLength * 0.58f * marker.visualScale,
+                strokeWidth = arrowStroke * marker.visualScale,
             )
         }
 
@@ -344,8 +344,12 @@ internal fun WritingCanvas(
             drawDirectionArrow(
                 center = Offset(guide.center.x, guide.center.y),
                 direction = Offset(guide.direction.x, guide.direction.y),
-                length = arrowLength * 0.58f,
-                strokeWidth = arrowStroke,
+                length = arrowLength * 0.58f * WritingCanvasGeometry.gaStrokeGuideScale(
+                    attempt.completedStrokes.size,
+                ),
+                strokeWidth = arrowStroke * WritingCanvasGeometry.gaStrokeGuideScale(
+                    attempt.completedStrokes.size,
+                ),
             )
         }
 

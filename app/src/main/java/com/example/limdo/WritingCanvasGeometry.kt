@@ -34,6 +34,7 @@ internal data class DemonstrationGuide(
     val direction: CanvasPoint,
     val strokeIndex: Int,
     val segmentIndex: Int,
+    val visualScale: Float,
 )
 
 internal object WritingCanvasGeometry {
@@ -235,6 +236,7 @@ internal object WritingCanvasGeometry {
             direction = CanvasPoint(segment.deltaX / segment.length, segment.deltaY / segment.length),
             strokeIndex = segment.strokeIndex,
             segmentIndex = segment.segmentIndex,
+            visualScale = gaStrokeGuideScale(segment.strokeIndex),
         )
     }
 
@@ -246,11 +248,23 @@ internal object WritingCanvasGeometry {
             }.toFloat()
         }
         require(strokeIndex in strokes.indices) { "strokeIndex must identify a ga stroke" }
+        val visualScale = gaStrokeGuideScale(strokeIndex)
+        val endpointInset = (1f - visualScale) * 0.5f
+        val visibleProgress = endpointInset + progress * (1f - endpointInset * 2f)
         val distanceBefore = strokes.take(strokeIndex).sum()
         val boundaryOffset = if (strokeIndex == 0) 0f else 0.000001f
         val totalDistance = strokes.sum()
-        return ((distanceBefore + strokes[strokeIndex] * progress) / totalDistance + boundaryOffset)
+        return ((distanceBefore + strokes[strokeIndex] * visibleProgress) / totalDistance + boundaryOffset)
             .coerceAtMost(1f)
+    }
+
+    fun gaStrokeGuideScale(strokeIndex: Int): Float {
+        val strokeLength = gaTemplate.getOrElse(strokeIndex) {
+            throw IllegalArgumentException("strokeIndex must identify a ga stroke")
+        }.zipWithNext().sumOf { (start, end) ->
+            kotlin.math.hypot((end.x - start.x).toDouble(), (end.y - start.y).toDouble())
+        }.toFloat()
+        return (strokeLength / 0.44f).coerceIn(0.5f, 1f)
     }
 
     fun gaCurrentStrokeDemonstrationProgress(
