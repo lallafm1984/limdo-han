@@ -288,7 +288,7 @@ private fun LearningShell(
         }
 
         ActionShelf(
-            speechAvailable = speechState.canReplay,
+            replayVisualState = speechState.replayVisualState,
             nextAvailable = rewardState.phase == RewardMovePhase.COMPLETE,
             onReplay = {
                 restoredInitialSpeechHandled = true
@@ -507,7 +507,7 @@ private data class ChildFeedback(
 
 @Composable
 private fun ActionShelf(
-    speechAvailable: Boolean,
+    replayVisualState: ReplayVisualState,
     nextAvailable: Boolean,
     onReplay: () -> Unit,
     onClear: () -> Unit,
@@ -528,7 +528,7 @@ private fun ActionShelf(
             ReplayAction(
                 label = stringResource(R.string.action_replay),
                 contentDescription = stringResource(R.string.action_replay_description),
-                available = speechAvailable,
+                visualState = replayVisualState,
                 onClick = onReplay,
                 modifier = Modifier.weight(1f),
             )
@@ -553,20 +553,34 @@ private fun ActionShelf(
 private fun ReplayAction(
     label: String,
     contentDescription: String,
-    available: Boolean,
+    visualState: ReplayVisualState,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val available = visualState == ReplayVisualState.AVAILABLE
+    val playing = visualState == ReplayVisualState.PLAYING
     Surface(
         onClick = onClick,
         enabled = available,
         modifier = modifier
             .heightIn(min = 64.dp)
-            .semantics {
-                this.contentDescription = contentDescription
-                stateDescription = if (available) "음성 안내 사용 가능" else "음성 안내 사용 불가"
+            .semantics(mergeDescendants = true) {
+                this.contentDescription = when (visualState) {
+                    ReplayVisualState.PLAYING -> "$contentDescription, 안내 재생 중, 사용 불가"
+                    ReplayVisualState.AVAILABLE -> "$contentDescription, 음성 안내 사용 가능"
+                    ReplayVisualState.UNAVAILABLE -> "$contentDescription, 음성 안내 사용 불가"
+                }
+                stateDescription = when (visualState) {
+                    ReplayVisualState.PLAYING -> "안내 재생 중, 사용 불가"
+                    ReplayVisualState.AVAILABLE -> "음성 안내 사용 가능"
+                    ReplayVisualState.UNAVAILABLE -> "음성 안내 사용 불가"
+                }
             },
-        color = if (available) Color(0xFFDCEDE5) else Color(0xFFD8D4CC),
+        color = when (visualState) {
+            ReplayVisualState.PLAYING -> Color(0xFFDDEEFF)
+            ReplayVisualState.AVAILABLE -> Color(0xFFDCEDE5)
+            ReplayVisualState.UNAVAILABLE -> Color(0xFFD8D4CC)
+        },
         shape = RoundedCornerShape(20.dp),
     ) {
         Row(
@@ -575,12 +589,20 @@ private fun ReplayAction(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = if (available) "🔊" else "🔇",
+                text = when (visualState) {
+                    ReplayVisualState.PLAYING -> "🔊 )))"
+                    ReplayVisualState.AVAILABLE -> "🔊"
+                    ReplayVisualState.UNAVAILABLE -> "🔇"
+                },
                 fontSize = 28.sp,
             )
             Text(
                 text = label,
-                color = if (available) Color(0xFF285A46) else Color(0xFF68645E),
+                color = when {
+                    playing -> Color(0xFF24577A)
+                    available -> Color(0xFF285A46)
+                    else -> Color(0xFF68645E)
+                },
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
             )

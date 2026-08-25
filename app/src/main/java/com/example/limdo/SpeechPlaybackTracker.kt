@@ -23,6 +23,25 @@ internal fun SpeechPlaybackState.diagnosticToken(): String = when (this) {
 internal val SpeechPlaybackState.canReplay: Boolean
     get() = this is SpeechPlaybackState.Ready || this is SpeechPlaybackState.Completed
 
+internal enum class ReplayVisualState {
+    PLAYING,
+    AVAILABLE,
+    UNAVAILABLE,
+}
+
+internal val SpeechPlaybackState.replayVisualState: ReplayVisualState
+    get() = when (this) {
+        is SpeechPlaybackState.Playing -> ReplayVisualState.PLAYING
+        SpeechPlaybackState.Ready,
+        is SpeechPlaybackState.Completed,
+        -> ReplayVisualState.AVAILABLE
+        SpeechPlaybackState.Initializing,
+        is SpeechPlaybackState.Error,
+        SpeechPlaybackState.Unavailable,
+        SpeechPlaybackState.Released,
+        -> ReplayVisualState.UNAVAILABLE
+    }
+
 internal class SpeechPlaybackTracker {
     var state: SpeechPlaybackState = SpeechPlaybackState.Initializing
         private set

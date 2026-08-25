@@ -20,6 +20,27 @@ class SpeechPlaybackTrackerTest {
     }
 
     @Test
+    fun `재생 중과 재생 가능과 실제 사용 불가는 서로 다른 표시 상태다`() {
+        assertEquals(
+            ReplayVisualState.PLAYING,
+            SpeechPlaybackState.Playing(SpokenCue.INITIAL).replayVisualState,
+        )
+        assertEquals(ReplayVisualState.AVAILABLE, SpeechPlaybackState.Ready.replayVisualState)
+        assertEquals(
+            ReplayVisualState.AVAILABLE,
+            SpeechPlaybackState.Completed(SpokenCue.INITIAL).replayVisualState,
+        )
+        listOf(
+            SpeechPlaybackState.Initializing,
+            SpeechPlaybackState.Error(SpokenCue.INITIAL),
+            SpeechPlaybackState.Unavailable,
+            SpeechPlaybackState.Released,
+        ).forEach { state ->
+            assertEquals(ReplayVisualState.UNAVAILABLE, state.replayVisualState)
+        }
+    }
+
+    @Test
     fun `모든 재생 상태는 발화문 없는 안정적인 진단 토큰을 제공한다`() {
         val expected = mapOf(
             SpeechPlaybackState.Initializing to "초기화 중",
