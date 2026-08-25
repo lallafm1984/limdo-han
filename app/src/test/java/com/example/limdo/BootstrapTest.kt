@@ -122,19 +122,61 @@ class BootstrapTest {
     }
 
     @Test
-    fun gaFixturePreservesNormalizedJamoLayoutAtUniformScale() {
-        val first = WritingCanvasGeometry.gaFixture(width = 1_962f, height = 775f)
-        val second = WritingCanvasGeometry.gaFixture(width = 1_000f, height = 500f)
-
-        assertEquals(3, first.strokes.size)
-        first.strokes.zip(second.strokes).forEach { (largeStroke, smallStroke) ->
-            val largeDx = largeStroke.last().x - largeStroke.first().x
-            val largeDy = largeStroke.last().y - largeStroke.first().y
-            val smallDx = smallStroke.last().x - smallStroke.first().x
-            val smallDy = smallStroke.last().y - smallStroke.first().y
-            if (smallDx != 0f) assertEquals(1.55f, largeDx / smallDx, 0.001f)
-            if (smallDy != 0f) assertEquals(1.55f, largeDy / smallDy, 0.001f)
+    fun gaUsesThreeEducationalStrokesInOrder() {
+        val glyph = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
+        val normalized = glyph.strokes.map { stroke ->
+            stroke.map { point ->
+                CanvasPoint(
+                    x = (point.x - 671f) / glyph.emSize,
+                    y = (point.y - 77.5f) / glyph.emSize,
+                )
+            }
         }
+
+        assertEquals(3, glyph.strokes.size)
+        val expected = listOf(
+            listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.48f, 0.12f), CanvasPoint(0.48f, 0.88f)),
+            listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+            listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
+        )
+        expected.zip(normalized).forEach { (expectedStroke, actualStroke) ->
+            expectedStroke.zip(actualStroke).forEach { (expectedPoint, actualPoint) ->
+                assertEquals(expectedPoint.x, actualPoint.x, 0.0001f)
+                assertEquals(expectedPoint.y, actualPoint.y, 0.0001f)
+            }
+        }
+    }
+
+    @Test
+    fun gaPreservesNormalizedJamoLayoutWithUniformScaleAcrossCanvasRatios() {
+        val wide = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
+        val tall = WritingCanvasGeometry.ga(width = 900f, height = 1_200f)
+        val wideBoard = WritingCanvasGeometry.learningBoard(width = 1_962f, height = 775f)
+        val tallBoard = WritingCanvasGeometry.learningBoard(width = 900f, height = 1_200f)
+
+        assertEquals(620f, wide.emSize, 0.001f)
+        assertEquals(720f, tall.emSize, 0.001f)
+        wide.strokes.zip(tall.strokes).forEach { (wideStroke, tallStroke) ->
+            wideStroke.zip(tallStroke).forEach { (widePoint, tallPoint) ->
+                assertEquals(
+                    (widePoint.x - wideBoard.left) / wide.emSize,
+                    (tallPoint.x - tallBoard.left) / tall.emSize,
+                    0.0001f,
+                )
+                assertEquals(
+                    (widePoint.y - wideBoard.top) / wide.emSize,
+                    (tallPoint.y - tallBoard.top) / tall.emSize,
+                    0.0001f,
+                )
+            }
+        }
+        assertEquals(0.20f, wide.strokeWidth / wide.emSize, 0.001f)
+        assertEquals(0.20f, tall.strokeWidth / tall.emSize, 0.001f)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun gaRejectsEmptyCanvas() {
+        WritingCanvasGeometry.ga(width = 1_000f, height = 0f)
     }
 
     @Test(expected = IllegalArgumentException::class)

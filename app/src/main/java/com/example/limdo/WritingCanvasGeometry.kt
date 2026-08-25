@@ -41,8 +41,7 @@ internal object WritingCanvasGeometry {
         ),
     )
 
-    // 화면에 노출하지 않는 조합 글자 배치 계약용 fixture다.
-    internal val gaTemplate = listOf(
+    private val gaTemplate = listOf(
         listOf(
             CanvasPoint(0.05f, 0.12f),
             CanvasPoint(0.48f, 0.12f),
@@ -115,7 +114,7 @@ internal object WritingCanvasGeometry {
         )
     }
 
-    internal fun gaFixture(width: Float, height: Float): GlyphGeometry =
+    fun ga(width: Float, height: Float): GlyphGeometry =
         transform(gaTemplate, width, height)
 
     private fun transform(
