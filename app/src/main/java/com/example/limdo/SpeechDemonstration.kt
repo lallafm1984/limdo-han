@@ -13,6 +13,7 @@ internal fun SpokenCue.demonstrationStrokeIndex(characterStart: Int): Int? {
         SpokenCue.RETRY_SECOND_START,
         SpokenCue.RETRY_SECOND_DIRECTION,
         SpokenCue.RETRY_SECOND_RIGHT_DIRECTION,
+        SpokenCue.RETRY_SECOND_LEFT_DIRECTION,
         SpokenCue.RETRY_SECOND_GUIDE,
         SpokenCue.RETRY_SECOND_FINISH,
         -> return 1
@@ -34,6 +35,9 @@ internal fun SpokenCue.demonstrationStrokeIndex(characterStart: Int): Int? {
         SpokenCue.SUCCESS_DIGEUT,
         SpokenCue.SUCCESS_NA,
         SpokenCue.SUCCESS_DA,
+        SpokenCue.SUCCESS_RIEUL,
+        SpokenCue.SUCCESS_MIEUM,
+        SpokenCue.SUCCESS_BIEUP,
         -> return null
         SpokenCue.INITIAL_GIEOK,
         SpokenCue.INITIAL_NIEUN,
@@ -43,6 +47,9 @@ internal fun SpokenCue.demonstrationStrokeIndex(characterStart: Int): Int? {
         SpokenCue.INITIAL,
         SpokenCue.INITIAL_NA,
         SpokenCue.INITIAL_DA,
+        SpokenCue.INITIAL_RIEUL,
+        SpokenCue.INITIAL_MIEUM,
+        SpokenCue.INITIAL_BIEUP,
         -> Unit
     }
 

@@ -30,6 +30,9 @@ class KoreanCurriculumTest {
                 CurriculumStage.CONSONANTS,
                 CurriculumStage.CONSONANTS,
                 CurriculumStage.CONSONANTS,
+                CurriculumStage.CONSONANTS,
+                CurriculumStage.CONSONANTS,
+                CurriculumStage.CONSONANTS,
                 CurriculumStage.VOWELS,
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
@@ -42,7 +45,7 @@ class KoreanCurriculumTest {
     @Test
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         assertEquals(
-            listOf("ㄱ", "ㄴ", "ㄷ", "ㅏ", "가", "나", "다"),
+            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅏ", "가", "나", "다"),
             KoreanCurriculum.lessons.map(LessonSpec::glyph),
         )
         assertEquals(0, KoreanCurriculum.nextIndex(KoreanCurriculum.lessons.lastIndex))
@@ -62,6 +65,7 @@ class KoreanCurriculumTest {
                 val dy = stroke[1].y - stroke[0].y
                 when (direction) {
                     StrokeDirection.RIGHT -> assertTrue(dx > 0f && abs(dx) > abs(dy))
+                    StrokeDirection.LEFT -> assertTrue(dx < 0f && abs(dx) > abs(dy))
                     StrokeDirection.DOWN -> assertTrue(dy > 0f && abs(dy) > abs(dx))
                 }
             }
@@ -121,6 +125,9 @@ class KoreanCurriculumTest {
                 LessonId.GIEOK,
                 LessonId.NIEUN,
                 LessonId.DIGEUT,
+                LessonId.RIEUL,
+                LessonId.MIEUM,
+                LessonId.BIEUP,
             ))
 
             val demonstrated = lesson.initialCue.utterance.indices

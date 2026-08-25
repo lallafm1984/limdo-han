@@ -7,6 +7,12 @@ internal enum class SpokenCue(val utterance: String) {
     SUCCESS_NIEUN("잘했어! 니은을 완성했어."),
     INITIAL_DIGEUT("오른쪽으로 그려봐. 다음은 아래쪽, 모서리에서 오른쪽으로 그려봐."),
     SUCCESS_DIGEUT("잘했어! 디귿을 완성했어."),
+    INITIAL_RIEUL("오른쪽, 아래쪽으로 그려봐. 다음은 왼쪽으로 그려봐. 마지막은 아래쪽, 오른쪽으로 그려봐."),
+    SUCCESS_RIEUL("잘했어! 리을을 완성했어."),
+    INITIAL_MIEUM("아래쪽으로 그려봐. 다음은 오른쪽, 아래쪽으로 그려봐. 마지막은 오른쪽으로 그려봐."),
+    SUCCESS_MIEUM("잘했어! 미음을 완성했어."),
+    INITIAL_BIEUP("왼쪽 아래. 다음은 오른쪽 아래. 다음은 위를 오른쪽. 마지막은 가운데와 아래를 이어봐."),
+    SUCCESS_BIEUP("잘했어! 비읍을 완성했어."),
     INITIAL_A("아래쪽으로 그려봐. 다음은 오른쪽으로 그려봐."),
     SUCCESS_A("잘했어! 아를 완성했어."),
     INITIAL("오른쪽, 모서리에서 아래쪽으로 그려봐. 다음은 아래쪽으로 그려봐. 마지막은 오른쪽으로 그려봐."),
@@ -23,6 +29,7 @@ internal enum class SpokenCue(val utterance: String) {
     RETRY_FIRST_DOWN_DIRECTION("첫 번째 획은 아래쪽으로 내려가보자."),
     RETRY_SECOND_DIRECTION("두 번째 획은 아래쪽으로 내려가보자."),
     RETRY_SECOND_RIGHT_DIRECTION("두 번째 획은 오른쪽으로 그려보자."),
+    RETRY_SECOND_LEFT_DIRECTION("두 번째 획은 왼쪽으로 그려보자."),
     RETRY_THIRD_DIRECTION("세 번째 획은 오른쪽으로 그려보자."),
     RETRY_THIRD_DOWN_DIRECTION("세 번째 획은 아래쪽으로 내려가보자."),
     RETRY_FOURTH_RIGHT_DIRECTION("네 번째 획은 오른쪽으로 그려보자."),
@@ -77,9 +84,11 @@ internal object SpokenCueModel {
         strokeIndex <= 0 && direction == StrokeDirection.RIGHT -> SpokenCue.RETRY_DIRECTION
         strokeIndex <= 0 -> SpokenCue.RETRY_FIRST_DOWN_DIRECTION
         strokeIndex == 1 && direction == StrokeDirection.RIGHT -> SpokenCue.RETRY_SECOND_RIGHT_DIRECTION
+        strokeIndex == 1 && direction == StrokeDirection.LEFT -> SpokenCue.RETRY_SECOND_LEFT_DIRECTION
         strokeIndex == 1 -> SpokenCue.RETRY_SECOND_DIRECTION
         strokeIndex == 3 -> SpokenCue.RETRY_FOURTH_RIGHT_DIRECTION
         direction == StrokeDirection.RIGHT -> SpokenCue.RETRY_THIRD_DIRECTION
+        direction == StrokeDirection.LEFT -> SpokenCue.RETRY_SECOND_LEFT_DIRECTION
         else -> SpokenCue.RETRY_THIRD_DOWN_DIRECTION
     }
 
