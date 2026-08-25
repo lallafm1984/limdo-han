@@ -60,6 +60,27 @@ class LessonRewardTest {
     }
 
     @Test
+    fun successMarkerKeepsTwentyFourDpClearOfProductionGa() {
+        val containerWidth = 2340f / 2.625f
+        val containerHeight = 1080f / 2.625f
+        val canvasWidth = containerWidth - 144f
+        val canvasHeight = containerHeight - 116f
+        val glyph = WritingCanvasGeometry.visibleLessonGlyph(canvasWidth, canvasHeight)
+        val guideRight = 72f + glyph.strokes.flatten().maxOf { it.x } + glyph.strokeWidth / 2f
+        val center = SuccessMarkerGeometry.center(containerWidth, containerHeight)
+        val markerLeft = center.x - SuccessMarkerGeometry.WIDTH / 2f
+
+        assertEquals(
+            SuccessMarkerGeometry.GLYPH_SAFETY_MARGIN,
+            markerLeft - guideRight,
+            0.001f,
+        )
+        assertTrue(center.x + SuccessMarkerGeometry.WIDTH / 2f <= containerWidth)
+        assertTrue(center.y - SuccessMarkerGeometry.HEIGHT / 2f >= 0f)
+        assertTrue(center.y + SuccessMarkerGeometry.HEIGHT / 2f <= containerHeight)
+    }
+
+    @Test
     fun successMovesExactlyStrokeCountStepsThroughClearPhases() {
         val started = LessonRewardState().onTraceResult(GieokTraceResult.SUCCESS, GieokLesson)
         val moving = started.moving()

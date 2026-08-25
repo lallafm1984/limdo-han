@@ -230,6 +230,10 @@ private fun LearningShell(
             completedSteps = rewardOffset.value,
             targetSteps = GaLesson.strokeCount,
         )
+        val successMarkerCenter = SuccessMarkerGeometry.center(
+            containerWidth = maxWidth.value,
+            containerHeight = maxHeight.value,
+        )
         Image(
             painter = painterResource(R.drawable.limdo_sunny_flower_background),
             contentDescription = null,
@@ -279,11 +283,19 @@ private fun LearningShell(
                 text = if (traceResult == GieokTraceResult.SUCCESS) "★  ✓" else "↻",
                 modifier = if (traceResult == GieokTraceResult.SUCCESS) {
                     Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 116.dp)
+                        .align(Alignment.Center)
+                        .offset(
+                            x = (successMarkerCenter.x - maxWidth.value / 2f).dp,
+                            y = (successMarkerCenter.y - maxHeight.value / 2f).dp,
+                        )
+                        .size(
+                            width = SuccessMarkerGeometry.WIDTH.dp,
+                            height = SuccessMarkerGeometry.HEIGHT.dp,
+                        )
                 } else {
                     Modifier.align(Alignment.TopCenter)
                 },
+                textAlign = TextAlign.Center,
                 color = if (traceResult == GieokTraceResult.SUCCESS) {
                     Color(0xFF276B50)
                 } else {
