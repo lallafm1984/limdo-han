@@ -54,6 +54,9 @@ class KoreanCurriculumTest {
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
             ),
             KoreanCurriculum.lessons.map(LessonSpec::stage),
         )
@@ -62,7 +65,7 @@ class KoreanCurriculumTest {
     @Test
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         assertEquals(
-            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다"),
+            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바"),
             KoreanCurriculum.lessons.map(LessonSpec::glyph),
         )
         assertEquals(0, KoreanCurriculum.nextIndex(KoreanCurriculum.lessons.lastIndex))

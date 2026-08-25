@@ -13,7 +13,7 @@ internal data class LessonSpec(
 internal enum class LessonId {
     GIEOK, NIEUN, DIGEUT, RIEUL, MIEUM, BIEUP, SIOT, IEUNG, JIEUT, CHIEUT, KIEUK, TIEUT,
     PIEUP, HIEUH,
-    A, YA, EO, YEO, O, YO, U, YU, EU, I, GA, NA, DA,
+    A, YA, EO, YEO, O, YO, U, YU, EU, I, GA, NA, DA, RA, MA, BA,
 }
 
 internal enum class StrokeDirection { RIGHT, LEFT, UP, DOWN }
@@ -295,6 +295,52 @@ internal object KoreanCurriculum {
                 StrokeDirection.RIGHT,
             ),
         ),
+        LessonSpec(
+            id = LessonId.RA,
+            stage = CurriculumStage.OPEN_SYLLABLES,
+            glyph = "라",
+            strokeCount = 5,
+            initialCue = SpokenCue.INITIAL_RA,
+            successCue = SpokenCue.SUCCESS_RA,
+            strokeDirections = listOf(
+                StrokeDirection.RIGHT,
+                StrokeDirection.LEFT,
+                StrokeDirection.DOWN,
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+            ),
+        ),
+        LessonSpec(
+            id = LessonId.MA,
+            stage = CurriculumStage.OPEN_SYLLABLES,
+            glyph = "마",
+            strokeCount = 5,
+            initialCue = SpokenCue.INITIAL_MA,
+            successCue = SpokenCue.SUCCESS_MA,
+            strokeDirections = listOf(
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+            ),
+        ),
+        LessonSpec(
+            id = LessonId.BA,
+            stage = CurriculumStage.OPEN_SYLLABLES,
+            glyph = "바",
+            strokeCount = 6,
+            initialCue = SpokenCue.INITIAL_BA,
+            successCue = SpokenCue.SUCCESS_BA,
+            strokeDirections = listOf(
+                StrokeDirection.DOWN,
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+            ),
+        ),
     )
 
     fun nextIndex(currentIndex: Int): Int = (currentIndex + 1) % lessons.size
@@ -327,6 +373,9 @@ internal val ILesson = KoreanCurriculum.lessons.first { it.id == LessonId.I }
 internal val GaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.GA }
 internal val NaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.NA }
 internal val DaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.DA }
+internal val RaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.RA }
+internal val MaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.MA }
+internal val BaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.BA }
 
 internal enum class RewardMovePhase { IDLE, START, MOVING, COMPLETE }
 
