@@ -14,13 +14,17 @@ internal object SuccessMarkerGeometry {
     private const val WRITING_TOP_PADDING = 24f
     private const val WRITING_BOTTOM_PADDING = 92f
 
-    fun center(containerWidth: Float, containerHeight: Float): MarkerCenter {
+    fun center(
+        containerWidth: Float,
+        containerHeight: Float,
+        lesson: LessonSpec = GaLesson,
+    ): MarkerCenter {
         require(containerWidth > WRITING_HORIZONTAL_PADDING * 2f)
         require(containerHeight > WRITING_TOP_PADDING + WRITING_BOTTOM_PADDING)
 
         val canvasWidth = containerWidth - WRITING_HORIZONTAL_PADDING * 2f
         val canvasHeight = containerHeight - WRITING_TOP_PADDING - WRITING_BOTTOM_PADDING
-        val glyph = WritingCanvasGeometry.visibleLessonGlyph(canvasWidth, canvasHeight)
+        val glyph = WritingCanvasGeometry.visibleLessonGlyph(canvasWidth, canvasHeight, lesson)
         val points = glyph.strokes.flatten()
         val guideLeft = WRITING_HORIZONTAL_PADDING + points.minOf { it.x } - glyph.strokeWidth / 2f
         val guideRight = WRITING_HORIZONTAL_PADDING + points.maxOf { it.x } + glyph.strokeWidth / 2f

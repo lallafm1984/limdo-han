@@ -95,6 +95,7 @@ private val TraceAttemptSaver = listSaver<TraceAttempt, Any>(
 
 @Composable
 internal fun WritingCanvas(
+    lesson: LessonSpec,
     contentDescription: String,
     clearRequest: Int,
     inputEnabled: Boolean,
@@ -103,7 +104,7 @@ internal fun WritingCanvas(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(24.dp)
-    var attempt by rememberSaveable(stateSaver = TraceAttemptSaver) {
+    var attempt by rememberSaveable(lesson.id, stateSaver = TraceAttemptSaver) {
         mutableStateOf(TraceAttempt())
     }
     var handledClearRequest by rememberSaveable { mutableIntStateOf(clearRequest) }
@@ -111,7 +112,7 @@ internal fun WritingCanvas(
     val emptyStateDescription = "아직 그린 선이 없어요"
     val drawingStateDescription = "선을 그리고 있어요"
     val demonstrationProgress = if (attempt.stroke.points.isEmpty() && attempt.result == null) {
-        val transition = rememberInfiniteTransition(label = "가 세 획 시범")
+        val transition = rememberInfiniteTransition(label = "${lesson.glyph} 현재 획 시범")
         val progress by transition.animateFloat(
             initialValue = 0f,
             targetValue = 1f,
@@ -128,8 +129,9 @@ internal fun WritingCanvas(
             label = "시작에서 끝까지",
         )
         demonstrationStrokeIndex?.let { strokeIndex ->
-            WritingCanvasGeometry.gaStrokeDemonstrationProgress(strokeIndex, progress)
-        } ?: WritingCanvasGeometry.gaCurrentStrokeDemonstrationProgress(
+            WritingCanvasGeometry.strokeDemonstrationProgress(lesson, strokeIndex, progress)
+        } ?: WritingCanvasGeometry.currentStrokeDemonstrationProgress(
+            lesson = lesson,
             completedStrokeCount = attempt.completedStrokes.size,
             progress = progress,
         )
@@ -164,7 +166,7 @@ internal fun WritingCanvas(
         modifier = modifier
             .background(PracticeSurface, shape)
             .border(2.dp, PracticeBorder, shape)
-            .pointerInput(inputEnabled) {
+            .pointerInput(inputEnabled, lesson.id) {
                 if (!inputEnabled) return@pointerInput
                 val safeInset = 24.dp.toPx()
                 awaitEachGesture {
@@ -195,6 +197,7 @@ internal fun WritingCanvas(
                     val finishedAttempt = attempt.finish(
                         width = size.width.toFloat(),
                         height = size.height.toFloat(),
+                        lesson = lesson,
                     )
                     attempt = finishedAttempt
                     currentOnTraceResult(finishedAttempt.result, finishedAttempt.completedStrokes.size)
@@ -203,7 +206,7 @@ internal fun WritingCanvas(
             .semantics {
                 this.contentDescription = contentDescription
                 stateDescription = when (attempt.result) {
-                    GieokTraceResult.SUCCESS -> "가를 완성했어요"
+                    GieokTraceResult.SUCCESS -> "${lesson.glyph}를 완성했어요"
                     GieokTraceResult.WRONG_START,
                     GieokTraceResult.WRONG_DIRECTION,
                     GieokTraceResult.OFF_GUIDE,
@@ -239,7 +242,7 @@ internal fun WritingCanvas(
             pathEffect = dashEffect,
         )
 
-        val glyph = WritingCanvasGeometry.visibleLessonGlyph(size.width, size.height)
+        val glyph = WritingCanvasGeometry.visibleLessonGlyph(size.width, size.height, lesson)
         val pathStroke = glyph.strokeWidth
         glyph.strokes.forEach { stroke ->
             stroke.zipWithNext().forEach { (start, end) ->
@@ -278,6 +281,7 @@ internal fun WritingCanvas(
             width = size.width,
             height = size.height,
             completedStrokeCount = attempt.completedStrokes.size,
+            lesson = lesson,
         )?.let { currentStart ->
             drawCircle(
                 color = StartMarker,
@@ -289,6 +293,7 @@ internal fun WritingCanvas(
             width = size.width,
             height = size.height,
             completedStrokeCount = attempt.completedStrokes.size,
+            lesson = lesson,
         )?.let { currentEnd ->
             drawCircle(
                 color = GieokGuide,
@@ -308,7 +313,8 @@ internal fun WritingCanvas(
         }
 
         demonstrationProgress?.let { progress ->
-            val marker = WritingCanvasGeometry.gaDemonstrationGuide(
+            val marker = WritingCanvasGeometry.demonstrationGuide(
+                lesson = lesson,
                 width = size.width,
                 height = size.height,
                 progress = progress,
@@ -329,7 +335,8 @@ internal fun WritingCanvas(
                 center = Offset(marker.center.x, marker.center.y),
                 direction = Offset(marker.direction.x, marker.direction.y),
                 length = arrowLength * 0.58f * marker.visualScale,
-                headLength = WritingCanvasGeometry.gaDirectionArrowHeadLength(
+                headLength = WritingCanvasGeometry.directionArrowHeadLength(
+                    lesson = lesson,
                     width = size.width,
                     height = size.height,
                     strokeIndex = marker.strokeIndex,
@@ -340,7 +347,8 @@ internal fun WritingCanvas(
         }
 
         inputGuideMotion?.let { motion ->
-            val guide = WritingCanvasGeometry.gaInputDirectionGuide(
+            val guide = WritingCanvasGeometry.inputDirectionGuide(
+                lesson = lesson,
                 width = size.width,
                 height = size.height,
                 strokeIndex = attempt.completedStrokes.size,
@@ -350,18 +358,22 @@ internal fun WritingCanvas(
             drawDirectionArrow(
                 center = Offset(guide.center.x, guide.center.y),
                 direction = Offset(guide.direction.x, guide.direction.y),
-                length = arrowLength * 0.58f * WritingCanvasGeometry.gaStrokeGuideScale(
+                length = arrowLength * 0.58f * WritingCanvasGeometry.strokeGuideScale(
+                    lesson,
                     attempt.completedStrokes.size,
                 ),
-                headLength = WritingCanvasGeometry.gaDirectionArrowHeadLength(
+                headLength = WritingCanvasGeometry.directionArrowHeadLength(
+                    lesson = lesson,
                     width = size.width,
                     height = size.height,
                     strokeIndex = attempt.completedStrokes.size,
-                    arrowLength = arrowLength * 0.58f * WritingCanvasGeometry.gaStrokeGuideScale(
+                    arrowLength = arrowLength * 0.58f * WritingCanvasGeometry.strokeGuideScale(
+                        lesson,
                         attempt.completedStrokes.size,
                     ),
                 ),
-                strokeWidth = arrowStroke * WritingCanvasGeometry.gaStrokeGuideScale(
+                strokeWidth = arrowStroke * WritingCanvasGeometry.strokeGuideScale(
+                    lesson,
                     attempt.completedStrokes.size,
                 ),
             )

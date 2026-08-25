@@ -8,10 +8,21 @@ class SpeechDemonstrationTest {
     @Test
     fun mapsInitialSpeechRangesToThreeProductionStrokes() {
         val utterance = SpokenCue.INITIAL.utterance
+        val boundaries = sentenceStarts(utterance)
 
         assertEquals(0, SpokenCue.INITIAL.demonstrationStrokeIndex(0))
-        assertEquals(1, SpokenCue.INITIAL.demonstrationStrokeIndex(utterance.indexOf(". ") + 2))
-        assertEquals(2, SpokenCue.INITIAL.demonstrationStrokeIndex(utterance.lastIndexOf(", ") + 2))
+        assertEquals(1, SpokenCue.INITIAL.demonstrationStrokeIndex(boundaries[1]))
+        assertEquals(2, SpokenCue.INITIAL.demonstrationStrokeIndex(boundaries[2]))
+    }
+
+    @Test
+    fun mapsDaInitialSpeechRangesToFourProductionStrokes() {
+        val boundaries = sentenceStarts(SpokenCue.INITIAL_DA.utterance)
+
+        assertEquals(4, boundaries.size)
+        boundaries.forEachIndexed { strokeIndex, characterStart ->
+            assertEquals(strokeIndex, SpokenCue.INITIAL_DA.demonstrationStrokeIndex(characterStart))
+        }
     }
 
     @Test
@@ -41,6 +52,12 @@ class SpeechDemonstrationTest {
                 SpokenCue.RETRY_THIRD_GUIDE,
                 SpokenCue.RETRY_THIRD_FINISH,
             ),
+            listOf(
+                SpokenCue.RETRY_FOURTH_START,
+                SpokenCue.RETRY_FOURTH_RIGHT_DIRECTION,
+                SpokenCue.RETRY_FOURTH_GUIDE,
+                SpokenCue.RETRY_FOURTH_FINISH,
+            ),
         )
 
         retryCuesByStroke.forEachIndexed { strokeIndex, cues ->
@@ -49,6 +66,15 @@ class SpeechDemonstrationTest {
                 assertEquals(strokeIndex, cue.demonstrationStrokeIndex(cue.utterance.lastIndex))
                 assertNull(cue.demonstrationStrokeIndex(-1))
             }
+        }
+    }
+
+    private fun sentenceStarts(utterance: String): List<Int> = buildList {
+        add(0)
+        var boundary = utterance.indexOf(". ")
+        while (boundary >= 0) {
+            add(boundary + 2)
+            boundary = utterance.indexOf(". ", boundary + 2)
         }
     }
 }

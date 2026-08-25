@@ -60,6 +60,35 @@ class LessonRewardTest {
     }
 
     @Test
+    fun fourStepRewardPathKeepsDaVehicleFullyVisibleAndClearOfTheGlyph() {
+        val containerWidth = 2340f / 2.625f
+        val containerHeight = 1080f / 2.625f
+        val canvasWidth = containerWidth - 144f
+        val canvasHeight = containerHeight - 116f
+        val glyph = WritingCanvasGeometry.visibleLessonGlyph(canvasWidth, canvasHeight, DaLesson)
+        val guideLeft = 72f + glyph.strokes.flatten().minOf { it.x } - glyph.strokeWidth / 2f
+        val centers = (0..DaLesson.strokeCount).map { step ->
+            RewardPathGeometry.vehicleCenterX(
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                completedSteps = step.toFloat(),
+                targetSteps = DaLesson.strokeCount,
+                lesson = DaLesson,
+            )
+        }
+        val distances = centers.zipWithNext().map { (start, end) -> end - start }
+
+        assertTrue(centers.first() >= RewardPathGeometry.VEHICLE_WIDTH / 2f)
+        assertTrue(distances.first() < RewardPathGeometry.STEP_DISTANCE)
+        distances.forEach { distance -> assertEquals(distances.first(), distance, 0.001f) }
+        assertEquals(
+            RewardPathGeometry.GLYPH_SAFETY_MARGIN,
+            guideLeft - (centers.last() + RewardPathGeometry.VEHICLE_WIDTH / 2f),
+            0.001f,
+        )
+    }
+
+    @Test
     fun successMarkerKeepsTwentyFourDpClearOfProductionGa() {
         val containerWidth = 2340f / 2.625f
         val containerHeight = 1080f / 2.625f

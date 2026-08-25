@@ -4,6 +4,21 @@ import kotlin.math.ceil
 import kotlin.math.hypot
 
 internal object GaTraceEvaluator {
+    fun evaluateStroke(
+        width: Float,
+        height: Float,
+        strokeIndex: Int,
+        stroke: StrokePath,
+    ): GieokTraceResult = LessonTraceEvaluator.evaluateStroke(
+        lesson = GaLesson,
+        width = width,
+        height = height,
+        strokeIndex = strokeIndex,
+        stroke = stroke,
+    )
+}
+
+internal object LessonTraceEvaluator {
     private const val START_TOLERANCE_EM = 0.18f
     private const val CORRIDOR_TOLERANCE_EM = 0.16f
     private const val FINISH_TOLERANCE_EM = 0.20f
@@ -11,13 +26,14 @@ internal object GaTraceEvaluator {
     private const val MAX_OFF_GUIDE_FRACTION = 0.25f
 
     fun evaluateStroke(
+        lesson: LessonSpec,
         width: Float,
         height: Float,
         strokeIndex: Int,
         stroke: StrokePath,
     ): GieokTraceResult {
-        val glyph = WritingCanvasGeometry.ga(width, height)
-        require(strokeIndex in glyph.strokes.indices) { "strokeIndex is outside ga strokes" }
+        val glyph = WritingCanvasGeometry.glyph(lesson, width, height)
+        require(strokeIndex in glyph.strokes.indices) { "strokeIndex is outside lesson strokes" }
         val target = glyph.strokes[strokeIndex]
         val points = stroke.points
         if (points.isEmpty()) return GieokTraceResult.EMPTY

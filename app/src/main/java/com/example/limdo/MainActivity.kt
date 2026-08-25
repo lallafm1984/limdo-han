@@ -143,6 +143,7 @@ private fun LearningShell(
     var clearRequest by rememberSaveable { mutableIntStateOf(0) }
     var traceResult by rememberSaveable { mutableStateOf<GieokTraceResult?>(null) }
     var traceStrokeIndex by rememberSaveable { mutableIntStateOf(0) }
+    var lessonIndex by rememberSaveable { mutableIntStateOf(0) }
     var vehicleIndex by rememberSaveable { mutableIntStateOf(0) }
     var vehicleSuccessArmed by rememberSaveable { mutableStateOf(true) }
     var nextVehiclePending by rememberSaveable { mutableStateOf(false) }
@@ -159,7 +160,8 @@ private fun LearningShell(
     var restoredSuccessSpeechHandled by remember {
         mutableStateOf(traceResult != GieokTraceResult.SUCCESS)
     }
-    val currentCue = SpokenCueModel.forResult(traceResult, traceStrokeIndex)
+    val currentLesson = KoreanCurriculum.lessons[lessonIndex]
+    val currentCue = SpokenCueModel.forResult(traceResult, traceStrokeIndex, currentLesson)
     val currentVehicle = VehicleCarousel.vehicles[vehicleIndex]
 
     LaunchedEffect(rewardState.targetSteps) {
@@ -184,13 +186,13 @@ private fun LearningShell(
     LaunchedEffect(speechState, initialSpeechRequested) {
         if (speechState == SpeechPlaybackState.Ready && !initialSpeechRequested) {
             initialSpeechRequested = true
-            speak(SpokenCue.INITIAL)
+            speak(currentLesson.initialCue)
         }
     }
 
     LaunchedEffect(speechState, initialSpeechPending, restoredInitialSpeechHandled) {
-        if (speechState == SpeechPlaybackState.Completed(SpokenCue.INITIAL) ||
-            speechState == SpeechPlaybackState.Error(SpokenCue.INITIAL)
+        if (speechState == SpeechPlaybackState.Completed(currentLesson.initialCue) ||
+            speechState == SpeechPlaybackState.Error(currentLesson.initialCue)
         ) {
             initialSpeechPending = false
         } else if (shouldResumeInitialCue(
@@ -200,12 +202,12 @@ private fun LearningShell(
             )
         ) {
             restoredInitialSpeechHandled = true
-            if (!speak(SpokenCue.INITIAL)) initialSpeechPending = false
+            if (!speak(currentLesson.initialCue)) initialSpeechPending = false
         }
     }
 
     LaunchedEffect(speechState, traceResult, successSpeechPending, restoredSuccessSpeechHandled) {
-        if (speechState == SpeechPlaybackState.Completed(SpokenCue.SUCCESS)) {
+        if (speechState == SpeechPlaybackState.Completed(currentLesson.successCue)) {
             successSpeechPending = false
         } else if (shouldResumeSuccessCue(
                 speechState = speechState,
@@ -215,7 +217,7 @@ private fun LearningShell(
             )
         ) {
             restoredSuccessSpeechHandled = true
-            if (!speak(SpokenCue.SUCCESS)) successSpeechPending = false
+            if (!speak(currentLesson.successCue)) successSpeechPending = false
         }
     }
 
@@ -228,11 +230,13 @@ private fun LearningShell(
             containerWidth = maxWidth.value,
             containerHeight = maxHeight.value,
             completedSteps = rewardOffset.value,
-            targetSteps = GaLesson.strokeCount,
+            targetSteps = currentLesson.strokeCount,
+            lesson = currentLesson,
         )
         val successMarkerCenter = SuccessMarkerGeometry.center(
             containerWidth = maxWidth.value,
             containerHeight = maxHeight.value,
+            lesson = currentLesson,
         )
         Image(
             painter = painterResource(R.drawable.limdo_sunny_flower_background),
@@ -244,6 +248,7 @@ private fun LearningShell(
         )
 
         WritingBoardPreview(
+            lesson = currentLesson,
             clearRequest = clearRequest,
             inputEnabled = !rewardState.inputLocked,
             demonstrationStrokeIndex = demonstrationStrokeIndex,
@@ -260,8 +265,10 @@ private fun LearningShell(
                 nextVehiclePending = vehicleState.nextVehiclePending
                 traceResult = result
                 traceStrokeIndex = strokeIndex
-                rewardState = rewardState.onTraceResult(result, GaLesson)
-                if (result != null) speak(SpokenCueModel.forResult(result, strokeIndex))
+                rewardState = rewardState.onTraceResult(result, currentLesson)
+                if (result != null) {
+                    speak(SpokenCueModel.forResult(result, strokeIndex, currentLesson))
+                }
             },
             modifier = Modifier
                 .fillMaxSize()
@@ -311,7 +318,7 @@ private fun LearningShell(
             nextAvailable = rewardState.phase == RewardMovePhase.COMPLETE,
             onReplay = {
                 restoredInitialSpeechHandled = true
-                initialSpeechPending = currentCue == SpokenCue.INITIAL
+                initialSpeechPending = currentCue == currentLesson.initialCue
                 if (!speak(currentCue)) initialSpeechPending = false
             },
             onClear = {
@@ -356,7 +363,10 @@ private fun LearningShell(
                 rewardState = LessonRewardState()
                 traceResult = null
                 traceStrokeIndex = 0
-                if (!speak(SpokenCue.INITIAL)) initialSpeechPending = false
+                val nextLessonIndex = KoreanCurriculum.nextIndex(lessonIndex)
+                val nextLesson = KoreanCurriculum.lessons[nextLessonIndex]
+                lessonIndex = nextLessonIndex
+                if (!speak(nextLesson.initialCue)) initialSpeechPending = false
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -496,6 +506,7 @@ private fun GuideCharacterCard(
 
 @Composable
 private fun WritingBoardPreview(
+    lesson: LessonSpec,
     clearRequest: Int,
     inputEnabled: Boolean,
     demonstrationStrokeIndex: Int?,
@@ -507,7 +518,8 @@ private fun WritingBoardPreview(
         color = Color.Transparent,
     ) {
         WritingCanvas(
-            contentDescription = stringResource(R.string.writing_canvas_description),
+            lesson = lesson,
+            contentDescription = "큰 쓰기판. 초록 점에서 시작해 ${lesson.glyph}를 ${lesson.strokeCount}획으로 그려요",
             clearRequest = clearRequest,
             inputEnabled = inputEnabled,
             demonstrationStrokeIndex = demonstrationStrokeIndex,

@@ -24,8 +24,13 @@ internal data class TraceAttempt(
         stroke = stroke.append(point, width, height, safeInset),
     )
 
-    fun finish(width: Float, height: Float): TraceAttempt {
-        val strokeResult = GaTraceEvaluator.evaluateStroke(
+    fun finish(
+        width: Float,
+        height: Float,
+        lesson: LessonSpec = GaLesson,
+    ): TraceAttempt {
+        val strokeResult = LessonTraceEvaluator.evaluateStroke(
+            lesson = lesson,
             width = width,
             height = height,
             strokeIndex = completedStrokes.size,
@@ -34,7 +39,7 @@ internal data class TraceAttempt(
         if (strokeResult != GieokTraceResult.SUCCESS) return copy(result = strokeResult)
 
         val finished = completedStrokes + stroke
-        return if (finished.size == WritingCanvasGeometry.ga(width, height).strokes.size) {
+        return if (finished.size == WritingCanvasGeometry.glyph(lesson, width, height).strokes.size) {
             copy(completedStrokes = finished, result = GieokTraceResult.SUCCESS)
         } else {
             copy(stroke = StrokePath(), completedStrokes = finished, result = null)

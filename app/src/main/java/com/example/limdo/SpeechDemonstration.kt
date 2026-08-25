@@ -6,28 +6,53 @@ internal fun SpokenCue.demonstrationStrokeIndex(characterStart: Int): Int? {
     when (this) {
         SpokenCue.RETRY_START,
         SpokenCue.RETRY_DIRECTION,
+        SpokenCue.RETRY_FIRST_DOWN_DIRECTION,
         SpokenCue.RETRY_GUIDE,
         SpokenCue.RETRY_FINISH,
         -> return 0
         SpokenCue.RETRY_SECOND_START,
         SpokenCue.RETRY_SECOND_DIRECTION,
+        SpokenCue.RETRY_SECOND_RIGHT_DIRECTION,
         SpokenCue.RETRY_SECOND_GUIDE,
         SpokenCue.RETRY_SECOND_FINISH,
         -> return 1
         SpokenCue.RETRY_THIRD_START,
         SpokenCue.RETRY_THIRD_DIRECTION,
+        SpokenCue.RETRY_THIRD_DOWN_DIRECTION,
         SpokenCue.RETRY_THIRD_GUIDE,
         SpokenCue.RETRY_THIRD_FINISH,
         -> return 2
-        SpokenCue.INITIAL -> Unit
-        SpokenCue.SUCCESS -> return null
+        SpokenCue.RETRY_FOURTH_START,
+        SpokenCue.RETRY_FOURTH_RIGHT_DIRECTION,
+        SpokenCue.RETRY_FOURTH_GUIDE,
+        SpokenCue.RETRY_FOURTH_FINISH,
+        -> return 3
+        SpokenCue.SUCCESS,
+        SpokenCue.SUCCESS_A,
+        SpokenCue.SUCCESS_GIEOK,
+        SpokenCue.SUCCESS_NIEUN,
+        SpokenCue.SUCCESS_DIGEUT,
+        SpokenCue.SUCCESS_NA,
+        SpokenCue.SUCCESS_DA,
+        -> return null
+        SpokenCue.INITIAL_GIEOK,
+        SpokenCue.INITIAL_NIEUN,
+        -> return 0
+        SpokenCue.INITIAL_A,
+        SpokenCue.INITIAL_DIGEUT,
+        SpokenCue.INITIAL,
+        SpokenCue.INITIAL_NA,
+        SpokenCue.INITIAL_DA,
+        -> Unit
     }
 
-    val secondStrokeStart = utterance.indexOf(". ").let { if (it < 0) it else it + 2 }
-    val thirdStrokeStart = utterance.lastIndexOf(", ").let { if (it < 0) it else it + 2 }
-    return when {
-        thirdStrokeStart >= 0 && characterStart >= thirdStrokeStart -> 2
-        secondStrokeStart >= 0 && characterStart >= secondStrokeStart -> 1
-        else -> 0
+    val strokeStarts = buildList {
+        add(0)
+        var boundary = utterance.indexOf(". ")
+        while (boundary >= 0) {
+            add(boundary + 2)
+            boundary = utterance.indexOf(". ", boundary + 2)
+        }
     }
+    return strokeStarts.indexOfLast { characterStart >= it }.coerceAtLeast(0)
 }

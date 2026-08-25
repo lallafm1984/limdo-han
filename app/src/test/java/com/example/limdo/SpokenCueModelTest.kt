@@ -37,7 +37,7 @@ class SpokenCueModelTest {
     @Test
     fun gaInitialAndDirectionRetriesMatchTheCurrentProductionStroke() {
         assertEquals(
-            "초록점에서 오른쪽, 아래쪽. 다음은 아래쪽, 마지막은 오른쪽으로 그려봐.",
+            "오른쪽, 모서리에서 아래쪽으로 그려봐. 다음은 아래쪽으로 그려봐. 마지막은 오른쪽으로 그려봐.",
             SpokenCue.INITIAL.utterance,
         )
         assertEquals(SpokenCue.RETRY_DIRECTION, SpokenCueModel.forResult(GieokTraceResult.WRONG_DIRECTION, 0))
@@ -58,6 +58,11 @@ class SpokenCueModelTest {
             val strokeIndex = if (cue.name.contains("SECOND")) 1 else 2
             assertEquals(cue, SpokenCueModel.forResult(result, strokeIndex))
         }
+
+        assertEquals(
+            SpokenCue.RETRY_FOURTH_RIGHT_DIRECTION,
+            SpokenCueModel.forResult(GieokTraceResult.WRONG_DIRECTION, 3, DaLesson),
+        )
     }
 
     @Test

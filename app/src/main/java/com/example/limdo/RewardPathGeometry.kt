@@ -14,6 +14,7 @@ internal object RewardPathGeometry {
         containerHeight: Float,
         completedSteps: Float,
         targetSteps: Int,
+        lesson: LessonSpec = GaLesson,
     ): Float {
         require(containerWidth > WRITING_HORIZONTAL_PADDING * 2f)
         require(containerHeight > WRITING_TOP_PADDING + WRITING_BOTTOM_PADDING)
@@ -22,11 +23,13 @@ internal object RewardPathGeometry {
 
         val canvasWidth = containerWidth - WRITING_HORIZONTAL_PADDING * 2f
         val canvasHeight = containerHeight - WRITING_TOP_PADDING - WRITING_BOTTOM_PADDING
-        val glyph = WritingCanvasGeometry.visibleLessonGlyph(canvasWidth, canvasHeight)
+        val glyph = WritingCanvasGeometry.visibleLessonGlyph(canvasWidth, canvasHeight, lesson)
         val glyphGuideLeft = WRITING_HORIZONTAL_PADDING +
             glyph.strokes.flatten().minOf { it.x } - glyph.strokeWidth / 2f
         val finalCenter = glyphGuideLeft - GLYPH_SAFETY_MARGIN - VEHICLE_WIDTH / 2f
-        val startCenter = finalCenter - STEP_DISTANCE * targetSteps
-        return startCenter + STEP_DISTANCE * completedSteps.coerceAtMost(targetSteps.toFloat())
+        val availableTravel = finalCenter - VEHICLE_WIDTH / 2f
+        val stepDistance = minOf(STEP_DISTANCE, availableTravel / targetSteps)
+        val startCenter = finalCenter - stepDistance * targetSteps
+        return startCenter + stepDistance * completedSteps.coerceAtMost(targetSteps.toFloat())
     }
 }

@@ -50,10 +50,53 @@ internal object WritingCanvasGeometry {
         ),
     )
 
+    private val nieunTemplate = listOf(
+        listOf(
+            CanvasPoint(0.12f, 0.08f),
+            CanvasPoint(0.12f, 0.88f),
+            CanvasPoint(0.88f, 0.88f),
+        ),
+    )
+
+    private val digeutTemplate = listOf(
+        listOf(CanvasPoint(0.12f, 0.12f), CanvasPoint(0.88f, 0.12f)),
+        listOf(
+            CanvasPoint(0.12f, 0.12f),
+            CanvasPoint(0.12f, 0.88f),
+            CanvasPoint(0.88f, 0.88f),
+        ),
+    )
+
+    private val aTemplate = listOf(
+        listOf(CanvasPoint(0.46f, 0.08f), CanvasPoint(0.46f, 0.92f)),
+        listOf(CanvasPoint(0.46f, 0.50f), CanvasPoint(0.76f, 0.50f)),
+    )
+
     private val gaTemplate = listOf(
         listOf(
             CanvasPoint(0.05f, 0.12f),
             CanvasPoint(0.48f, 0.12f),
+            CanvasPoint(0.48f, 0.88f),
+        ),
+        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+        listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
+    )
+
+    private val naTemplate = listOf(
+        listOf(
+            CanvasPoint(0.05f, 0.12f),
+            CanvasPoint(0.05f, 0.88f),
+            CanvasPoint(0.48f, 0.88f),
+        ),
+        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+        listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
+    )
+
+    private val daTemplate = listOf(
+        listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.48f, 0.12f)),
+        listOf(
+            CanvasPoint(0.05f, 0.12f),
+            CanvasPoint(0.05f, 0.88f),
             CanvasPoint(0.48f, 0.88f),
         ),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
@@ -126,7 +169,19 @@ internal object WritingCanvasGeometry {
     fun ga(width: Float, height: Float): GlyphGeometry =
         transform(gaTemplate, width, height)
 
+    fun glyph(lesson: LessonSpec, width: Float, height: Float): GlyphGeometry =
+        transform(templateFor(lesson), width, height)
+
     fun gaInputDirectionGuide(
+        width: Float,
+        height: Float,
+        strokeIndex: Int,
+        input: CanvasPoint,
+        motionProgress: Float,
+    ): InputDirectionGuide = inputDirectionGuide(GaLesson, width, height, strokeIndex, input, motionProgress)
+
+    fun inputDirectionGuide(
+        lesson: LessonSpec,
         width: Float,
         height: Float,
         strokeIndex: Int,
@@ -134,8 +189,8 @@ internal object WritingCanvasGeometry {
         motionProgress: Float,
     ): InputDirectionGuide {
         require(motionProgress in 0f..1f) { "motionProgress must be between 0 and 1" }
-        val stroke = ga(width, height).strokes.getOrElse(strokeIndex) {
-            throw IllegalArgumentException("strokeIndex must identify a ga stroke")
+        val stroke = glyph(lesson, width, height).strokes.getOrElse(strokeIndex) {
+            throw IllegalArgumentException("strokeIndex must identify a lesson stroke")
         }
         val segments = stroke.zipWithNext().map { (start, end) ->
             val deltaX = end.x - start.x
@@ -184,14 +239,18 @@ internal object WritingCanvasGeometry {
         )
     }
 
-    fun visibleLessonGlyph(width: Float, height: Float): GlyphGeometry =
-        ga(width, height)
+    fun visibleLessonGlyph(
+        width: Float,
+        height: Float,
+        lesson: LessonSpec = GaLesson,
+    ): GlyphGeometry = glyph(lesson, width, height)
 
     fun currentVisibleStrokeStart(
         width: Float,
         height: Float,
         completedStrokeCount: Int,
-    ): CanvasPoint? = visibleLessonGlyph(width, height).strokes
+        lesson: LessonSpec = GaLesson,
+    ): CanvasPoint? = visibleLessonGlyph(width, height, lesson).strokes
         .getOrNull(completedStrokeCount)
         ?.first()
 
@@ -199,13 +258,22 @@ internal object WritingCanvasGeometry {
         width: Float,
         height: Float,
         completedStrokeCount: Int,
-    ): CanvasPoint? = visibleLessonGlyph(width, height).strokes
+        lesson: LessonSpec = GaLesson,
+    ): CanvasPoint? = visibleLessonGlyph(width, height, lesson).strokes
         .getOrNull(completedStrokeCount)
         ?.last()
 
-    fun gaDemonstrationGuide(width: Float, height: Float, progress: Float): DemonstrationGuide {
+    fun gaDemonstrationGuide(width: Float, height: Float, progress: Float): DemonstrationGuide =
+        demonstrationGuide(GaLesson, width, height, progress)
+
+    fun demonstrationGuide(
+        lesson: LessonSpec,
+        width: Float,
+        height: Float,
+        progress: Float,
+    ): DemonstrationGuide {
         require(progress in 0f..1f) { "progress must be between 0 and 1" }
-        val segments = ga(width, height).strokes.flatMapIndexed { strokeIndex, stroke ->
+        val segments = glyph(lesson, width, height).strokes.flatMapIndexed { strokeIndex, stroke ->
             stroke.zipWithNext().mapIndexed { segmentIndex, (start, end) ->
                 val deltaX = end.x - start.x
                 val deltaY = end.y - start.y
@@ -236,19 +304,26 @@ internal object WritingCanvasGeometry {
             direction = CanvasPoint(segment.deltaX / segment.length, segment.deltaY / segment.length),
             strokeIndex = segment.strokeIndex,
             segmentIndex = segment.segmentIndex,
-            visualScale = gaStrokeGuideScale(segment.strokeIndex),
+            visualScale = strokeGuideScale(lesson, segment.strokeIndex),
         )
     }
 
-    fun gaStrokeDemonstrationProgress(strokeIndex: Int, progress: Float): Float {
+    fun gaStrokeDemonstrationProgress(strokeIndex: Int, progress: Float): Float =
+        strokeDemonstrationProgress(GaLesson, strokeIndex, progress)
+
+    fun strokeDemonstrationProgress(
+        lesson: LessonSpec,
+        strokeIndex: Int,
+        progress: Float,
+    ): Float {
         require(progress in 0f..1f) { "progress must be between 0 and 1" }
-        val strokes = gaTemplate.map { stroke ->
+        val strokes = templateFor(lesson).map { stroke ->
             stroke.zipWithNext().sumOf { (start, end) ->
                 kotlin.math.hypot((end.x - start.x).toDouble(), (end.y - start.y).toDouble())
             }.toFloat()
         }
-        require(strokeIndex in strokes.indices) { "strokeIndex must identify a ga stroke" }
-        val visualScale = gaStrokeGuideScale(strokeIndex)
+        require(strokeIndex in strokes.indices) { "strokeIndex must identify a lesson stroke" }
+        val visualScale = strokeGuideScale(lesson, strokeIndex)
         val endpointInset = (1f - visualScale) * 0.5f
         val visibleProgress = endpointInset + progress * (1f - endpointInset * 2f)
         val distanceBefore = strokes.take(strokeIndex).sum()
@@ -259,8 +334,12 @@ internal object WritingCanvasGeometry {
     }
 
     fun gaStrokeGuideScale(strokeIndex: Int): Float {
-        val strokeLength = gaTemplate.getOrElse(strokeIndex) {
-            throw IllegalArgumentException("strokeIndex must identify a ga stroke")
+        return strokeGuideScale(GaLesson, strokeIndex)
+    }
+
+    fun strokeGuideScale(lesson: LessonSpec, strokeIndex: Int): Float {
+        val strokeLength = templateFor(lesson).getOrElse(strokeIndex) {
+            throw IllegalArgumentException("strokeIndex must identify a lesson stroke")
         }.zipWithNext().sumOf { (start, end) ->
             kotlin.math.hypot((end.x - start.x).toDouble(), (end.y - start.y).toDouble())
         }.toFloat()
@@ -272,16 +351,24 @@ internal object WritingCanvasGeometry {
         height: Float,
         strokeIndex: Int,
         arrowLength: Float,
+    ): Float = directionArrowHeadLength(GaLesson, width, height, strokeIndex, arrowLength)
+
+    fun directionArrowHeadLength(
+        lesson: LessonSpec,
+        width: Float,
+        height: Float,
+        strokeIndex: Int,
+        arrowLength: Float,
     ): Float {
         require(arrowLength > 0f) { "arrowLength must be positive" }
-        val glyph = ga(width, height)
+        val glyph = glyph(lesson, width, height)
         val stroke = glyph.strokes.getOrElse(strokeIndex) {
-            throw IllegalArgumentException("strokeIndex must identify a ga stroke")
+            throw IllegalArgumentException("strokeIndex must identify a lesson stroke")
         }
         val strokeLength = stroke.zipWithNext().sumOf { (start, end) ->
             kotlin.math.hypot((end.x - start.x).toDouble(), (end.y - start.y).toDouble())
         }.toFloat()
-        val visualScale = gaStrokeGuideScale(strokeIndex)
+        val visualScale = strokeGuideScale(lesson, strokeIndex)
         val scaledStrokeMinimum = strokeLength * (1f - visualScale) * 0.22f
         return maxOf(arrowLength * 0.30f, scaledStrokeMinimum)
             .coerceAtMost(arrowLength * 0.75f)
@@ -291,6 +378,22 @@ internal object WritingCanvasGeometry {
         completedStrokeCount: Int,
         progress: Float,
     ): Float = gaStrokeDemonstrationProgress(completedStrokeCount, progress)
+
+    fun currentStrokeDemonstrationProgress(
+        lesson: LessonSpec,
+        completedStrokeCount: Int,
+        progress: Float,
+    ): Float = strokeDemonstrationProgress(lesson, completedStrokeCount, progress)
+
+    private fun templateFor(lesson: LessonSpec): List<List<CanvasPoint>> = when (lesson.id) {
+        LessonId.GIEOK -> gieokTemplate
+        LessonId.NIEUN -> nieunTemplate
+        LessonId.DIGEUT -> digeutTemplate
+        LessonId.A -> aTemplate
+        LessonId.GA -> gaTemplate
+        LessonId.NA -> naTemplate
+        LessonId.DA -> daTemplate
+    }
 
     private fun transform(
         template: List<List<CanvasPoint>>,
