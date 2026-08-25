@@ -1,0 +1,21 @@
+
+--- probe 1 ---
+        mHaveState=false mIcicle=null
+      mHaveState=false mIcicle=null
+
+--- probe 2 ---
+        mHaveState=false mIcicle=null
+      mHaveState=false mIcicle=null
+
+--- probe 3 ---
+        mHaveState=false mIcicle=null
+      mHaveState=false mIcicle=null
+
+--- probe 4 ---
+        mHaveState=false mIcicle=null
+      mHaveState=false mIcicle=null
+
+--- probe 5 ---
+        mHaveState=false mIcicle=null
+      mHaveState=true mIcicle=Bundle[mParcelledData.dataSize=3040]
+      state=STOPPED delayedResume=false finishing=false

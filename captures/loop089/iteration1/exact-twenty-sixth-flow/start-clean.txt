@@ -1,0 +1,7 @@
+Starting: Intent { cmp=com.example.limdo/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.example.limdo/.MainActivity
+TotalTime: 1538
+WaitTime: 1553
+Complete
