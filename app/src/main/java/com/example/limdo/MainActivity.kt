@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -218,11 +219,17 @@ private fun LearningShell(
         }
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFFD85A)),
     ) {
+        val rewardVehicleCenterX = RewardPathGeometry.vehicleCenterX(
+            containerWidth = maxWidth.value,
+            containerHeight = maxHeight.value,
+            completedSteps = rewardOffset.value,
+            targetSteps = GaLesson.strokeCount,
+        )
         Image(
             painter = painterResource(R.drawable.limdo_sunny_flower_background),
             contentDescription = null,
@@ -262,7 +269,7 @@ private fun LearningShell(
             contentDescription = "${currentVehicle.koreanName} 안내",
             modifier = Modifier
                 .align(Alignment.Center)
-                .offset(x = (-344 + (rewardOffset.value * 48f)).dp, y = (-139).dp)
+                .offset(x = (rewardVehicleCenterX - maxWidth.value / 2f).dp, y = (-139).dp)
                 .size(width = 128.dp, height = 86.dp),
             contentScale = ContentScale.Fit,
         )

@@ -28,6 +28,38 @@ class LessonRewardTest {
     }
 
     @Test
+    fun threeStepRewardPathKeepsEveryVehiclePositionClearOfProductionGa() {
+        val containerWidth = 2340f / 2.625f
+        val containerHeight = 1080f / 2.625f
+        val canvasWidth = containerWidth - 144f
+        val canvasHeight = containerHeight - 116f
+        val glyph = WritingCanvasGeometry.visibleLessonGlyph(canvasWidth, canvasHeight)
+        val guideLeft = 72f + glyph.strokes.flatten().minOf { it.x } - glyph.strokeWidth / 2f
+
+        val centers = (0..GaLesson.strokeCount).map { step ->
+            RewardPathGeometry.vehicleCenterX(
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                completedSteps = step.toFloat(),
+                targetSteps = GaLesson.strokeCount,
+            )
+        }
+
+        centers.forEach { center ->
+            val vehicleRight = center + RewardPathGeometry.VEHICLE_WIDTH / 2f
+            assertTrue(guideLeft - vehicleRight >= RewardPathGeometry.GLYPH_SAFETY_MARGIN)
+        }
+        centers.zipWithNext().forEach { (start, end) ->
+            assertEquals(RewardPathGeometry.STEP_DISTANCE, end - start, 0.001f)
+        }
+        assertEquals(
+            RewardPathGeometry.GLYPH_SAFETY_MARGIN,
+            guideLeft - (centers.last() + RewardPathGeometry.VEHICLE_WIDTH / 2f),
+            0.001f,
+        )
+    }
+
+    @Test
     fun successMovesExactlyStrokeCountStepsThroughClearPhases() {
         val started = LessonRewardState().onTraceResult(GieokTraceResult.SUCCESS, GieokLesson)
         val moving = started.moving()
