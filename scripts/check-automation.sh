@@ -19,6 +19,7 @@ required_files=(
     ".loop/qa-findings.md"
     ".loop/user-directives.md"
     ".loop/cli-worker-prompt.md"
+    "scripts/check-work-value.sh"
     "scripts/run-cli-loop.sh"
     "scripts/start-cli-loop.sh"
     "scripts/cli-loop-status.sh"
@@ -58,6 +59,12 @@ grep -q '^검토 관문: AUTO_CHILD_PROXY_QA$' .loop/queue.md || fail "자동 �
 grep -q '다음 루프 하나' CLI_AUTOMATION.md || fail "완료 뒤 단일 다음 루프 계약이 없음"
 grep -q '.loop/qa-findings.md' .loop/cli-worker-prompt.md || fail "작업자 지시문에 QA 발견 기록이 없음"
 grep -q '.loop/user-directives.md' .loop/cli-worker-prompt.md || fail "작업자 지시문에 Codex 앱 지시 기록이 없음"
+grep -q '숫자만 늘린 반복' AGENTS.md || fail "AGENTS.md에 무의미한 반복 금지 규칙이 없음"
+grep -q '작업 가치 관문' CLI_AUTOMATION.md || fail "CLI 자동화 문서에 작업 가치 관문이 없음"
+grep -q '작업 가치 관문' .loop/cli-worker-prompt.md || fail "작업자 지시문에 작업 가치 관문이 없음"
+(( $(grep -c './scripts/check-automation.sh' scripts/run-cli-loop.sh) >= 2 )) || fail "감독자에 세션별 자동화 계약 재검사가 없음"
+
+./scripts/check-work-value.sh LOOP_GOAL.md
 
 goal_loop="$(sed -n 's/^# 루프 목표 \([0-9][0-9][0-9]\).*/\1/p' LOOP_GOAL.md)"
 state_loop="$(sed -n 's/^루프: \([0-9][0-9][0-9]\).*/\1/p' .loop/state.md)"

@@ -112,6 +112,11 @@ while has_work; do
         exit 0
     fi
 
+    if ! ./scripts/check-automation.sh; then
+        echo "CLI 루프 중지: 다음 세션의 자동화 계약 또는 작업 가치 관문 실패" >&2
+        exit 2
+    fi
+
     session_number=$((session_number + 1))
     run_id="$(date '+%Y%m%d-%H%M%S')-$(printf '%03d' "$session_number")"
     run_dir="$sessions_dir/$run_id"
