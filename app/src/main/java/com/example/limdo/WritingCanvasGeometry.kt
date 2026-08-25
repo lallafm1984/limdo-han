@@ -222,6 +222,21 @@ internal object WritingCanvasGeometry {
         )
     }
 
+    fun gaStrokeDemonstrationProgress(strokeIndex: Int, progress: Float): Float {
+        require(progress in 0f..1f) { "progress must be between 0 and 1" }
+        val strokes = gaTemplate.map { stroke ->
+            stroke.zipWithNext().sumOf { (start, end) ->
+                kotlin.math.hypot((end.x - start.x).toDouble(), (end.y - start.y).toDouble())
+            }.toFloat()
+        }
+        require(strokeIndex in strokes.indices) { "strokeIndex must identify a ga stroke" }
+        val distanceBefore = strokes.take(strokeIndex).sum()
+        val boundaryOffset = if (strokeIndex == 0) 0f else 0.000001f
+        val totalDistance = strokes.sum()
+        return ((distanceBefore + strokes[strokeIndex] * progress) / totalDistance + boundaryOffset)
+            .coerceAtMost(1f)
+    }
+
     private fun transform(
         template: List<List<CanvasPoint>>,
         width: Float,

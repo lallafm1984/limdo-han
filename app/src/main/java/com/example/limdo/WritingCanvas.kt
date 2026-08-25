@@ -98,6 +98,7 @@ internal fun WritingCanvas(
     contentDescription: String,
     clearRequest: Int,
     inputEnabled: Boolean,
+    demonstrationStrokeIndex: Int?,
     onTraceResult: (GieokTraceResult?, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -126,7 +127,9 @@ internal fun WritingCanvas(
             ),
             label = "시작에서 끝까지",
         )
-        progress
+        demonstrationStrokeIndex?.let { strokeIndex ->
+            WritingCanvasGeometry.gaStrokeDemonstrationProgress(strokeIndex, progress)
+        } ?: progress
     } else {
         null
     }

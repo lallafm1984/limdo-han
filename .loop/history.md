@@ -3392,3 +3392,54 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 이전 근거와 비교: 루프 122의 `INITIAL`은 1획만 말했고 2·3획 실패도 단일 `ㄱ` cue를 사용했다. 이번에는 같은 production `ga` 획 index가 시각 안내·판정·음성을 함께 선택하므로 가설을 채택했다.
 - 최종 아이 대리 QA: `captures/loop123/iteration1/final-proxy-qa/` 새 APK에서 큰 `가`, 초록 시작점, 획별 움직이는 화살표, 주황 끝점, 큰 다시 듣기·지우기, 성공 표식·3칸 보상은 글을 읽지 않고도 과제·시작·방향·초기화·결과를 구분했다. 다만 최종 `INITIAL`은 `19:16:54.955→19:17:08.326`, 약 13.37초 동안 재생되는데 시각 시범은 3초 주기라 음성 한 번에 약 4.5회 반복되어 말하는 획과 보이는 획이 엇갈릴 새 불편을 확인했다. `아이 대리 점검: 음성 내용 통과, 음성·시범 시간 동기화 실패`, `실제 아이 관찰: 실행 안 함`.
 - 완료·전환: 루프 123 성공 조건 1~8을 모두 새 근거로 통과했다. 가장 중요한 새 불편인 3획 음성·시범 시간 불일치를 루프 124로 준비하며 이번 작업자는 루프 124를 구현하지 않는다.
+
+## 루프 124 반복 1 — 가설
+
+- 우선 미충족 조건: 초기·다시 듣기 INITIAL 음성 구간이 현재 1·2·3획 중 어느 구간인지 화면 시범에 전달되지 않아, 화면 시범은 독립적인 3초 전체 반복을 계속한다.
+- 반증 가능한 가설: Android TTS의 onRangeStart 문자 offset을 INITIAL 문구의 “초록점”, “다음은”, “마지막” 경계에 매핑하고 WritingCanvas 시범을 해당 획 구간만 재생하면, 음성 완료·지우기·복구 시 비어 있는 상태로 돌아가면서 음성 재생 중에는 말하는 획과 같은 획만 시범할 수 있다.
+
+### 반복 1 — 결과 및 인계
+
+- 변경: `SpeechDemonstration.kt`에 `INITIAL` 문장의 구두점 경계를 0·1·2 획 index로 바꾸는 순수 모델을 추가하고, `LocalKoreanSpeech`의 `onRangeStart`가 이를 발행하도록 했다. 완료·오류·`stop`·`release`에서는 시범 획 상태를 null로 정리한다. 문구 정규화 차이로 첫 테스트가 실패해 한글 문자열 탐색 대신 기존 문장의 구두점 구조를 사용하는 최소 보정을 했다.
+- 검증·비교: 새 단위 테스트 2건은 세 획 경계와 비 `INITIAL`·음수 범위 무시를 통과했다. 첫 `./scripts/verify.sh`는 생성자 trailing lambda 호환 오류와 문자열 정규화 테스트 실패를 드러냈고 각각 보정했다. 최종 `./scripts/verify.sh`의 automation contract·전체 66개 단위 테스트·Android lint·debug build가 모두 통과했으며 `./scripts/check-automation.sh`와 `git diff --check`도 통과했다. 루프 123의 독립 3초 시범과 달리 이번에는 실제 TTS 문자 진행에서 획 상태를 얻는 새 기반을 확보해 가설을 부분 채택했다.
+- 남은 실패·다음 작업: callback을 Compose 화면에 아직 연결하지 않았으므로 보이는 화살표는 그대로이며 성공 조건 1~5·7과 정확한 2340 × 1080 시간 근거는 미충족이다. 다음 반복은 획 index를 화면에 전달해 해당 production 획만 재생하고 초기·다시 듣기·지우기·복구를 에뮬레이터에서 검증한다. `아이 대리 점검: 최종 수행 안 함`, `실제 아이 관찰: 실행 안 함`. 루프는 진행 중이며 커밋·push하지 않는다.
+
+## 루프 124 반복 2 — 가설
+
+- 우선 미충족 조건: 반복 1의 음성 획 index callback이 Compose 상태와 `WritingCanvas`에 전달되지 않아, `INITIAL` 재생 중에도 화면은 음성과 무관한 3초 전체 획 시범을 반복한다.
+- 반증 가능한 가설: `LocalKoreanSpeech` callback을 UI thread의 nullable 획 index 상태로 옮겨 `WritingCanvas`에 전달하고, 음성 재생 중에는 해당 `ga` 획의 국소 progress만 반복하며 callback이 null이면 기존 전체 시범으로 복귀하면, 초기·다시 듣기 음성 구간과 보이는 획이 일치하고 입력·지우기·재생 완료 상태는 회귀하지 않을 것이다.
+
+### 반복 2 — 결과 및 인계
+
+- 변경: 반복 1의 TTS 획 callback을 `MainActivity` UI thread의 nullable 상태로 옮겨 `LimDoApp` → `LearningShell` → `WritingBoardPreview` → `WritingCanvas`로 전달했다. `WritingCanvasGeometry.gaStrokeDemonstrationProgress`는 선택된 production `ga` 획 안에서만 국소 0~1 progress를 전체 거리로 변환하며, 획 경계가 이전 획 끝으로 귀속되지 않도록 경계를 보정했다. TTS 오류 callback도 시범 상태를 null로 정리하고, 에뮬레이터 시간 비교용 획·문자 범위 진단 로그를 남긴다.
+- 자동 검증: `speechSelectedDemonstrationProgressStaysWithinRequestedStroke` 회귀 테스트를 추가했다. 최종 `./scripts/verify.sh`의 전체 67개 단위 테스트, Android lint, debug build가 통과했고 `./scripts/check-automation.sh`와 `git diff --check`도 통과했다.
+- 새 에뮬레이터 근거: `captures/loop124/iteration2/initial-sync/` 새 APK에서 물리 1080 × 2340, `user_rotation=1`, 정확한 앱 2340 × 1080, 전면 `MainActivity`, WritingCanvas `[189,63][2151,838]` = 1962 × 775 px를 확인했다. 초기 재생은 1획 `19:32:20.766`, 2획 `19:32:23.449`, 3획 `19:32:25.062`, 완료 `19:32:27.715`로 순서대로 전환했다. 다시 듣기의 `replay-stroke1.png`, `replay-stroke2.png`, `replay-stroke3.png`는 각각 1획 오른쪽→아래쪽, 2획 아래쪽, 3획 오른쪽 표식을 음성 callback 구간 안에서 보였다. 지우기는 1획 재생 `19:41:09.163`을 `19:41:10.259`의 `준비 완료`로 바꾸고 7초 동안 느지막 획·완료 callback을 남기지 않았다.
+- 이전 근거와 비교: 루프 123은 13.37초 `INITIAL` 안에서 독립 3초 시범이 약 4.5회 반복되었지만, 이번 초기·다시 듣기는 TTS 문자 구간이 선택한 획 안에서만 표식을 반복했으므로 가설을 채택했다.
+- 남은 조건·다음 작업: 성공 조건 1·2와 지우기 전환, 조건 5의 핵심 시간 일치, 조건 6을 새 근거로 통과했다. 백그라운드 복원·실패 시범, 입력 중 획 안내·3획 판정·3칸 보상·입력 잠금의 새 화면·callback 회귀 근거가 남아 루프는 진행 중이다. `아이 대리 점검: 최종 수행 안 함`, `실제 아이 관찰: 실행 안 함`. 이번 작업자는 커밋·push하지 않고 종료한다.
+
+## 루프 124 반복 3 — 가설
+
+- 우선 미충족 조건: 반복 2는 초기·다시 듣기·지우기의 음성·시범 동기화를 확인했지만, 같은 최종 변경 APK에서 백그라운드 복원·실패 callback 정리와 정상 3획 입력·판정·3칸 보상·이동 중 입력 잠금을 확인하지 않았다.
+- 반증 가능한 가설: 획 시범 index는 TTS 재생 범위에만 적용되고 `stop`·완료·오류에서 null로 정리되므로, 백그라운드 전환 뒤 느지막 시범 callback이 없고 잘못된 획은 `RETRY`만 만들며, 이어진 production `ga` 정상 3획은 입력 중 현재 획 안내와 `SUCCESS` 1회·126 px씩 3칸 이동·이동 중 입력 잠금을 그대로 유지할 것이다.
+
+### 반복 3 — 결과 및 인계
+
+- 새 에뮬레이터 근거: `captures/loop124/iteration3/final-regression/`에서 물리 1080 × 2340, `user_rotation=1`, 정확한 앱 2340 × 1080, 전면 `MainActivity`, WritingCanvas `[189,63][2151,838]` = 1962 × 775 px를 유지했다. 안내 중 Home 전환 뒤 같은 task 복원에서 `INITIAL`은 1→2→3획 callback과 완료가 각 한 번뿐이었고 중복 callback은 없었다.
+- 판정·보상 회귀: 잘못된 3획 선행 입력은 `RETRY_START` 1회만 만들었다. 지우기 뒤 production `ga` 정상 세 획은 `SUCCESS` 시작·완료 각 1회와 `★  ✓`를 만들었고 경찰차는 `[99,62][435,288]`→`[477,62][813,288]`, 즉 126 px씩 3칸 이동했다. 보상 이동 중 추가 입력을 보냈지만 최종 획과 callback은 하나만 유지되어 입력 잠금도 회귀하지 않았다.
+- 반증된 부분: `input.log`의 2획 실패 흐름에서 `RETRY_SECOND_FINISH`와 `RETRY_SECOND_START` 음성이 재생되는 동안 `onRangeStart` 진단은 모두 `시범 획:0`, 즉 nullable 획 선택 없음이었다. 화면은 선택 획이 null이면 기존 전체 3획 시범으로 복귀하므로, 2획 아래쪽 재시도 음성과 1·2·3획 전체 시범이 엇갈린다. 따라서 실패 callback까지 동기화된다는 가설을 기각하고 성공 조건 3을 미충족으로 유지한다.
+- 자동 검증·비교: `./scripts/verify.sh`의 67개 단위 테스트·lint·debug build, `./scripts/check-automation.sh`, `git diff --check`, 캡처 SHA-256 생성이 통과했다. 반복 2보다 정상 입력·판정·3칸 보상·잠금과 백그라운드 중복 없음은 새로 확인했지만, 반복 2가 다루지 않은 획별 `RETRY`에서 같은 동기화 모델이 적용되지 않는 정확한 실패를 찾았다.
+- 다음 작업: `SpokenCueModel`의 1·2·3획 재시도 cue에도 시범 획 index를 제공해 `LocalKoreanSpeech.onRangeStart`가 해당 production `ga` 획만 선택하도록 최소 모델과 테스트를 추가하고, 2·3획 실패 음성·연속 프레임을 다시 확인한다. `아이 대리 점검: 최종 수행 안 함`, `실제 아이 관찰: 실행 안 함`. 루프는 진행 중이며 커밋·push하지 않는다.
+
+## 루프 124 반복 4 — 가설
+
+- 우선 미충족 조건: 2·3획 재시도 음성은 현재 획 방향을 말하지만 `SpokenCue.demonstrationStrokeIndex`가 `INITIAL`만 해석해 TTS 범위 callback 동안 시범 획이 null이고 화면은 전체 3획 시범으로 복귀한다.
+- 반증 가능한 가설: 각 `RETRY` cue를 production `ga`의 고정 획 index 0·1·2에 매핑하고 유효한 TTS 범위에서 그 index를 발행하면, 2획 실패 중에는 2획 아래쪽만, 3획 실패 중에는 3획 오른쪽만 보이며 완료·오류·지우기의 null 정리는 유지될 것이다.
+
+### 반복 4 — 결과 및 완료
+
+- 변경: `SpokenCue.demonstrationStrokeIndex`가 1·2·3획의 시작·방향·가이드 이탈·미완료 재시도 cue 12종을 각각 고정 production 획 0·1·2에 매핑하도록 최소 확장했다. 음수 범위는 계속 무시하고 `SUCCESS`는 시범을 선택하지 않는다.
+- 자동 검증: 새 단위 테스트가 12개 재시도 cue의 시작·마지막 문자 범위와 음수 범위를 고정했다. 집중 테스트와 `./scripts/verify.sh`의 전체 68개 단위 테스트·Android lint·debug build, `./scripts/check-automation.sh`, `git diff --check`가 모두 통과했다.
+- 새 에뮬레이터 근거: `captures/loop124/iteration4/retry-sync/`의 새 APK는 물리 1080 × 2340, `user_rotation=1`, 정확한 앱 2340 × 1080, 전면 `MainActivity`, WritingCanvas `[189,63][2151,838]` = 1962 × 775 px이다. `RETRY_SECOND_FINISH`의 6개 범위 callback은 모두 `시범 획:2`, `RETRY_THIRD_FINISH`의 6개는 모두 `시범 획:3`이고 각각 완료 뒤 정리됐다. 정상 3획은 `SUCCESS` 시작·완료 각 1회와 차량 최종 `[477,62][813,288]`를 유지했다.
+- 이전 근거와 비교: 반복 3의 같은 2획 실패는 `시범 획:0`으로 전체 시범에 복귀했지만 이번에는 음성이 말하는 production 획만 선택했고, 3획도 독립 확인했으므로 가설을 채택했다. 루프 124 성공 조건 1~7을 모두 새 누적 근거로 통과했다.
+- 최종 아이 대리 QA: 초기·다시 듣기·2획 실패·3획 실패에서 음성과 같은 획만 움직이고 완료·지우기·복원·정상 판정·3칸 보상도 유지됐다. 다만 성공 뒤에도 `다음`이 회색 `준비 중` 비활성이라 아이가 다음 입력을 위해 `지우기`를 알아서 눌러야 하는 새 불편을 확인했다. `아이 대리 점검: 음성·시범 동기화 통과, 성공 뒤 진행 동작 실패`, `실제 아이 관찰: 실행 안 함`.
+- 완료·전환: 루프 124를 완료하고 새 화면 근거의 가장 중요한 불편을 제품 변경 루프 125로 준비했다. 이번 작업자는 루프 125를 구현하지 않는다.

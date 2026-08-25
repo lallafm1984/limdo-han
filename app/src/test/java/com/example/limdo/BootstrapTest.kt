@@ -257,6 +257,24 @@ class BootstrapTest {
     }
 
     @Test
+    fun speechSelectedDemonstrationProgressStaysWithinRequestedStroke() {
+        for (strokeIndex in 0..2) {
+            val start = WritingCanvasGeometry.gaDemonstrationGuide(
+                1_962f,
+                775f,
+                WritingCanvasGeometry.gaStrokeDemonstrationProgress(strokeIndex, 0f),
+            )
+            val middle = WritingCanvasGeometry.gaDemonstrationGuide(
+                1_962f,
+                775f,
+                WritingCanvasGeometry.gaStrokeDemonstrationProgress(strokeIndex, 0.5f),
+            )
+            assertEquals(strokeIndex, start.strokeIndex)
+            assertEquals(strokeIndex, middle.strokeIndex)
+        }
+    }
+
+    @Test
     fun gaPreservesNormalizedJamoLayoutWithUniformScaleAcrossCanvasRatios() {
         val wide = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
         val tall = WritingCanvasGeometry.ga(width = 900f, height = 1_200f)

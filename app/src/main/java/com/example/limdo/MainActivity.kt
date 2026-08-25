@@ -55,15 +55,21 @@ import kotlinx.coroutines.delay
 class MainActivity : ComponentActivity() {
     private lateinit var localSpeech: LocalKoreanSpeech
     private var speechState by mutableStateOf<SpeechPlaybackState>(SpeechPlaybackState.Initializing)
+    private var demonstrationStrokeIndex by mutableStateOf<Int?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        localSpeech = LocalKoreanSpeech(this) { newState ->
-            runOnUiThread { speechState = newState }
-        }
+        localSpeech = LocalKoreanSpeech(
+            context = this,
+            onDemonstrationStrokeChanged = { strokeIndex ->
+                runOnUiThread { demonstrationStrokeIndex = strokeIndex }
+            },
+            onStateChanged = { newState -> runOnUiThread { speechState = newState } },
+        )
         setContent {
             LimDoApp(
                 speechState = speechState,
+                demonstrationStrokeIndex = demonstrationStrokeIndex,
                 speak = localSpeech::speakLatest,
                 stopSpeech = localSpeech::stop,
             )
@@ -107,6 +113,7 @@ private val RewardOffsetSaver = Saver<Animatable<Float, *>, Float>(
 @Composable
 private fun LimDoApp(
     speechState: SpeechPlaybackState,
+    demonstrationStrokeIndex: Int?,
     speak: (SpokenCue) -> Boolean,
     stopSpeech: () -> Unit,
 ) {
@@ -115,7 +122,12 @@ private fun LimDoApp(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            LearningShell(speechState = speechState, speak = speak, stopSpeech = stopSpeech)
+            LearningShell(
+                speechState = speechState,
+                demonstrationStrokeIndex = demonstrationStrokeIndex,
+                speak = speak,
+                stopSpeech = stopSpeech,
+            )
         }
     }
 }
@@ -123,6 +135,7 @@ private fun LimDoApp(
 @Composable
 private fun LearningShell(
     speechState: SpeechPlaybackState,
+    demonstrationStrokeIndex: Int?,
     speak: (SpokenCue) -> Boolean,
     stopSpeech: () -> Unit,
 ) {
@@ -222,6 +235,7 @@ private fun LearningShell(
         WritingBoardPreview(
             clearRequest = clearRequest,
             inputEnabled = !rewardState.inputLocked,
+            demonstrationStrokeIndex = demonstrationStrokeIndex,
             onTraceResult = { result, strokeIndex ->
                 restoredSuccessSpeechHandled = true
                 successSpeechPending = result == GieokTraceResult.SUCCESS
@@ -438,6 +452,7 @@ private fun GuideCharacterCard(
 private fun WritingBoardPreview(
     clearRequest: Int,
     inputEnabled: Boolean,
+    demonstrationStrokeIndex: Int?,
     onTraceResult: (GieokTraceResult?, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -449,6 +464,7 @@ private fun WritingBoardPreview(
             contentDescription = stringResource(R.string.writing_canvas_description),
             clearRequest = clearRequest,
             inputEnabled = inputEnabled,
+            demonstrationStrokeIndex = demonstrationStrokeIndex,
             onTraceResult = onTraceResult,
             modifier = Modifier.fillMaxSize(),
         )

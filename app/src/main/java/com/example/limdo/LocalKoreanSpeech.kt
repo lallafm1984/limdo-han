@@ -29,6 +29,7 @@ internal fun isInstalledOfflineKoreanVoice(
 
 internal class LocalKoreanSpeech(
     context: Context,
+    private val onDemonstrationStrokeChanged: (Int?) -> Unit = {},
     private val onStateChanged: (SpeechPlaybackState) -> Unit = {},
 ) : TextToSpeech.OnInitListener {
     private val tracker = SpeechPlaybackTracker()
@@ -54,16 +55,26 @@ internal class LocalKoreanSpeech(
         currentEngine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) = Unit
 
+            override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
+                val cue = (tracker.state as? SpeechPlaybackState.Playing)?.cue
+                val strokeIndex = cue?.demonstrationStrokeIndex(start)
+                Log.i(LOG_TAG, "시범 획:${strokeIndex?.plus(1) ?: 0} 범위:$start-$end")
+                onDemonstrationStrokeChanged(strokeIndex)
+            }
+
             override fun onDone(utteranceId: String?) {
+                onDemonstrationStrokeChanged(null)
                 if (utteranceId != null) update { completed(utteranceId) }
             }
 
             @Deprecated("Deprecated in Android")
             override fun onError(utteranceId: String?) {
+                onDemonstrationStrokeChanged(null)
                 update { failed(utteranceId) }
             }
 
             override fun onError(utteranceId: String?, errorCode: Int) {
+                onDemonstrationStrokeChanged(null)
                 update { failed(utteranceId) }
             }
         })
@@ -82,6 +93,7 @@ internal class LocalKoreanSpeech(
 
     fun stop() {
         engine?.stop()
+        onDemonstrationStrokeChanged(null)
         update { stop() }
     }
 
@@ -89,6 +101,7 @@ internal class LocalKoreanSpeech(
         engine?.stop()
         engine?.shutdown()
         engine = null
+        onDemonstrationStrokeChanged(null)
         update { release() }
     }
 
