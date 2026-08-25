@@ -148,6 +148,17 @@ class BootstrapTest {
     }
 
     @Test
+    fun visibleLessonUsesProductionGaGeometryWithoutDuplicatedCoordinates() {
+        val visible = WritingCanvasGeometry.visibleLessonGlyph(width = 1_962f, height = 775f)
+        val production = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
+
+        assertEquals(production, visible)
+        assertEquals(3, visible.strokes.size)
+        assertEquals(620f, visible.emSize, 0.001f)
+        assertEquals(124f, visible.strokeWidth, 0.001f)
+    }
+
+    @Test
     fun gaPreservesNormalizedJamoLayoutWithUniformScaleAcrossCanvasRatios() {
         val wide = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
         val tall = WritingCanvasGeometry.ga(width = 900f, height = 1_200f)

@@ -208,17 +208,19 @@ internal fun WritingCanvas(
             pathEffect = dashEffect,
         )
 
-        val glyph = WritingCanvasGeometry.gieok(size.width, size.height)
-        val points = glyph.strokes.single()
+        val glyph = WritingCanvasGeometry.visibleLessonGlyph(size.width, size.height)
+        val points = WritingCanvasGeometry.gieokPoints(size.width, size.height)
         val pathStroke = glyph.strokeWidth
-        points.zipWithNext().forEach { (start, end) ->
-            drawLine(
-                color = GieokGuide,
-                start = Offset(start.x, start.y),
-                end = Offset(end.x, end.y),
-                strokeWidth = pathStroke,
-                cap = StrokeCap.Round,
-            )
+        glyph.strokes.forEach { stroke ->
+            stroke.zipWithNext().forEach { (start, end) ->
+                drawLine(
+                    color = GieokGuide,
+                    start = Offset(start.x, start.y),
+                    end = Offset(end.x, end.y),
+                    strokeWidth = pathStroke,
+                    cap = StrokeCap.Round,
+                )
+            }
         }
         val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(size.width, size.height)
         if (attempt.stroke.points.size == 1) {

@@ -1,19 +1,19 @@
 # 현재 루프 상태
 
-루프: 118 — 첫 조합 글자 `가` 표시 연결
+루프: 119 — `가` 3획 동적 안내 연결
 
 상태: 준비
 
 반복: 0
 
-마지막 검증: 루프 117 반복 1에서 `gaFixture`를 production `ga(width, height)` API로 전환하고 3획 순서·정규화 자모 배치·가로형/세로형 Canvas의 균일 배율·잘못된 크기 거부를 새 단위 테스로 확정했다. `./scripts/verify.sh`의 단위 테스·lint·debug build가 모두 통과했다.
+마지막 검증: 루프 118 반복 1에서 `WritingCanvasGeometry.visibleLessonGlyph`가 production `ga(width, height)`를 그대로 선택하고 `WritingCanvas`가 세 획을 모두 그리도록 연결했다. `./scripts/verify.sh`, `./scripts/check-automation.sh`, `git diff --check`가 통과했다.
 
-완료한 조건: 루프 117 성공 조건 1~7 전체. 정확한 2340 × 1080 최종 아이 대리 QA에서 현재 화면은 의도대로 `ㄱ`만 표시하고 `가`는 아직 표시하지 않음을 확인했다.
+완료한 조건: 루프 118 성공 조건 1~7 전체. 정확한 2340 × 1080에서 WritingCanvas `[189,63][2151,838]` = 1962 × 775 px와 정사각형 620 px em, guide 124 px, `가` 중심선 bounds 약 551 × 521 px를 확인했다.
 
-현재 실패: 없음.
+현재 실패: `가`는 표시되지만 초록 시작점·정적 화살표·움직이는 시범과 입력 판정은 아직 이전 `ㄱ` 경로를 사용한다.
 
-현재 가설: `WritingCanvas`가 production `WritingCanvasGeometry.ga`의 3획을 별도 좌표 중복 없이 그리게 하면, 정사각형 em·자모 배치·20% 굵기를 유지한 `가`를 정확한 화면에 표시할 수 있다.
+현재 가설: production `ga`의 세 획과 선분 길이에서 전체 시범 진행률과 방향을 파생하면 별도 좌표 없이 올바른 3획 동적 안내를 표시할 수 있다.
 
-다음 작업: `WritingCanvas`의 `ㄱ` guide 렌더링과 lesson 선택 경계를 확인하고, production `ga` strokes를 그리는 최소 표시 연결과 실측 테스를 구현한다.
+다음 작업: `가` 세 획의 진행률→현재 선분·방향 매핑 API를 추가하고 입력 전 동적 안내를 연결한다.
 
-남은 조건: 루프 118 성공 조건 1~7 전체.
+남은 조건: 루프 119 성공 조건 1~7 전체.

@@ -3307,3 +3307,18 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 이전 반복과 비교: 루프 116은 제품 변경 없이 동일 안내 callback 횟수만 재검증했지만, 이번 반복은 테스트 fixture를 실제 제품 API로 전환하고 `가` 3획·배치·균일 배율을 새 제품 계약으로 확정했다. 따라서 가설을 채택했다.
 - 최종 아이 대리 QA: 새 debug APK를 `alarmquest-qa` 에뮬레이터에 설치하고 `captures/loop117/iteration1/final-proxy-qa/`에 정확한 2340 × 1080 초기 화면·hierarchy를 수집했다. 전면 focus는 `MainActivity`, WritingCanvas는 `[189,63][2151,838]` = 1962 × 775 px였다. 큰 `ㄱ`·시작점·방향 화살표·끝점·경찰차·큰 조작 버튼이 글을 읽지 않아도 현재 과제를 구분했다. 이번 루프는 의도대로 `가`를 화면에 표시하지 않았으며, 이 미완료 제품 단계를 루프 118로 준비했다. `아이 대리 점검: 현재 ㄱ 흐름 통과`, `실제 아이 관찰: 실행 안 함`.
 - 완료·전환: 루프 117 성공 조건 1~7을 모두 충족했다. 새 화면에서 추가 결함은 발견하지 못했으며, 최신 미완료 사용자 지시인 `가` 표시 연결을 작업 가치 관문이 있는 루프 118로 준비했다. 이번 작업자는 루프 118을 구현하지 않는다.
+
+## 루프 118 반복 1 — 가설
+
+- 우선 미충족 조건: 실제 `WritingCanvas`는 여전히 `WritingCanvasGeometry.gieok`만 표시하며 production `ga(width, height)`의 3획을 화면에 그리지 않는다.
+- 가설: 표시 선택 경계를 production `ga(width, height)`로 하나로 고정하고 `WritingCanvas`가 그 3획을 모두 그리게 하면, 1962 × 775 Canvas에서 정사각형 em·자모 배치·20% 굵기를 유지한 채 `가`가 표시될 것이다. 이번 루프에서는 미완료인 3획 동적 안내·판정을 별도 루프로 남기며, 기존 `기역` 판정·동적 안내는 그대로 유지한다.
+
+### 반복 1 — 결과 및 완료
+
+- 변경: `WritingCanvasGeometry.visibleLessonGlyph(width, height)`가 production `ga(width, height)`를 직접 선택하게 하고, `WritingCanvas`가 반환된 세 획의 모든 선분을 순회해 그리도록 변경했다. `BootstrapTest`는 화면 선택 geometry와 production geometry의 완전 동등성, 3획, 620 px em, 124 px guide를 고정한다. 별도 표시 좌표는 추가하지 않았다.
+- 첫 검증과 보정: 집중 `BootstrapTest`는 통과했다. 첫 `./scripts/verify.sh`는 제품 테스트·lint·build는 통과했으나 `.loop/state.md` 상태 토큰을 계약에 없는 `진행`으로 적어 automation 단계만 실패했다. 상태를 허용 토큰 `진행 중`으로 바로잡았고 제품 코드는 바꾸지 않았다.
+- 최종 자동 검증: 보정 뒤 `./scripts/verify.sh`의 automation contract, 전체 unit test, Android lint, debug build가 모두 통과했다. `./scripts/check-automation.sh`와 `git diff --check`도 통과했다. 기존 `ㄱ` geometry·입력 판정·보상·음성·초기화 회귀 테스트를 함께 유지했다.
+- 에뮬레이터 근거: 새 debug APK를 `alarmquest-qa`에 설치했다. 첫 캡처는 앱 시작 직후 launcher가 잠시 전면이어서 폐기하고, `MainActivity` focus를 다시 확인한 뒤 `captures/loop118/iteration1/final-proxy-qa/initial.png`와 `initial.xml`을 수집했다. PNG는 정확한 2340 × 1080이고 WritingCanvas는 `[189,63][2151,838]` = 1962 × 775 px이다. geometry 기준 정사각형 em은 620 × 620 px, guide는 124 px, `가` 중심선 bounds는 x `891..1442`, y 약 `190..711`, 즉 약 551 × 521 px이며 세 획은 자동차·시스템 바·하단 버튼에 가리지 않는다.
+- 이전 반복과 비교: 루프 117은 `ga`가 production API와 단위 테스트에만 있었고 화면에는 `ㄱ`만 보였다. 이번 새 APK 화면에는 같은 production 좌표의 `ㄱ`+`ㅏ` 세 획이 실제로 표시되어 가설을 채택했다.
+- 최종 아이 대리 QA: `가` 모양과 큰 쓰기 위치는 글을 읽지 않아도 구분되지만, 초록 시작점·오른쪽/아래 정적 화살표·움직이는 표식과 접근성 설명은 여전히 이전 `ㄱ` 경로를 가리킨다. 표시 연결만 입증하며 3획 동적 안내·입력 판정을 완료했다고 주장하지 않는다. `아이 대리 점검: 표시 통과, 시작점·획순·방향 실패`, `실제 아이 관찰: 실행 안 함`.
+- 완료·전환: 루프 118 성공 조건 1~7을 모두 충족했다. 가장 중요한 새 불편인 `가` 표시와 기존 `ㄱ` 안내 불일치를 결함 수정 루프 119로 준비했으며 이번 작업자는 루프 119를 구현하지 않는다.

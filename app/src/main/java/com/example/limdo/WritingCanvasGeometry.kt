@@ -117,6 +117,9 @@ internal object WritingCanvasGeometry {
     fun ga(width: Float, height: Float): GlyphGeometry =
         transform(gaTemplate, width, height)
 
+    fun visibleLessonGlyph(width: Float, height: Float): GlyphGeometry =
+        ga(width, height)
+
     private fun transform(
         template: List<List<CanvasPoint>>,
         width: Float,
