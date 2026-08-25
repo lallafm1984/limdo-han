@@ -129,7 +129,10 @@ internal fun WritingCanvas(
         )
         demonstrationStrokeIndex?.let { strokeIndex ->
             WritingCanvasGeometry.gaStrokeDemonstrationProgress(strokeIndex, progress)
-        } ?: progress
+        } ?: WritingCanvasGeometry.gaCurrentStrokeDemonstrationProgress(
+            completedStrokeCount = attempt.completedStrokes.size,
+            progress = progress,
+        )
     } else {
         null
     }
@@ -272,21 +275,6 @@ internal fun WritingCanvas(
         }
         val arrowLength = min(size.width, size.height) * 0.10f
         val arrowStroke = pathStroke * 0.18f
-        if (attempt.stroke.points.isEmpty()) {
-            glyph.strokes.forEach { stroke ->
-                stroke.zipWithNext().forEach { (start, end) ->
-                    val deltaX = end.x - start.x
-                    val deltaY = end.y - start.y
-                    val length = kotlin.math.sqrt((deltaX * deltaX) + (deltaY * deltaY))
-                    drawDirectionArrow(
-                        center = Offset((start.x + end.x) / 2f, (start.y + end.y) / 2f),
-                        direction = Offset(deltaX / length, deltaY / length),
-                        length = arrowLength,
-                        strokeWidth = arrowStroke,
-                    )
-                }
-            }
-        }
         drawCircle(
             color = StartMarker,
             radius = pathStroke * 0.62f,

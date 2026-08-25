@@ -275,6 +275,23 @@ class BootstrapTest {
     }
 
     @Test
+    fun idleDemonstrationAdvancesOnlyToTheCurrentUnfinishedStroke() {
+        for (completedStrokeCount in 0..2) {
+            listOf(0f, 0.5f, 0.99f).forEach { progress ->
+                val guide = WritingCanvasGeometry.gaDemonstrationGuide(
+                    1_962f,
+                    775f,
+                    WritingCanvasGeometry.gaCurrentStrokeDemonstrationProgress(
+                        completedStrokeCount,
+                        progress,
+                    ),
+                )
+                assertEquals(completedStrokeCount, guide.strokeIndex)
+            }
+        }
+    }
+
+    @Test
     fun gaPreservesNormalizedJamoLayoutWithUniformScaleAcrossCanvasRatios() {
         val wide = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
         val tall = WritingCanvasGeometry.ga(width = 900f, height = 1_200f)

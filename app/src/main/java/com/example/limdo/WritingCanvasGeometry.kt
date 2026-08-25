@@ -237,6 +237,11 @@ internal object WritingCanvasGeometry {
             .coerceAtMost(1f)
     }
 
+    fun gaCurrentStrokeDemonstrationProgress(
+        completedStrokeCount: Int,
+        progress: Float,
+    ): Float = gaStrokeDemonstrationProgress(completedStrokeCount, progress)
+
     private fun transform(
         template: List<List<CanvasPoint>>,
         width: Float,
