@@ -31,17 +31,27 @@ class VehicleCarouselTest {
     }
 
     @Test
-    fun failureReplayAndClearBeforeMoveCompletionDoNotAdvance() {
+    fun clearNeverAdvancesAndRearmsCurrentVehicle() {
         val afterSuccess = VehicleCarouselState().onTraceResult(GieokTraceResult.SUCCESS)
         val afterRetry = afterSuccess.onTraceResult(GieokTraceResult.OFF_GUIDE)
         val afterReplay = afterRetry.onTraceResult(null)
-        val earlyClear = afterReplay.prepareNextInput(moveCompleted = false)
+        val cleared = afterReplay.clearCurrentInput()
 
         assertEquals("경찰차", afterRetry.current.koreanName)
         assertEquals(afterRetry, afterReplay)
-        assertEquals("경찰차", earlyClear.current.koreanName)
-        assertTrue(earlyClear.successArmed)
-        assertFalse(earlyClear.nextVehiclePending)
+        assertEquals("경찰차", cleared.current.koreanName)
+        assertTrue(cleared.successArmed)
+        assertFalse(cleared.nextVehiclePending)
+    }
+
+    @Test
+    fun nextCannotAdvanceBeforeMoveCompletion() {
+        val pending = VehicleCarouselState().onTraceResult(GieokTraceResult.SUCCESS)
+        val blocked = pending.prepareNextInput(moveCompleted = false)
+
+        assertEquals("경찰차", blocked.current.koreanName)
+        assertTrue(blocked.successArmed)
+        assertFalse(blocked.nextVehiclePending)
     }
 
     @Test

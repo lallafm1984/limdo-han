@@ -32,6 +32,11 @@ internal data class VehicleCarouselState(
         successArmed = true,
         nextVehiclePending = false,
     )
+
+    fun clearCurrentInput(): VehicleCarouselState = copy(
+        successArmed = true,
+        nextVehiclePending = false,
+    )
 }
 
 internal object VehicleCarousel {

@@ -289,6 +289,7 @@ private fun LearningShell(
 
         ActionShelf(
             speechAvailable = speechState.canReplay,
+            nextAvailable = rewardState.phase == RewardMovePhase.COMPLETE,
             onReplay = {
                 restoredInitialSpeechHandled = true
                 initialSpeechPending = currentCue == SpokenCue.INITIAL
@@ -304,7 +305,25 @@ private fun LearningShell(
                     index = vehicleIndex,
                     successArmed = vehicleSuccessArmed,
                     nextVehiclePending = nextVehiclePending,
-                ).prepareNextInput(moveCompleted = rewardState.phase == RewardMovePhase.COMPLETE)
+                ).clearCurrentInput()
+                vehicleIndex = vehicleState.index
+                vehicleSuccessArmed = vehicleState.successArmed
+                nextVehiclePending = vehicleState.nextVehiclePending
+                rewardState = LessonRewardState()
+                traceResult = null
+                traceStrokeIndex = 0
+            },
+            onNext = {
+                initialSpeechPending = false
+                restoredSuccessSpeechHandled = true
+                successSpeechPending = false
+                stopSpeech()
+                clearRequest += 1
+                val vehicleState = VehicleCarouselState(
+                    index = vehicleIndex,
+                    successArmed = vehicleSuccessArmed,
+                    nextVehiclePending = nextVehiclePending,
+                ).prepareNextInput(moveCompleted = true)
                 vehicleIndex = vehicleState.index
                 vehicleSuccessArmed = vehicleState.successArmed
                 nextVehiclePending = vehicleState.nextVehiclePending
@@ -481,8 +500,10 @@ private data class ChildFeedback(
 @Composable
 private fun ActionShelf(
     speechAvailable: Boolean,
+    nextAvailable: Boolean,
     onReplay: () -> Unit,
     onClear: () -> Unit,
+    onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -510,8 +531,10 @@ private fun ActionShelf(
                 modifier = Modifier.weight(1f),
             )
             Spacer(modifier = Modifier.width(8.dp))
-            ActionPlaceholder(
+            NextAction(
                 label = stringResource(R.string.action_next),
+                available = nextAvailable,
+                onClick = onNext,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -594,30 +617,43 @@ private fun ClearAction(
 }
 
 @Composable
-private fun ActionPlaceholder(
+private fun NextAction(
     label: String,
+    available: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier.heightIn(min = 64.dp),
-        color = Color(0xFFF8F7F3),
+        onClick = onClick,
+        enabled = available,
+        modifier = modifier
+            .heightIn(min = 64.dp)
+            .semantics {
+                contentDescription = if (available) {
+                    "다음 쓰기, 사용 가능"
+                } else {
+                    "다음 쓰기, 사용 불가"
+                }
+                stateDescription = if (available) "다음 쓰기 사용 가능" else "다음 쓰기 사용 불가"
+            },
+        color = if (available) Color(0xFFDCEDE5) else Color(0xFFD8D4CC),
         shape = RoundedCornerShape(20.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = label,
-                color = Color(0xFF68716C),
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
+                text = "▶",
+                color = if (available) Color(0xFF285A46) else Color(0xFF68645E),
+                fontSize = 28.sp,
             )
             Text(
-                text = stringResource(R.string.not_available_yet),
-                color = Color(0xFF7C857F),
-                fontSize = 11.sp,
+                text = label,
+                color = if (available) Color(0xFF285A46) else Color(0xFF68645E),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
             )
         }
     }
