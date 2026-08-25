@@ -275,11 +275,17 @@ internal fun WritingCanvas(
         }
         val arrowLength = min(size.width, size.height) * 0.10f
         val arrowStroke = pathStroke * 0.18f
-        drawCircle(
-            color = StartMarker,
-            radius = pathStroke * 0.62f,
-            center = Offset(points.first().x, points.first().y),
-        )
+        WritingCanvasGeometry.currentVisibleStrokeStart(
+            width = size.width,
+            height = size.height,
+            completedStrokeCount = attempt.completedStrokes.size,
+        )?.let { currentStart ->
+            drawCircle(
+                color = StartMarker,
+                radius = pathStroke * 0.62f,
+                center = Offset(currentStart.x, currentStart.y),
+            )
+        }
         drawCircle(
             color = GieokGuide,
             radius = pathStroke * 0.76f,
