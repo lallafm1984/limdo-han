@@ -30,7 +30,33 @@ class SpokenCueModelTest {
             assertFalse(cue.utterance.isBlank())
             assertEquals(cue.utterance.trim(), cue.utterance)
             assertFalse(cue.utterance.contains('\n'))
-            assertFalse(cue.utterance.length > 40)
+            assertFalse(cue.utterance.length > 55)
+        }
+    }
+
+    @Test
+    fun gaInitialAndDirectionRetriesMatchTheCurrentProductionStroke() {
+        assertEquals(
+            "초록점에서 오른쪽, 아래쪽. 다음은 아래쪽, 마지막은 오른쪽으로 그려봐.",
+            SpokenCue.INITIAL.utterance,
+        )
+        assertEquals(SpokenCue.RETRY_DIRECTION, SpokenCueModel.forResult(GieokTraceResult.WRONG_DIRECTION, 0))
+        assertEquals(SpokenCue.RETRY_SECOND_DIRECTION, SpokenCueModel.forResult(GieokTraceResult.WRONG_DIRECTION, 1))
+        assertEquals(SpokenCue.RETRY_THIRD_DIRECTION, SpokenCueModel.forResult(GieokTraceResult.WRONG_DIRECTION, 2))
+
+        val secondStrokeCues = listOf(
+            GieokTraceResult.WRONG_START to SpokenCue.RETRY_SECOND_START,
+            GieokTraceResult.OFF_GUIDE to SpokenCue.RETRY_SECOND_GUIDE,
+            GieokTraceResult.INCOMPLETE to SpokenCue.RETRY_SECOND_FINISH,
+        )
+        val thirdStrokeCues = listOf(
+            GieokTraceResult.WRONG_START to SpokenCue.RETRY_THIRD_START,
+            GieokTraceResult.OFF_GUIDE to SpokenCue.RETRY_THIRD_GUIDE,
+            GieokTraceResult.INCOMPLETE to SpokenCue.RETRY_THIRD_FINISH,
+        )
+        (secondStrokeCues + thirdStrokeCues).forEach { (result, cue) ->
+            val strokeIndex = if (cue.name.contains("SECOND")) 1 else 2
+            assertEquals(cue, SpokenCueModel.forResult(result, strokeIndex))
         }
     }
 

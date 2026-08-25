@@ -98,7 +98,7 @@ internal fun WritingCanvas(
     contentDescription: String,
     clearRequest: Int,
     inputEnabled: Boolean,
-    onTraceResult: (GieokTraceResult?) -> Unit,
+    onTraceResult: (GieokTraceResult?, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(24.dp)
@@ -150,7 +150,7 @@ internal fun WritingCanvas(
         if (clearRequest != handledClearRequest) {
             handledClearRequest = clearRequest
             attempt = attempt.clear()
-            currentOnTraceResult(null)
+            currentOnTraceResult(null, 0)
         }
     }
 
@@ -169,7 +169,7 @@ internal fun WritingCanvas(
                         height = size.height.toFloat(),
                         safeInset = safeInset,
                     )
-                    currentOnTraceResult(null)
+                    currentOnTraceResult(null, attempt.completedStrokes.size)
                     down.consume()
 
                     while (true) {
@@ -191,7 +191,7 @@ internal fun WritingCanvas(
                         height = size.height.toFloat(),
                     )
                     attempt = finishedAttempt
-                    currentOnTraceResult(finishedAttempt.result)
+                    currentOnTraceResult(finishedAttempt.result, finishedAttempt.completedStrokes.size)
                 }
             }
             .semantics {

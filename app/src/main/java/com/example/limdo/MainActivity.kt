@@ -128,6 +128,7 @@ private fun LearningShell(
 ) {
     var clearRequest by rememberSaveable { mutableIntStateOf(0) }
     var traceResult by rememberSaveable { mutableStateOf<GieokTraceResult?>(null) }
+    var traceStrokeIndex by rememberSaveable { mutableIntStateOf(0) }
     var vehicleIndex by rememberSaveable { mutableIntStateOf(0) }
     var vehicleSuccessArmed by rememberSaveable { mutableStateOf(true) }
     var nextVehiclePending by rememberSaveable { mutableStateOf(false) }
@@ -144,7 +145,7 @@ private fun LearningShell(
     var restoredSuccessSpeechHandled by remember {
         mutableStateOf(traceResult != GieokTraceResult.SUCCESS)
     }
-    val currentCue = SpokenCueModel.forResult(traceResult)
+    val currentCue = SpokenCueModel.forResult(traceResult, traceStrokeIndex)
     val currentVehicle = VehicleCarousel.vehicles[vehicleIndex]
 
     LaunchedEffect(rewardState.targetSteps) {
@@ -221,7 +222,7 @@ private fun LearningShell(
         WritingBoardPreview(
             clearRequest = clearRequest,
             inputEnabled = !rewardState.inputLocked,
-            onTraceResult = { result ->
+            onTraceResult = { result, strokeIndex ->
                 restoredSuccessSpeechHandled = true
                 successSpeechPending = result == GieokTraceResult.SUCCESS
                 val vehicleState = VehicleCarouselState(
@@ -233,8 +234,9 @@ private fun LearningShell(
                 vehicleSuccessArmed = vehicleState.successArmed
                 nextVehiclePending = vehicleState.nextVehiclePending
                 traceResult = result
+                traceStrokeIndex = strokeIndex
                 rewardState = rewardState.onTraceResult(result, GaLesson)
-                if (result != null) speak(SpokenCueModel.forResult(result))
+                if (result != null) speak(SpokenCueModel.forResult(result, strokeIndex))
             },
             modifier = Modifier
                 .fillMaxSize()
@@ -294,6 +296,7 @@ private fun LearningShell(
                 nextVehiclePending = vehicleState.nextVehiclePending
                 rewardState = LessonRewardState()
                 traceResult = null
+                traceStrokeIndex = 0
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -435,7 +438,7 @@ private fun GuideCharacterCard(
 private fun WritingBoardPreview(
     clearRequest: Int,
     inputEnabled: Boolean,
-    onTraceResult: (GieokTraceResult?) -> Unit,
+    onTraceResult: (GieokTraceResult?, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
