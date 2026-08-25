@@ -42,6 +42,9 @@ class KoreanCurriculumTest {
                 CurriculumStage.CONSONANTS,
                 CurriculumStage.CONSONANTS,
                 CurriculumStage.VOWELS,
+                CurriculumStage.VOWELS,
+                CurriculumStage.VOWELS,
+                CurriculumStage.VOWELS,
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
@@ -53,7 +56,7 @@ class KoreanCurriculumTest {
     @Test
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         assertEquals(
-            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "가", "나", "다"),
+            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅑ", "ㅓ", "ㅕ", "가", "나", "다"),
             KoreanCurriculum.lessons.map(LessonSpec::glyph),
         )
         assertEquals(0, KoreanCurriculum.nextIndex(KoreanCurriculum.lessons.lastIndex))
@@ -144,6 +147,9 @@ class KoreanCurriculumTest {
                 LessonId.TIEUT,
                 LessonId.PIEUP,
                 LessonId.HIEUH,
+                LessonId.YA,
+                LessonId.EO,
+                LessonId.YEO,
             ))
 
             val demonstrated = lesson.initialCue.utterance.indices

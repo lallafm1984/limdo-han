@@ -46,11 +46,17 @@ internal fun SpokenCue.demonstrationStrokeIndex(characterStart: Int): Int? {
         SpokenCue.SUCCESS_TIEUT,
         SpokenCue.SUCCESS_PIEUP,
         SpokenCue.SUCCESS_HIEUH,
+        SpokenCue.SUCCESS_YA,
+        SpokenCue.SUCCESS_EO,
+        SpokenCue.SUCCESS_YEO,
         -> return null
         SpokenCue.INITIAL_GIEOK,
         SpokenCue.INITIAL_NIEUN,
         -> return 0
         SpokenCue.INITIAL_A,
+        SpokenCue.INITIAL_YA,
+        SpokenCue.INITIAL_EO,
+        SpokenCue.INITIAL_YEO,
         SpokenCue.INITIAL_DIGEUT,
         SpokenCue.INITIAL,
         SpokenCue.INITIAL_NA,
