@@ -44,6 +44,8 @@ internal fun SpokenCue.demonstrationStrokeIndex(characterStart: Int): Int? {
         SpokenCue.SUCCESS_CHIEUT,
         SpokenCue.SUCCESS_KIEUK,
         SpokenCue.SUCCESS_TIEUT,
+        SpokenCue.SUCCESS_PIEUP,
+        SpokenCue.SUCCESS_HIEUH,
         -> return null
         SpokenCue.INITIAL_GIEOK,
         SpokenCue.INITIAL_NIEUN,
@@ -62,6 +64,8 @@ internal fun SpokenCue.demonstrationStrokeIndex(characterStart: Int): Int? {
         SpokenCue.INITIAL_CHIEUT,
         SpokenCue.INITIAL_KIEUK,
         SpokenCue.INITIAL_TIEUT,
+        SpokenCue.INITIAL_PIEUP,
+        SpokenCue.INITIAL_HIEUH,
         -> Unit
     }
 

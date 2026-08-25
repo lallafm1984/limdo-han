@@ -154,6 +154,29 @@ internal object WritingCanvasGeometry {
         ),
     )
 
+    private val pieupTemplate = listOf(
+        listOf(CanvasPoint(0.18f, 0.12f), CanvasPoint(0.18f, 0.88f)),
+        listOf(CanvasPoint(0.82f, 0.12f), CanvasPoint(0.82f, 0.88f)),
+        listOf(CanvasPoint(0.18f, 0.28f), CanvasPoint(0.82f, 0.28f)),
+        listOf(CanvasPoint(0.18f, 0.72f), CanvasPoint(0.82f, 0.72f)),
+    )
+
+    private val hieuhTemplate = listOf(
+        listOf(CanvasPoint(0.30f, 0.08f), CanvasPoint(0.70f, 0.08f)),
+        listOf(CanvasPoint(0.18f, 0.28f), CanvasPoint(0.82f, 0.28f)),
+        listOf(
+            CanvasPoint(0.50f, 0.38f),
+            CanvasPoint(0.82f, 0.50f),
+            CanvasPoint(0.82f, 0.70f),
+            CanvasPoint(0.68f, 0.88f),
+            CanvasPoint(0.50f, 0.94f),
+            CanvasPoint(0.32f, 0.88f),
+            CanvasPoint(0.18f, 0.70f),
+            CanvasPoint(0.18f, 0.50f),
+            CanvasPoint(0.50f, 0.38f),
+        ),
+    )
+
     private val aTemplate = listOf(
         listOf(CanvasPoint(0.46f, 0.08f), CanvasPoint(0.46f, 0.92f)),
         listOf(CanvasPoint(0.46f, 0.50f), CanvasPoint(0.76f, 0.50f)),
@@ -485,6 +508,8 @@ internal object WritingCanvasGeometry {
         LessonId.CHIEUT -> chieutTemplate
         LessonId.KIEUK -> kieukTemplate
         LessonId.TIEUT -> tieutTemplate
+        LessonId.PIEUP -> pieupTemplate
+        LessonId.HIEUH -> hieuhTemplate
         LessonId.A -> aTemplate
         LessonId.GA -> gaTemplate
         LessonId.NA -> naTemplate
