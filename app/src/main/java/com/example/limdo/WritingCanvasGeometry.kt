@@ -439,6 +439,19 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
+    private val gakTemplate = finalConsonantTemplate(
+        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.75f, 0.70f), CanvasPoint(0.75f, 0.94f)),
+    )
+
+    private val ganTemplate = finalConsonantTemplate(
+        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.25f, 0.94f), CanvasPoint(0.75f, 0.94f)),
+    )
+
+    private val gatTemplate = finalConsonantTemplate(
+        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.75f, 0.70f)),
+        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.25f, 0.94f), CanvasPoint(0.75f, 0.94f)),
+    )
+
     fun gieok(width: Float, height: Float): GlyphGeometry =
         transform(gieokTemplate, width, height)
 
@@ -761,7 +774,18 @@ internal object WritingCanvasGeometry {
         LessonId.TA -> taTemplate
         LessonId.PA -> paTemplate
         LessonId.HA -> haTemplate
+        LessonId.GAK -> gakTemplate
+        LessonId.GAN -> ganTemplate
+        LessonId.GAT -> gatTemplate
     }
+
+    private fun finalConsonantTemplate(
+        vararg finalStrokes: List<CanvasPoint>,
+    ): List<List<CanvasPoint>> = listOf(
+        listOf(CanvasPoint(0.08f, 0.06f), CanvasPoint(0.43f, 0.06f), CanvasPoint(0.43f, 0.58f)),
+        listOf(CanvasPoint(0.68f, 0.04f), CanvasPoint(0.68f, 0.62f)),
+        listOf(CanvasPoint(0.68f, 0.34f), CanvasPoint(0.90f, 0.34f)),
+    ) + finalStrokes
 
     private fun transform(
         template: List<List<CanvasPoint>>,

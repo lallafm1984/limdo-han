@@ -66,6 +66,9 @@ class KoreanCurriculumTest {
                 CurriculumStage.OPEN_SYLLABLES,
                 CurriculumStage.OPEN_SYLLABLES,
                 CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.FINAL_CONSONANTS,
+                CurriculumStage.FINAL_CONSONANTS,
+                CurriculumStage.FINAL_CONSONANTS,
             ),
             KoreanCurriculum.lessons.map(LessonSpec::stage),
         )
@@ -74,11 +77,34 @@ class KoreanCurriculumTest {
     @Test
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         assertEquals(
-            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바", "사", "아", "자", "차", "카", "타", "파", "하"),
+            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바", "사", "아", "자", "차", "카", "타", "파", "하", "각", "간", "갇"),
             KoreanCurriculum.lessons.map(LessonSpec::glyph),
         )
         assertEquals(0, KoreanCurriculum.nextIndex(KoreanCurriculum.lessons.lastIndex))
         assertEquals(1, KoreanCurriculum.nextIndex(0))
+    }
+
+    @Test
+    fun firstFinalConsonantsKeepGaAboveAndDistinctJongseongBelow() {
+        val finalLessons = listOf(
+            LessonId.GAK to 4,
+            LessonId.GAN to 4,
+            LessonId.GAT to 5,
+        ).map { (id, strokeCount) ->
+            KoreanCurriculum.lessons.single { it.id == id }.also {
+                assertEquals(CurriculumStage.FINAL_CONSONANTS, it.stage)
+                assertEquals(strokeCount, it.strokeCount)
+            }
+        }
+        val geometries = finalLessons.map { WritingCanvasGeometry.glyph(it, width, height) }
+        geometries.forEach { geometry ->
+            val top = geometry.strokes.take(3)
+            val bottom = geometry.strokes.drop(3)
+            assertTrue(top.flatten().maxOf { it.y } < bottom.flatten().minOf { it.y })
+            assertEquals(top, geometries.first().strokes.take(3))
+        }
+        assertNotEquals(geometries[0].strokes.drop(3), geometries[1].strokes.drop(3))
+        assertNotEquals(geometries[1].strokes.drop(3), geometries[2].strokes.drop(3))
     }
 
     @Test

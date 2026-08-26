@@ -14,7 +14,7 @@ internal enum class LessonId {
     GIEOK, NIEUN, DIGEUT, RIEUL, MIEUM, BIEUP, SIOT, IEUNG, JIEUT, CHIEUT, KIEUK, TIEUT,
     PIEUP, HIEUH,
     A, AE, YA, EO, YEO, O, YO, U, YU, EU, I, GA, NA, DA, RA, MA, BA, SA, AH, JA, CHA, KA, TA,
-    PA, HA,
+    PA, HA, GAK, GAN, GAT,
 }
 
 internal enum class StrokeDirection { RIGHT, LEFT, UP, DOWN }
@@ -469,6 +469,49 @@ internal object KoreanCurriculum {
                 StrokeDirection.RIGHT,
             ),
         ),
+        LessonSpec(
+            id = LessonId.GAK,
+            stage = CurriculumStage.FINAL_CONSONANTS,
+            glyph = "각",
+            strokeCount = 4,
+            initialCue = SpokenCue.INITIAL_GAK,
+            successCue = SpokenCue.SUCCESS_GAK,
+            strokeDirections = listOf(
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+                StrokeDirection.RIGHT,
+            ),
+        ),
+        LessonSpec(
+            id = LessonId.GAN,
+            stage = CurriculumStage.FINAL_CONSONANTS,
+            glyph = "간",
+            strokeCount = 4,
+            initialCue = SpokenCue.INITIAL_GAN,
+            successCue = SpokenCue.SUCCESS_GAN,
+            strokeDirections = listOf(
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+            ),
+        ),
+        LessonSpec(
+            id = LessonId.GAT,
+            stage = CurriculumStage.FINAL_CONSONANTS,
+            glyph = "갇",
+            strokeCount = 5,
+            initialCue = SpokenCue.INITIAL_GAT,
+            successCue = SpokenCue.SUCCESS_GAT,
+            strokeDirections = listOf(
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+            ),
+        ),
     )
 
     fun nextIndex(currentIndex: Int): Int = (currentIndex + 1) % lessons.size
@@ -513,6 +556,9 @@ internal val KaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.KA }
 internal val TaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.TA }
 internal val PaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.PA }
 internal val HaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.HA }
+internal val GakLesson = KoreanCurriculum.lessons.first { it.id == LessonId.GAK }
+internal val GanLesson = KoreanCurriculum.lessons.first { it.id == LessonId.GAN }
+internal val GatLesson = KoreanCurriculum.lessons.first { it.id == LessonId.GAT }
 
 internal enum class RewardMovePhase { IDLE, START, MOVING, COMPLETE }
 
