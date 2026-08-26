@@ -2,9 +2,48 @@ package com.example.limdo
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LearningNavigationTest {
+    @Test
+    fun playgroundTokensKeepSharedCardLanguageAndDistinctMenuColors() {
+        assertTrue(LimDoPlaygroundTokens.CARD_CORNER_DP >= 28f)
+        assertTrue(LimDoPlaygroundTokens.CARD_BORDER_DP >= 3f)
+        assertTrue(LimDoPlaygroundTokens.CARD_SHADOW_DP >= 5f)
+        assertTrue(LimDoPlaygroundTokens.CARD_GAP_DP >= 12f)
+        assertEquals(3, LearningMenu.entries.map { it.visuals().accent }.distinct().size)
+        assertEquals(3, LearningMenu.entries.map { it.visuals().softSurface }.distinct().size)
+    }
+
+    @Test
+    fun menuVisualsKeepHomeVehicleIdentityInWriting() {
+        assertEquals(
+            listOf("경찰차", "소방차", "버스"),
+            LearningMenu.entries.map { menu ->
+                VehicleCarousel.vehicles[menu.visuals().startingVehicleIndex].koreanName
+            },
+        )
+    }
+
+    @Test
+    fun lessonCardsDistinguishDefaultSelectedAndDisabledWithoutColorAlone() {
+        LearningMenu.entries.forEach { menu ->
+            val default = menu.lessonCardVisuals(LessonCardVisualState.DEFAULT)
+            val selected = menu.lessonCardVisuals(LessonCardVisualState.SELECTED)
+            val disabled = menu.lessonCardVisuals(LessonCardVisualState.DISABLED)
+
+            assertNotEquals(default.surface, selected.surface)
+            assertNotEquals(default.outlineWidthDp, selected.outlineWidthDp)
+            assertNotEquals(default.cornerDp, selected.cornerDp)
+            assertNotEquals(default.surface, disabled.surface)
+            assertNotEquals(default.outlineWidthDp, disabled.outlineWidthDp)
+            assertNotEquals(default.cornerDp, disabled.cornerDp)
+            assertTrue(selected.outlineWidthDp > default.outlineWidthDp)
+            assertTrue(disabled.shadowDp < default.shadowDp)
+        }
+    }
+
     @Test
     fun menusHaveDistinctShortKoreanSelectionCues() {
         assertEquals(
@@ -35,6 +74,31 @@ class LearningNavigationTest {
             ),
             LearningNavigation.lessons(LearningMenu.GANADA).map(LessonSpec::id),
         )
+    }
+
+    @Test
+    fun fourteenGanadaSelectionsKeepWritingSpeechGeometryRewardAndHomeReturnIntegrated() {
+        val lessons = LearningNavigation.lessons(LearningMenu.GANADA)
+
+        lessons.forEachIndexed { index, lesson ->
+            val destination = LearningDestination.Writing(
+                menu = LearningMenu.GANADA,
+                lessonId = lesson.id,
+                sessionId = index + 1,
+            )
+            val geometry = WritingCanvasGeometry.glyph(lesson, width = 1962f, height = 954f)
+            val reward = LessonRewardState().onTraceResult(GieokTraceResult.SUCCESS, lesson)
+
+            assertEquals(lesson.strokeCount, geometry.strokes.size)
+            assertEquals(lesson.strokeCount, lesson.strokeDirections.size)
+            assertTrue(lesson.initialCue.utterance.isNotBlank())
+            assertTrue(lesson.successCue.utterance.isNotBlank())
+            assertEquals(lesson.strokeCount, reward.targetSteps)
+            assertEquals(
+                LearningDestination.Selection(LearningMenu.GANADA),
+                LearningNavigation.back(destination),
+            )
+        }
     }
 
     @Test

@@ -7,6 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -172,6 +174,7 @@ private fun LearningShell(
         is LearningDestination.Writing -> key(current.sessionId) {
             WritingLesson(
                 initialLessonId = current.lessonId,
+                menu = current.menu,
                 speechState = speechState,
                 demonstrationStrokeIndex = demonstrationStrokeIndex,
                 speak = speak,
@@ -190,27 +193,29 @@ private fun LearningMenuHome(onSelect: (LearningMenu) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFD85A))
-            .padding(48.dp),
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
+            .background(LimDoPlaygroundTokens.playgroundBackground)
+            .padding(LimDoPlaygroundTokens.SCREEN_PADDING_DP.dp),
+        horizontalArrangement = Arrangement.spacedBy(LimDoPlaygroundTokens.CARD_GAP_DP.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LearningMenu.entries.forEach { menu ->
+            val visuals = menu.visuals()
             Surface(
                 onClick = { onSelect(menu) },
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
+                    .border(
+                        LimDoPlaygroundTokens.CARD_BORDER_DP.dp,
+                        visuals.accent,
+                        RoundedCornerShape(LimDoPlaygroundTokens.CARD_CORNER_DP.dp),
+                    )
                     .semantics(mergeDescendants = true) {
                         contentDescription = "${menu.label} 학습, ${menu.symbol}"
                     },
-                color = when (menu) {
-                    LearningMenu.CONSONANTS -> Color(0xFFE5F3FF)
-                    LearningMenu.VOWELS -> Color(0xFFFFE8D2)
-                    LearningMenu.GANADA -> Color(0xFFE4F4DE)
-                },
-                shape = RoundedCornerShape(36.dp),
-                shadowElevation = 8.dp,
+                color = visuals.softSurface,
+                shape = RoundedCornerShape(LimDoPlaygroundTokens.CARD_CORNER_DP.dp),
+                shadowElevation = LimDoPlaygroundTokens.CARD_SHADOW_DP.dp,
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -232,17 +237,18 @@ private fun LessonSelection(
     onHome: () -> Unit,
 ) {
     val lessons = LearningNavigation.lessons(menu)
+    val visuals = menu.visuals()
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFD85A))
-            .padding(32.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+            .background(visuals.softSurface)
+            .padding(LimDoPlaygroundTokens.SCREEN_PADDING_DP.dp),
+        verticalArrangement = Arrangement.spacedBy(LimDoPlaygroundTokens.CARD_GAP_DP.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(LimDoPlaygroundTokens.CARD_GAP_DP.dp),
         ) {
             Surface(
                 onClick = onHome,
@@ -258,15 +264,39 @@ private fun LessonSelection(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 rowLessons.forEach { lesson ->
+                    val available = true
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isPressed by interactionSource.collectIsPressedAsState()
+                    val cardState = when {
+                        !available -> LessonCardVisualState.DISABLED
+                        isPressed -> LessonCardVisualState.SELECTED
+                        else -> LessonCardVisualState.DEFAULT
+                    }
+                    val cardVisuals = menu.lessonCardVisuals(cardState)
+                    val cardShape = RoundedCornerShape(cardVisuals.cornerDp.dp)
                     Surface(
                         onClick = { onSelect(lesson) },
+                        enabled = available,
+                        interactionSource = interactionSource,
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .semantics { contentDescription = "${lesson.glyph} 쓰기 시작" },
-                        color = Color(0xFFFFFEFA),
-                        shape = RoundedCornerShape(28.dp),
-                        shadowElevation = 5.dp,
+                            .border(
+                                cardVisuals.outlineWidthDp.dp,
+                                cardVisuals.outline,
+                                cardShape,
+                            )
+                            .semantics {
+                                contentDescription = "${lesson.glyph} 쓰기 시작"
+                                stateDescription = when (cardState) {
+                                    LessonCardVisualState.DEFAULT -> "선택 가능"
+                                    LessonCardVisualState.SELECTED -> "선택됨"
+                                    LessonCardVisualState.DISABLED -> "아직 사용할 수 없음"
+                                }
+                            },
+                        color = cardVisuals.surface,
+                        shape = cardShape,
+                        shadowElevation = cardVisuals.shadowDp.dp,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(lesson.glyph, fontSize = 58.sp, fontWeight = FontWeight.Bold)
@@ -282,6 +312,7 @@ private fun LessonSelection(
 @Composable
 private fun WritingLesson(
     initialLessonId: LessonId,
+    menu: LearningMenu,
     speechState: SpeechPlaybackState,
     demonstrationStrokeIndex: Int?,
     speak: (SpokenCue) -> Boolean,
@@ -294,7 +325,9 @@ private fun WritingLesson(
     var lessonIndex by rememberSaveable {
         mutableIntStateOf(KoreanCurriculum.lessons.indexOfFirst { it.id == initialLessonId })
     }
-    var vehicleIndex by rememberSaveable { mutableIntStateOf(0) }
+    var vehicleIndex by rememberSaveable {
+        mutableIntStateOf(menu.visuals().startingVehicleIndex)
+    }
     var vehicleSuccessArmed by rememberSaveable { mutableStateOf(true) }
     var nextVehiclePending by rememberSaveable { mutableStateOf(false) }
     var rewardState by rememberSaveable(stateSaver = LessonRewardStateSaver) {
@@ -374,7 +407,7 @@ private fun WritingLesson(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFD85A)),
+            .background(menu.visuals().softSurface),
     ) {
         val rewardVehicleCenterX = RewardPathGeometry.vehicleCenterX(
             containerWidth = maxWidth.value,
