@@ -286,6 +286,49 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
+    private val verticalGieok = gaTemplate.first()
+    private val horizontalGieok = listOf(
+        CanvasPoint(0.12f, 0.08f), CanvasPoint(0.88f, 0.08f), CanvasPoint(0.88f, 0.43f),
+    )
+    private val gyaTemplate = listOf(verticalGieok) + listOf(
+        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+        listOf(CanvasPoint(0.72f, 0.38f), CanvasPoint(0.94f, 0.38f)),
+        listOf(CanvasPoint(0.72f, 0.62f), CanvasPoint(0.94f, 0.62f)),
+    )
+    private val geoTemplate = listOf(verticalGieok) + listOf(
+        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+        listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.52f, 0.50f)),
+    )
+    private val gyeoTemplate = listOf(verticalGieok) + listOf(
+        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+        listOf(CanvasPoint(0.72f, 0.38f), CanvasPoint(0.52f, 0.38f)),
+        listOf(CanvasPoint(0.72f, 0.62f), CanvasPoint(0.52f, 0.62f)),
+    )
+    private val goTemplate = listOf(horizontalGieok) + listOf(
+        listOf(CanvasPoint(0.12f, 0.72f), CanvasPoint(0.88f, 0.72f)),
+        listOf(CanvasPoint(0.50f, 0.72f), CanvasPoint(0.50f, 0.50f)),
+    )
+    private val gyoTemplate = listOf(horizontalGieok) + listOf(
+        listOf(CanvasPoint(0.12f, 0.76f), CanvasPoint(0.88f, 0.76f)),
+        listOf(CanvasPoint(0.38f, 0.76f), CanvasPoint(0.38f, 0.54f)),
+        listOf(CanvasPoint(0.62f, 0.76f), CanvasPoint(0.62f, 0.54f)),
+    )
+    private val guTemplate = listOf(horizontalGieok) + listOf(
+        listOf(CanvasPoint(0.12f, 0.62f), CanvasPoint(0.88f, 0.62f)),
+        listOf(CanvasPoint(0.50f, 0.62f), CanvasPoint(0.50f, 0.88f)),
+    )
+    private val gyuTemplate = listOf(horizontalGieok) + listOf(
+        listOf(CanvasPoint(0.12f, 0.58f), CanvasPoint(0.88f, 0.58f)),
+        listOf(CanvasPoint(0.38f, 0.58f), CanvasPoint(0.38f, 0.84f)),
+        listOf(CanvasPoint(0.62f, 0.58f), CanvasPoint(0.62f, 0.84f)),
+    )
+    private val geuTemplate = listOf(horizontalGieok) + listOf(
+        listOf(CanvasPoint(0.12f, 0.72f), CanvasPoint(0.88f, 0.72f)),
+    )
+    private val giTemplate = listOf(verticalGieok) + listOf(
+        listOf(CanvasPoint(0.76f, 0.08f), CanvasPoint(0.76f, 0.92f)),
+    )
+
     private val naTemplate = listOf(
         listOf(
             CanvasPoint(0.05f, 0.12f),
@@ -796,6 +839,15 @@ internal object WritingCanvasGeometry {
         LessonId.GA -> gaTemplate
         LessonId.NA -> naTemplate
         LessonId.DA -> daTemplate
+        LessonId.GYA -> gyaTemplate
+        LessonId.GEO -> geoTemplate
+        LessonId.GYEO -> gyeoTemplate
+        LessonId.GO -> goTemplate
+        LessonId.GYO -> gyoTemplate
+        LessonId.GU -> guTemplate
+        LessonId.GYU -> gyuTemplate
+        LessonId.GEU -> geuTemplate
+        LessonId.GI -> giTemplate
         LessonId.RA -> raTemplate
         LessonId.MA -> maTemplate
         LessonId.BA -> baTemplate

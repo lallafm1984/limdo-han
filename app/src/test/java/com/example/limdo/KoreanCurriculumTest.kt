@@ -67,6 +67,15 @@ class KoreanCurriculumTest {
                 CurriculumStage.OPEN_SYLLABLES,
                 CurriculumStage.OPEN_SYLLABLES,
                 CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
                 CurriculumStage.FINAL_CONSONANTS,
                 CurriculumStage.FINAL_CONSONANTS,
                 CurriculumStage.FINAL_CONSONANTS,
@@ -81,12 +90,40 @@ class KoreanCurriculumTest {
     @Test
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         assertEquals(
-            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바", "사", "아", "자", "차", "카", "타", "파", "하", "각", "간", "갇", "갈", "감", "갑"),
+            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "갸", "거", "겨", "고", "교", "구", "규", "그", "기", "라", "마", "바", "사", "아", "자", "차", "카", "타", "파", "하", "각", "간", "갇", "갈", "감", "갑"),
             KoreanCurriculum.lessons.map(LessonSpec::glyph),
         )
         assertEquals(0, KoreanCurriculum.nextIndex(KoreanCurriculum.lessons.lastIndex))
         assertEquals(1, KoreanCurriculum.nextIndex(0))
     }
+
+    @Test
+    fun firstGieokVowelRowKeepsOneInitialAndSwitchesVerticalAndHorizontalLayouts() {
+        val ids = listOf(
+            LessonId.GYA, LessonId.GEO, LessonId.GYEO, LessonId.GO, LessonId.GYO,
+            LessonId.GU, LessonId.GYU, LessonId.GEU, LessonId.GI,
+        )
+        val lessons = ids.map { id -> KoreanCurriculum.lessons.single { it.id == id } }
+        assertEquals(listOf("갸", "거", "겨", "고", "교", "구", "규", "그", "기"), lessons.map { it.glyph })
+        assertTrue(KoreanCurriculum.lessons.indexOf(DaLesson) + 1 == KoreanCurriculum.lessons.indexOf(GyaLesson))
+        lessons.forEach { assertEquals(CurriculumStage.OPEN_SYLLABLES, it.stage) }
+
+        val geometries = lessons.associate { it.id to WritingCanvasGeometry.glyph(it, width, height) }
+        val vertical = listOf(LessonId.GYA, LessonId.GEO, LessonId.GYEO, LessonId.GI)
+        val horizontal = listOf(LessonId.GO, LessonId.GYO, LessonId.GU, LessonId.GYU, LessonId.GEU)
+        vertical.map { geometries.getValue(it).strokes.first() }.zipWithNext().forEach { (a, b) -> assertEquals(a, b) }
+        horizontal.map { geometries.getValue(it).strokes.first() }.zipWithNext().forEach { (a, b) -> assertEquals(a, b) }
+        vertical.forEach { id ->
+            val strokes = geometries.getValue(id).strokes
+            assertTrue(strokes.first().flattenXMax() < strokes.drop(1).flatten().maxOf { it.x })
+        }
+        horizontal.forEach { id ->
+            val strokes = geometries.getValue(id).strokes
+            assertTrue(strokes.first().maxOf { it.y } < strokes.drop(1).flatten().maxOf { it.y })
+        }
+    }
+
+    private fun List<CanvasPoint>.flattenXMax(): Float = maxOf { it.x }
 
     @Test
     fun firstFinalConsonantsRecomposeInitialMedialAndFinalByClosedSyllableShape() {

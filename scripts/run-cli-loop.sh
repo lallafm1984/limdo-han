@@ -22,17 +22,39 @@ case "${1:-}" in
 esac
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd -P)"
+env_file="$repo_root/.loop/env.sh"
 runtime_dir="$repo_root/.loop/runtime"
 sessions_dir="$runtime_dir/sessions"
 lock_dir="$runtime_dir/supervisor.lock"
 stop_file="$runtime_dir/stop"
+visible_stop_file="$repo_root/.loop/STOP"
 prompt_file="$repo_root/.loop/cli-worker-prompt.md"
 session_log="$runtime_dir/sessions.tsv"
-max_process_failures=3
+[[ -r "$env_file" ]] && source "$env_file"
+max_process_failures="${CODEX_LOOP_MAX_PROCESS_FAILURES:-3}"
 pause_seconds="${CODEX_LOOP_PAUSE_SECONDS:-2}"
+max_sessions="${CODEX_LOOP_MAX_SESSIONS:-0}"
 sandbox_mode="${CODEX_LOOP_SANDBOX:-danger-full-access}"
 
 mkdir -p "$sessions_dir"
+
+for integer_value in "$max_process_failures" "$pause_seconds" "$max_sessions"; do
+    [[ "$integer_value" =~ ^[0-9]+$ ]] || {
+        echo "CLI 루프 중지: env 숫자 설정이 올바르지 않음: $integer_value" >&2
+        exit 2
+    }
+done
+(( max_process_failures >= 1 )) || {
+    echo "CLI 루프 중지: 연속 실패 상한은 1 이상이어야 함" >&2
+    exit 2
+}
+case "$sandbox_mode" in
+    read-only|workspace-write|danger-full-access) ;;
+    *)
+        echo "CLI 루프 중지: 지원하지 않는 sandbox 모드: $sandbox_mode" >&2
+        exit 2
+        ;;
+esac
 
 acquire_lock() {
     if mkdir "$lock_dir" 2>/dev/null; then
@@ -82,7 +104,7 @@ durable_fingerprint() {
 
 acquire_lock || exit 2
 trap release_lock EXIT INT TERM
-rm -f "$stop_file"
+rm -f "$stop_file" "$visible_stop_file"
 
 cd "$repo_root" || exit 2
 if ! ./scripts/check-automation.sh; then
@@ -107,8 +129,13 @@ consecutive_failures=0
 session_number=0
 
 while has_work; do
-    if [[ -e "$stop_file" ]]; then
+    if [[ -e "$stop_file" || -e "$visible_stop_file" ]]; then
         echo "CLI 루프 중지: 중지 신호를 받음"
+        exit 0
+    fi
+
+    if (( max_sessions > 0 && session_number >= max_sessions )); then
+        echo "CLI 루프 중지: 감독자 최대 새 세션 수 $max_sessions 도달"
         exit 0
     fi
 
@@ -120,7 +147,9 @@ while has_work; do
     session_number=$((session_number + 1))
     run_id="$(date '+%Y%m%d-%H%M%S')-$(printf '%03d' "$session_number")"
     run_dir="$sessions_dir/$run_id"
+    daily_log_dir="$repo_root/logs/$(date '+%Y-%m-%d')"
     mkdir -p "$run_dir"
+    mkdir -p "$daily_log_dir"
 
     before_fingerprint="$(durable_fingerprint)"
     printf '%s\n' "$run_id" > "$runtime_dir/current-session"
@@ -159,6 +188,7 @@ while has_work; do
     fi
 
     printf '%s\t%s\t%s\t%s\n' "$run_id" "${thread_id:-UNKNOWN}" "$cli_status" "$progress" >> "$session_log"
+    printf '%s\t%s\t%s\t%s\n' "$run_id" "${thread_id:-UNKNOWN}" "$cli_status" "$progress" >> "$daily_log_dir/sessions.tsv"
     printf 'CLI 루프 세션 종료 run=%s thread=%s 종료=%s 지속기록=%s\n' \
         "$run_id" "${thread_id:-UNKNOWN}" "$cli_status" "$progress"
 

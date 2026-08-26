@@ -10,13 +10,21 @@
 
 `.loop/queue.md`의 활성 루프만 `LOOP_GOAL.md`와 최신 `.loop/user-directives.md`에 따라 완료한다. 각 새 작업자는 초점이 분명한 변경 하나로 정확히 한 번 반복하고, 한글 근거를 `.loop/history.md`와 `.loop/state.md`에 저장한 뒤 종료한다. 루프 완료 작업자는 새 아이 대리 QA 근거로 다음 루프 하나만 준비하고 그 구현은 다음 새 세션에 맡긴다.
 
+### 1차 목표 지속 계약
+
+`docs/1차-목표-작업-기획서.md`가 완료되기 전에는 새 QA 불편이 없다는 이유만으로 `IDLE`로 종료하지 않는다. 현재 루프 154를 완료한 뒤 `자음·모음·가나다` 세 메뉴와 진입 기능, 글자 선택과 복귀, 통일된 유아용 디자인, 안전한 화려한 연출, QA 팀 관문, 다섯 살 아이 대리 시뮬레이션 순서에서 아직 충족되지 않은 가장 앞선 작업 하나를 다음 루프로 준비한다.
+
+`디자인 팀`과 `QA 팀`은 자동 루프 안의 독립 역할 이름이다. 디자인 역할은 새 화면과 연출을 실제 2340 × 1080 근거로 판정하고, QA 역할은 구현 근거와 분리해 자동·에뮬레이터·회귀 관문을 판정한다. 실제 사람이 참여하지 않았다면 사람 검토로 기록하지 않는다.
+
+1차 목표는 기획서의 `1차 목표 완료 관문`을 모두 통과하고 완료 커밋을 일반 push한 뒤에만 완료한다. 그때 큐를 `없음`으로 만들고 `IDLE`로 종료하며 2차 목표는 자동으로 시작하지 않는다.
+
 ## 세션 절차
 
 1. 감독자는 시작할 때와 모든 새 세션 직전에 `./scripts/check-automation.sh`를 검증하고 저장소 전용 원자적 잠금을 얻는다. 이 검사는 `scripts/check-work-value.sh`의 작업 가치 관문을 포함한다.
-2. `.loop/cli-worker-prompt.md`를 표준 입력으로 전달해 `codex exec --ephemeral --json --sandbox danger-full-access`를 시작한다. Android Gradle 잠금, ADB, 에뮬레이터는 macOS 작업공간 샌드박스가 막는 로컬 소켓을 사용하므로 이 모드가 필요하다. 별도의 승인·샌드박스 우회 플래그는 사용하지 않는다.
+2. `.loop/env.sh`를 읽은 뒤 `.loop/cli-worker-prompt.md`를 표준 입력으로 전달해 `codex exec --ephemeral --json --sandbox danger-full-access`를 시작한다. Android Gradle 잠금, ADB, 에뮬레이터는 macOS 작업공간 샌드박스가 막는 로컬 소켓을 사용하므로 이 모드가 필요하다. 별도의 승인·샌드박스 우회 플래그는 사용하지 않는다.
 3. 작업자는 대화 기억 대신 현재 프로젝트 계약과 Git 상태를 읽는다.
 4. 작업자는 정확히 한 번 반복하고 성공 또는 실패를 한글로 기록한 뒤 종료한다.
-5. 감독자는 새 thread ID와 종료 상태를 `.loop/runtime/sessions/`에 남긴다.
+5. 감독자는 새 thread ID와 종료 상태를 `.loop/runtime/sessions/`에 남기고 날짜별 요약을 `logs/YYYY-MM-DD/`에 남긴다.
 6. 활성 루프 또는 명시적 `준비` 항목이 있을 때만 다음 새 세션을 시작한다. 정상 완료는 `AUTO_CHILD_PROXY_QA` 전환으로 다음 활성 루프를 남긴다.
 
 ## 허용되는 자율 작업
@@ -58,6 +66,24 @@ Codex 앱 heartbeat 자동화 `LimDo 진행 상황 보고`가 10분마다 이 �
 ./scripts/start-cli-loop.sh
 ./scripts/cli-loop-status.sh
 ./scripts/stop-cli-loop.sh
+./scripts/cli-loop-service.sh status
 ```
 
 `./scripts/run-cli-loop.sh`는 전면 실행, `./scripts/run-cli-loop.sh --once`는 새 작업자 한 세션만 실행한다. 실행 로그, 잠금, 중지 신호는 Git에서 제외한다.
+
+### 설정과 로그
+
+- `.loop/env.sh`: 모델, 새 세션 사이 대기, 감독자 최대 세션 수, 연속 실패 상한, sandbox 모드. 비밀키는 넣지 않는다.
+- `.loop/STOP`: 사람이 직접 만들 수 있는 중지 신호. 현재 작업자 세션이 끝난 뒤 감독자가 정상 종료한다.
+- `logs/YYYY-MM-DD/`: 날짜별 감독자와 세션 요약.
+- `.loop/runtime/sessions/<run-id>/`: JSONL 이벤트, stderr, 최종 응답 원본.
+
+### macOS 로그인 자동 실행
+
+`scripts/cli-loop-service.sh`는 launchd 설정을 준비·켜기·끄기·조회·제거한다. plist는 PATH와 `CODEX_BIN`을 절대 경로로 기록하고 로그인할 때 시작하며 비정상 종료에만 재시작한다. 정상 STOP과 작업 없음은 성공 종료이므로 재시작하지 않는다.
+
+공용 에뮬레이터 충돌을 막기 위해 저장소에 템플릿이 있다는 이유만으로 설치하거나 켜지 않는다. 사용자의 명시적 재개와 에뮬레이터 사용 가능 확인 뒤에만 `enable`한다.
+
+### 외부 루프 사용법에서의 선택
+
+세부 대응과 적용하지 않은 이유는 `docs/루프-엔지니어링-적용.md`에 기록한다. 특히 자동 검사 뒤 화면 확인 전에 커밋하는 일반 규칙은 채택하지 않는다. LimDo는 화면까지 검증한 완료 루프만 커밋하고, 중단 시에는 작업 트리와 한글 상태·이력에서 재개한다.

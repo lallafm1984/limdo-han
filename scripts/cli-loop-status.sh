@@ -7,6 +7,7 @@ repo_root="$(cd "$(dirname "$0")/.." && pwd -P)"
 runtime_dir="$repo_root/.loop/runtime"
 lock_pid_file="$runtime_dir/supervisor.lock/pid"
 screen_name="limdo_cli_loop"
+env_file="$repo_root/.loop/env.sh"
 
 echo "LimDo CLI 루프 상태"
 if [[ -r "$lock_pid_file" ]]; then
@@ -24,6 +25,17 @@ if grep -E "[0-9]+\.${screen_name}[[:space:]]" <<< "$screen_list" >/dev/null; th
     echo "분리 CLI 세션: 실행 중 ($screen_name)"
 else
     echo "분리 CLI 세션: 중지"
+fi
+if [[ -e "$repo_root/.loop/STOP" || -e "$runtime_dir/stop" ]]; then
+    echo "중지 신호: 있음"
+else
+    echo "중지 신호: 없음"
+fi
+
+if [[ -r "$env_file" ]]; then
+    # shellcheck disable=SC1090
+    source "$env_file"
+    echo "설정: 대기=${CODEX_LOOP_PAUSE_SECONDS}초 최대세션=${CODEX_LOOP_MAX_SESSIONS} 연속실패상한=${CODEX_LOOP_MAX_PROCESS_FAILURES} sandbox=${CODEX_LOOP_SANDBOX}"
 fi
 
 sed -n '/^실행 단계:/p;/^활성 루프:/p;/^검토 관문:/p' "$repo_root/.loop/queue.md"

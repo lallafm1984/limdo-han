@@ -14,7 +14,7 @@ internal enum class LessonId {
     GIEOK, NIEUN, DIGEUT, RIEUL, MIEUM, BIEUP, SIOT, IEUNG, JIEUT, CHIEUT, KIEUK, TIEUT,
     PIEUP, HIEUH,
     A, AE, YA, EO, YEO, O, YO, U, YU, EU, I, GA, NA, DA, RA, MA, BA, SA, AH, JA, CHA, KA, TA,
-    PA, HA, GAK, GAN, GAT, GAL, GAM, GAP,
+    PA, HA, GYA, GEO, GYEO, GO, GYO, GU, GYU, GEU, GI, GAK, GAN, GAT, GAL, GAM, GAP,
 }
 
 internal enum class StrokeDirection { RIGHT, LEFT, UP, DOWN }
@@ -305,6 +305,24 @@ internal object KoreanCurriculum {
                 StrokeDirection.RIGHT,
             ),
         ),
+        LessonSpec(LessonId.GYA, CurriculumStage.OPEN_SYLLABLES, "갸", 4, SpokenCue.INITIAL_GYA, SpokenCue.SUCCESS_GYA,
+            listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.RIGHT, StrokeDirection.RIGHT)),
+        LessonSpec(LessonId.GEO, CurriculumStage.OPEN_SYLLABLES, "거", 3, SpokenCue.INITIAL_GEO, SpokenCue.SUCCESS_GEO,
+            listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.LEFT)),
+        LessonSpec(LessonId.GYEO, CurriculumStage.OPEN_SYLLABLES, "겨", 4, SpokenCue.INITIAL_GYEO, SpokenCue.SUCCESS_GYEO,
+            listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.LEFT, StrokeDirection.LEFT)),
+        LessonSpec(LessonId.GO, CurriculumStage.OPEN_SYLLABLES, "고", 3, SpokenCue.INITIAL_GO, SpokenCue.SUCCESS_GO,
+            listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.UP)),
+        LessonSpec(LessonId.GYO, CurriculumStage.OPEN_SYLLABLES, "교", 4, SpokenCue.INITIAL_GYO, SpokenCue.SUCCESS_GYO,
+            listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.UP, StrokeDirection.UP)),
+        LessonSpec(LessonId.GU, CurriculumStage.OPEN_SYLLABLES, "구", 3, SpokenCue.INITIAL_GU, SpokenCue.SUCCESS_GU,
+            listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN)),
+        LessonSpec(LessonId.GYU, CurriculumStage.OPEN_SYLLABLES, "규", 4, SpokenCue.INITIAL_GYU, SpokenCue.SUCCESS_GYU,
+            listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.DOWN)),
+        LessonSpec(LessonId.GEU, CurriculumStage.OPEN_SYLLABLES, "그", 2, SpokenCue.INITIAL_GEU, SpokenCue.SUCCESS_GEU,
+            listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT)),
+        LessonSpec(LessonId.GI, CurriculumStage.OPEN_SYLLABLES, "기", 2, SpokenCue.INITIAL_GI, SpokenCue.SUCCESS_GI,
+            listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN)),
         LessonSpec(
             id = LessonId.RA,
             stage = CurriculumStage.OPEN_SYLLABLES,
@@ -594,6 +612,7 @@ internal val ILesson = KoreanCurriculum.lessons.first { it.id == LessonId.I }
 internal val GaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.GA }
 internal val NaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.NA }
 internal val DaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.DA }
+internal val GyaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.GYA }
 internal val RaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.RA }
 internal val MaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.MA }
 internal val BaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.BA }

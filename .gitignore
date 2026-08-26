@@ -8,3 +8,6 @@ captures/
 .cxx/
 app/build/
 .loop/runtime/
+.loop/STOP
+logs/*
+!logs/README.md
