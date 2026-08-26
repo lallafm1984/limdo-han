@@ -1,6 +1,7 @@
 package com.example.limdo
 
 import android.os.Bundle
+import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -33,6 +34,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.key
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -140,10 +142,158 @@ private fun LearningShell(
     speak: (SpokenCue) -> Boolean,
     stopSpeech: () -> Unit,
 ) {
+    var destination by remember { mutableStateOf<LearningDestination>(LearningDestination.Home) }
+    var nextWritingSessionId by rememberSaveable { mutableIntStateOf(0) }
+
+    BackHandler(enabled = destination != LearningDestination.Home) {
+        stopSpeech()
+        destination = LearningNavigation.back(destination)
+    }
+
+    when (val current = destination) {
+        LearningDestination.Home -> LearningMenuHome(
+            onSelect = {
+                speak(it.spokenCue)
+                destination = LearningDestination.Selection(it)
+            },
+        )
+        is LearningDestination.Selection -> LessonSelection(
+            menu = current.menu,
+            onSelect = { lesson ->
+                nextWritingSessionId += 1
+                destination = LearningDestination.Writing(
+                    menu = current.menu,
+                    lessonId = lesson.id,
+                    sessionId = nextWritingSessionId,
+                )
+            },
+            onHome = { destination = LearningDestination.Home },
+        )
+        is LearningDestination.Writing -> key(current.sessionId) {
+            WritingLesson(
+                initialLessonId = current.lessonId,
+                speechState = speechState,
+                demonstrationStrokeIndex = demonstrationStrokeIndex,
+                speak = speak,
+                stopSpeech = stopSpeech,
+                onHome = {
+                    stopSpeech()
+                    destination = LearningDestination.Home
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun LearningMenuHome(onSelect: (LearningMenu) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFFD85A))
+            .padding(48.dp),
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LearningMenu.entries.forEach { menu ->
+            Surface(
+                onClick = { onSelect(menu) },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = "${menu.label} 학습, ${menu.symbol}"
+                    },
+                color = when (menu) {
+                    LearningMenu.CONSONANTS -> Color(0xFFE5F3FF)
+                    LearningMenu.VOWELS -> Color(0xFFFFE8D2)
+                    LearningMenu.GANADA -> Color(0xFFE4F4DE)
+                },
+                shape = RoundedCornerShape(36.dp),
+                shadowElevation = 8.dp,
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Text(menu.icon, fontSize = 72.sp)
+                    Text(menu.symbol, fontSize = 54.sp, fontWeight = FontWeight.Bold)
+                    Text(menu.label, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LessonSelection(
+    menu: LearningMenu,
+    onSelect: (LessonSpec) -> Unit,
+    onHome: () -> Unit,
+) {
+    val lessons = LearningNavigation.lessons(menu)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFFD85A))
+            .padding(32.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            Surface(
+                onClick = onHome,
+                modifier = Modifier.size(72.dp),
+                color = Color.White,
+                shape = CircleShape,
+            ) { Box(contentAlignment = Alignment.Center) { Text("⌂", fontSize = 36.sp) } }
+            Text("${menu.icon}  ${menu.symbol}", fontSize = 40.sp, fontWeight = FontWeight.Bold)
+        }
+        lessons.chunked(7).forEach { rowLessons ->
+            Row(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                rowLessons.forEach { lesson ->
+                    Surface(
+                        onClick = { onSelect(lesson) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .semantics { contentDescription = "${lesson.glyph} 쓰기 시작" },
+                        color = Color(0xFFFFFEFA),
+                        shape = RoundedCornerShape(28.dp),
+                        shadowElevation = 5.dp,
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(lesson.glyph, fontSize = 58.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+                repeat(7 - rowLessons.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WritingLesson(
+    initialLessonId: LessonId,
+    speechState: SpeechPlaybackState,
+    demonstrationStrokeIndex: Int?,
+    speak: (SpokenCue) -> Boolean,
+    stopSpeech: () -> Unit,
+    onHome: () -> Unit,
+) {
     var clearRequest by rememberSaveable { mutableIntStateOf(0) }
     var traceResult by rememberSaveable { mutableStateOf<GieokTraceResult?>(null) }
     var traceStrokeIndex by rememberSaveable { mutableIntStateOf(0) }
-    var lessonIndex by rememberSaveable { mutableIntStateOf(0) }
+    var lessonIndex by rememberSaveable {
+        mutableIntStateOf(KoreanCurriculum.lessons.indexOfFirst { it.id == initialLessonId })
+    }
     var vehicleIndex by rememberSaveable { mutableIntStateOf(0) }
     var vehicleSuccessArmed by rememberSaveable { mutableStateOf(true) }
     var nextVehiclePending by rememberSaveable { mutableStateOf(false) }
@@ -319,6 +469,7 @@ private fun LearningShell(
         EdgeActionColumns(
             replayVisualState = speechState.replayVisualState,
             nextAvailable = rewardState.phase == RewardMovePhase.COMPLETE,
+            onHome = onHome,
             onReplay = {
                 restoredInitialSpeechHandled = true
                 initialSpeechPending = currentCue == currentLesson.initialCue
@@ -541,6 +692,7 @@ private data class ChildFeedback(
 private fun EdgeActionColumns(
     replayVisualState: ReplayVisualState,
     nextAvailable: Boolean,
+    onHome: () -> Unit,
     onReplay: () -> Unit,
     onClear: () -> Unit,
     onNext: () -> Unit,
@@ -553,6 +705,10 @@ private fun EdgeActionColumns(
                 .padding(start = 4.dp),
             verticalArrangement = Arrangement.spacedBy(LearningShellSpec.ACTION_COLUMN_SPACING_DP.dp),
         ) {
+            HomeAction(
+                onClick = onHome,
+                modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
+            )
             ReplayAction(
                 label = stringResource(R.string.action_replay),
                 contentDescription = stringResource(R.string.action_replay_description),
@@ -578,6 +734,25 @@ private fun EdgeActionColumns(
                 onClick = onNext,
                 modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun HomeAction(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier
+            .heightIn(min = 64.dp)
+            .semantics { contentDescription = "홈으로 돌아가기" },
+        color = Color(0xFFFFFEFA),
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text("⌂", color = Color(0xFF7A4A22), fontSize = 30.sp, fontWeight = FontWeight.Bold)
         }
     }
 }

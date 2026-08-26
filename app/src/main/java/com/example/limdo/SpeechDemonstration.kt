@@ -28,6 +28,9 @@ internal fun SpokenCue.demonstrationStrokeIndex(characterStart: Int): Int? {
         SpokenCue.RETRY_FOURTH_GUIDE,
         SpokenCue.RETRY_FOURTH_FINISH,
         -> return 3
+        SpokenCue.MENU_CONSONANTS,
+        SpokenCue.MENU_VOWELS,
+        SpokenCue.MENU_GANADA,
         SpokenCue.SUCCESS,
         SpokenCue.SUCCESS_A,
         SpokenCue.SUCCESS_AE,

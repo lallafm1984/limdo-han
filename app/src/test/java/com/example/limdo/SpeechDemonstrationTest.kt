@@ -27,6 +27,9 @@ class SpeechDemonstrationTest {
 
     @Test
     fun ignoresNonInitialAndInvalidRanges() {
+        assertNull(SpokenCue.MENU_CONSONANTS.demonstrationStrokeIndex(0))
+        assertNull(SpokenCue.MENU_VOWELS.demonstrationStrokeIndex(0))
+        assertNull(SpokenCue.MENU_GANADA.demonstrationStrokeIndex(0))
         assertNull(SpokenCue.SUCCESS.demonstrationStrokeIndex(0))
         assertNull(SpokenCue.INITIAL.demonstrationStrokeIndex(-1))
     }

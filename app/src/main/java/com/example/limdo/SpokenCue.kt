@@ -1,6 +1,9 @@
 package com.example.limdo
 
 internal enum class SpokenCue(val utterance: String) {
+    MENU_CONSONANTS("자음"),
+    MENU_VOWELS("모음"),
+    MENU_GANADA("가나다"),
     INITIAL_GIEOK("초록점에서 오른쪽, 모서리에서 아래쪽으로 그려봐."),
     SUCCESS_GIEOK("잘했어! 기역을 완성했어."),
     INITIAL_NIEUN("초록점에서 아래쪽, 모서리에서 오른쪽으로 그려봐."),
