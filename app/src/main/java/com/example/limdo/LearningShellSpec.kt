@@ -1,9 +1,15 @@
 package com.example.limdo
 
 internal object LearningShellSpec {
-    const val GUIDE_WEIGHT = 3f
-    const val WRITING_BOARD_WEIGHT = 7f
+    const val CANVAS_HORIZONTAL_PADDING_DP = 72f
+    const val CANVAS_VERTICAL_PADDING_DP = 24f
+    const val ACTION_COLUMN_WIDTH_DP = 64f
+    const val ACTION_COLUMN_SPACING_DP = 12f
 
-    val writingBoardFraction: Float
-        get() = WRITING_BOARD_WEIGHT / (GUIDE_WEIGHT + WRITING_BOARD_WEIGHT)
+    fun writingCanvasSizePx(screenWidthPx: Int, screenHeightPx: Int, density: Float): Pair<Int, Int> {
+        val horizontalInset = 2f * CANVAS_HORIZONTAL_PADDING_DP * density
+        val verticalInset = 2f * CANVAS_VERTICAL_PADDING_DP * density
+        return (screenWidthPx - horizontalInset).toInt() to
+            (screenHeightPx - verticalInset).toInt()
+    }
 }

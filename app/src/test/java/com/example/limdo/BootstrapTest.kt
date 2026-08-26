@@ -11,9 +11,18 @@ class BootstrapTest {
     }
 
     @Test
-    fun writingBoardUsesSeventyPercentOfLearningArea() {
-        assertEquals(0.7f, LearningShellSpec.writingBoardFraction, 0.001f)
-        assertTrue(LearningShellSpec.writingBoardFraction in 0.65f..0.75f)
+    fun edgeActionsLeaveA1962By954WritingCanvasAtReferenceResolution() {
+        val canvas = LearningShellSpec.writingCanvasSizePx(
+            screenWidthPx = 2_340,
+            screenHeightPx = 1_080,
+            density = 2.625f,
+        )
+
+        assertEquals(1_962 to 954, canvas)
+        assertTrue(canvas.first >= 1_872)
+        assertTrue(canvas.second >= 900)
+        assertEquals(64f, LearningShellSpec.ACTION_COLUMN_WIDTH_DP, 0.001f)
+        assertEquals(12f, LearningShellSpec.ACTION_COLUMN_SPACING_DP, 0.001f)
     }
 
     @Test

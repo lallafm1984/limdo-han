@@ -272,7 +272,10 @@ private fun LearningShell(
             },
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 72.dp, top = 24.dp, end = 72.dp, bottom = 92.dp),
+                .padding(
+                    horizontal = LearningShellSpec.CANVAS_HORIZONTAL_PADDING_DP.dp,
+                    vertical = LearningShellSpec.CANVAS_VERTICAL_PADDING_DP.dp,
+                ),
         )
 
         Image(
@@ -313,7 +316,7 @@ private fun LearningShell(
             )
         }
 
-        ActionShelf(
+        EdgeActionColumns(
             replayVisualState = speechState.replayVisualState,
             nextAvailable = rewardState.phase == RewardMovePhase.COMPLETE,
             onReplay = {
@@ -369,9 +372,7 @@ private fun LearningShell(
                 if (!speak(nextLesson.initialCue)) initialSpeechPending = false
             },
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth(0.58f)
-                .padding(bottom = 10.dp),
+                .fillMaxSize(),
         )
     }
 }
@@ -537,7 +538,7 @@ private data class ChildFeedback(
 )
 
 @Composable
-private fun ActionShelf(
+private fun EdgeActionColumns(
     replayVisualState: ReplayVisualState,
     nextAvailable: Boolean,
     onReplay: () -> Unit,
@@ -545,36 +546,37 @@ private fun ActionShelf(
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier
-            .heightIn(min = 72.dp),
-        color = Color(0xE6FFF9E9),
-        shape = RoundedCornerShape(24.dp),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
+    Box(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(LearningShellSpec.ACTION_COLUMN_SPACING_DP.dp),
         ) {
             ReplayAction(
                 label = stringResource(R.string.action_replay),
                 contentDescription = stringResource(R.string.action_replay_description),
                 visualState = replayVisualState,
                 onClick = onReplay,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
             )
             ClearAction(
                 label = stringResource(R.string.action_clear),
                 contentDescription = stringResource(R.string.action_clear_description),
                 onClick = onClear,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
             )
-            Spacer(modifier = Modifier.width(8.dp))
+        }
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 4.dp),
+        ) {
             NextAction(
                 label = stringResource(R.string.action_next),
                 available = nextAvailable,
                 onClick = onNext,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
             )
         }
     }
@@ -614,10 +616,10 @@ private fun ReplayAction(
         },
         shape = RoundedCornerShape(20.dp),
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = when (visualState) {
@@ -625,7 +627,7 @@ private fun ReplayAction(
                     ReplayVisualState.AVAILABLE -> "🔊"
                     ReplayVisualState.UNAVAILABLE -> "🔇"
                 },
-                fontSize = 28.sp,
+                fontSize = 24.sp,
             )
             Text(
                 text = label,
@@ -634,7 +636,7 @@ private fun ReplayAction(
                     available -> Color(0xFF285A46)
                     else -> Color(0xFF68645E)
                 },
-                fontSize = 18.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
             )
         }
@@ -656,21 +658,21 @@ private fun ClearAction(
         color = Color(0xFFFFF3E6),
         shape = RoundedCornerShape(20.dp),
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = "⌫",
                 color = Color(0xFF7A4A22),
-                fontSize = 28.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
             )
             Text(
                 text = label,
                 color = Color(0xFF7A4A22),
-                fontSize = 18.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
             )
         }
@@ -700,20 +702,20 @@ private fun NextAction(
         color = if (available) Color(0xFFDCEDE5) else Color(0xFFD8D4CC),
         shape = RoundedCornerShape(20.dp),
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = "▶",
                 color = if (available) Color(0xFF285A46) else Color(0xFF68645E),
-                fontSize = 28.sp,
+                fontSize = 24.sp,
             )
             Text(
                 text = label,
                 color = if (available) Color(0xFF285A46) else Color(0xFF68645E),
-                fontSize = 18.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
             )
         }
