@@ -14,6 +14,7 @@ internal enum class LessonId {
     GIEOK, NIEUN, DIGEUT, RIEUL, MIEUM, BIEUP, SIOT, IEUNG, JIEUT, CHIEUT, KIEUK, TIEUT,
     PIEUP, HIEUH,
     A, AE, YA, EO, YEO, O, YO, U, YU, EU, I, GA, NA, DA, RA, MA, BA, SA, AH, JA, CHA, KA, TA,
+    PA, HA,
 }
 
 internal enum class StrokeDirection { RIGHT, LEFT, UP, DOWN }
@@ -437,6 +438,37 @@ internal object KoreanCurriculum {
                 StrokeDirection.RIGHT,
             ),
         ),
+        LessonSpec(
+            id = LessonId.PA,
+            stage = CurriculumStage.OPEN_SYLLABLES,
+            glyph = "파",
+            strokeCount = 6,
+            initialCue = SpokenCue.INITIAL_PA,
+            successCue = SpokenCue.SUCCESS_PA,
+            strokeDirections = listOf(
+                StrokeDirection.RIGHT,
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.DOWN,
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+            ),
+        ),
+        LessonSpec(
+            id = LessonId.HA,
+            stage = CurriculumStage.OPEN_SYLLABLES,
+            glyph = "하",
+            strokeCount = 5,
+            initialCue = SpokenCue.INITIAL_HA,
+            successCue = SpokenCue.SUCCESS_HA,
+            strokeDirections = listOf(
+                StrokeDirection.RIGHT,
+                StrokeDirection.RIGHT,
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
+            ),
+        ),
     )
 
     fun nextIndex(currentIndex: Int): Int = (currentIndex + 1) % lessons.size
@@ -479,6 +511,8 @@ internal val JaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.JA }
 internal val ChaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.CHA }
 internal val KaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.KA }
 internal val TaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.TA }
+internal val PaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.PA }
+internal val HaLesson = KoreanCurriculum.lessons.first { it.id == LessonId.HA }
 
 internal enum class RewardMovePhase { IDLE, START, MOVING, COMPLETE }
 

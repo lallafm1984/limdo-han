@@ -64,6 +64,8 @@ class KoreanCurriculumTest {
                 CurriculumStage.OPEN_SYLLABLES,
                 CurriculumStage.OPEN_SYLLABLES,
                 CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
+                CurriculumStage.OPEN_SYLLABLES,
             ),
             KoreanCurriculum.lessons.map(LessonSpec::stage),
         )
@@ -72,7 +74,7 @@ class KoreanCurriculumTest {
     @Test
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         assertEquals(
-            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바", "사", "아", "자", "차", "카", "타"),
+            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바", "사", "아", "자", "차", "카", "타", "파", "하"),
             KoreanCurriculum.lessons.map(LessonSpec::glyph),
         )
         assertEquals(0, KoreanCurriculum.nextIndex(KoreanCurriculum.lessons.lastIndex))
@@ -132,6 +134,8 @@ class KoreanCurriculumTest {
             LessonId.JA to 5,
             LessonId.CHA to 6,
             LessonId.TA to 5,
+            LessonId.PA to 6,
+            LessonId.HA to 5,
         ).associate { (id, expectedStrokes) ->
             val lesson = KoreanCurriculum.lessons.single { it.id == id }
             assertEquals(expectedStrokes, lesson.strokeCount)
@@ -180,16 +184,20 @@ class KoreanCurriculumTest {
             assertTrue(tieut[2][2].x > tieut[2][1].x)
         }
 
-        val pieup = lessons.getValue(LessonId.PIEUP).strokes
-        assertTrue(pieup[0].last().x > pieup[0].first().x)
-        assertTrue(pieup[1].last().x > pieup[1].first().x)
-        assertTrue(pieup[2].last().y > pieup[2].first().y)
-        assertTrue(pieup[3].last().y > pieup[3].first().y)
+        listOf(LessonId.PIEUP, LessonId.PA).forEach { id ->
+            val pieup = lessons.getValue(id).strokes
+            assertTrue(pieup[0].last().x > pieup[0].first().x)
+            assertTrue(pieup[1].last().x > pieup[1].first().x)
+            assertTrue(pieup[2].last().y > pieup[2].first().y)
+            assertTrue(pieup[3].last().y > pieup[3].first().y)
+        }
 
-        val hieuh = lessons.getValue(LessonId.HIEUH).strokes
-        assertTrue(hieuh[0].last().x - hieuh[0].first().x < hieuh[1].last().x - hieuh[1].first().x)
-        assertTrue(hieuh[2].first().y > hieuh[1].first().y)
-        assertEquals(hieuh[2].first(), hieuh[2].last())
+        listOf(LessonId.HIEUH, LessonId.HA).forEach { id ->
+            val hieuh = lessons.getValue(id).strokes
+            assertTrue(hieuh[0].last().x - hieuh[0].first().x < hieuh[1].last().x - hieuh[1].first().x)
+            assertTrue(hieuh[2].first().y > hieuh[1].first().y)
+            assertEquals(hieuh[2].first(), hieuh[2].last())
+        }
     }
 
     @Test
