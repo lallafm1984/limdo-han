@@ -1,6 +1,7 @@
 package com.example.limdo
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -154,6 +155,219 @@ class LearningNavigationTest {
                 LearningDestination.Selection(LearningMenu.GANADA),
                 LearningNavigation.back(destination),
             )
+        }
+    }
+
+    @Test
+    fun fourteenGanadaLessonsMatchIndependentProductionMappingOracle() {
+        data class ExpectedLesson(
+            val id: LessonId,
+            val glyph: String,
+            val strokeCount: Int,
+            val initialCue: SpokenCue,
+            val successCue: SpokenCue,
+        )
+
+        val expected = listOf(
+            ExpectedLesson(LessonId.GA, "가", 3, SpokenCue.INITIAL, SpokenCue.SUCCESS),
+            ExpectedLesson(LessonId.NA, "나", 3, SpokenCue.INITIAL_NA, SpokenCue.SUCCESS_NA),
+            ExpectedLesson(LessonId.DA, "다", 4, SpokenCue.INITIAL_DA, SpokenCue.SUCCESS_DA),
+            ExpectedLesson(LessonId.RA, "라", 5, SpokenCue.INITIAL_RA, SpokenCue.SUCCESS_RA),
+            ExpectedLesson(LessonId.MA, "마", 5, SpokenCue.INITIAL_MA, SpokenCue.SUCCESS_MA),
+            ExpectedLesson(LessonId.BA, "바", 6, SpokenCue.INITIAL_BA, SpokenCue.SUCCESS_BA),
+            ExpectedLesson(LessonId.SA, "사", 4, SpokenCue.INITIAL_SA, SpokenCue.SUCCESS_SA),
+            ExpectedLesson(LessonId.AH, "아", 3, SpokenCue.INITIAL_AH, SpokenCue.SUCCESS_AH),
+            ExpectedLesson(LessonId.JA, "자", 5, SpokenCue.INITIAL_JA, SpokenCue.SUCCESS_JA),
+            ExpectedLesson(LessonId.CHA, "차", 6, SpokenCue.INITIAL_CHA, SpokenCue.SUCCESS_CHA),
+            ExpectedLesson(LessonId.KA, "카", 4, SpokenCue.INITIAL_KA, SpokenCue.SUCCESS_KA),
+            ExpectedLesson(LessonId.TA, "타", 5, SpokenCue.INITIAL_TA, SpokenCue.SUCCESS_TA),
+            ExpectedLesson(LessonId.PA, "파", 6, SpokenCue.INITIAL_PA, SpokenCue.SUCCESS_PA),
+            ExpectedLesson(LessonId.HA, "하", 5, SpokenCue.INITIAL_HA, SpokenCue.SUCCESS_HA),
+        )
+        val actual = LearningNavigation.lessons(LearningMenu.GANADA)
+
+        assertEquals(expected.map(ExpectedLesson::id), actual.map(LessonSpec::id))
+        assertEquals(expected.size, actual.map(LessonSpec::id).distinct().size)
+        expected.zip(actual).forEachIndexed { index, (oracle, lesson) ->
+            val geometry = WritingCanvasGeometry.glyph(lesson, width = 1962f, height = 954f)
+            val reward = LessonRewardState().onTraceResult(GieokTraceResult.SUCCESS, lesson)
+            val writing = LearningDestination.Writing(
+                menu = LearningMenu.GANADA,
+                lessonId = lesson.id,
+                sessionId = index + 1,
+            )
+
+            assertEquals(oracle.glyph, lesson.glyph)
+            assertEquals(oracle.strokeCount, lesson.strokeCount)
+            assertEquals(oracle.initialCue, lesson.initialCue)
+            assertEquals(oracle.successCue, lesson.successCue)
+            assertEquals(oracle.strokeCount, geometry.strokes.size)
+            assertEquals(oracle.strokeCount, reward.targetSteps)
+            assertEquals(
+                LearningDestination.Selection(LearningMenu.GANADA),
+                LearningNavigation.back(writing),
+            )
+        }
+    }
+
+    @Test
+    fun threeMenuRepresentativePathsKeepLessonRewardNextAndHomeDestinationsIndependent() {
+        LearningMenu.entries.forEachIndexed { menuIndex, menu ->
+            val menuLessons = LearningNavigation.lessons(menu)
+            val representative = menuLessons.first()
+            val writing = LearningDestination.Writing(
+                menu = menu,
+                lessonId = representative.id,
+                sessionId = menuIndex + 1,
+            )
+            val reward = LessonRewardState().onTraceResult(
+                GieokTraceResult.SUCCESS,
+                representative,
+            )
+            val curriculumIndex = KoreanCurriculum.lessons.indexOfFirst {
+                it.id == representative.id
+            }
+            val nextLesson = KoreanCurriculum.lessons[
+                KoreanCurriculum.nextIndex(curriculumIndex)
+            ]
+
+            assertTrue(menuLessons.size > 1)
+            assertEquals(representative.strokeCount, reward.targetSteps)
+            assertEquals(menuLessons[1].id, nextLesson.id)
+            assertEquals(
+                LearningDestination.Selection(menu),
+                LearningNavigation.back(writing),
+            )
+            assertEquals(
+                LearningDestination.Home,
+                LearningNavigation.back(LearningDestination.Selection(menu)),
+            )
+        }
+    }
+
+    @Test
+    fun threeMenuRetryReplayClearAndNextStatesStayConsistent() {
+        LearningMenu.entries.forEach { menu ->
+            val lesson = LearningNavigation.lessons(menu).first()
+            val retryResult = GieokTraceResult.OFF_GUIDE
+            val retryReward = LessonRewardState().onTraceResult(retryResult, lesson)
+            val retryVehicle = VehicleCarouselState(
+                index = menu.visuals().startingVehicleIndex,
+            ).onTraceResult(retryResult)
+            val retryCue = SpokenCueModel.forResult(retryResult, strokeIndex = 0, lesson = lesson)
+
+            assertEquals(SpokenCue.RETRY_GUIDE, retryCue)
+            assertEquals(0, retryReward.targetSteps)
+            assertEquals(RewardMovePhase.IDLE, retryReward.phase)
+            assertFalse(retryVehicle.nextVehiclePending)
+            assertTrue(SpeechPlaybackState.Ready.canReplay)
+            assertEquals(ReplayVisualState.AVAILABLE, SpeechPlaybackState.Ready.replayVisualState)
+            assertFalse(
+                shouldStartNextInitialCue(
+                    moveCompleted = retryReward.phase == RewardMovePhase.COMPLETE,
+                    nextVehiclePending = retryVehicle.nextVehiclePending,
+                ),
+            )
+
+            val successReward = LessonRewardState()
+                .onTraceResult(GieokTraceResult.SUCCESS, lesson)
+            val successVehicle = VehicleCarouselState(
+                index = menu.visuals().startingVehicleIndex,
+            ).onTraceResult(GieokTraceResult.SUCCESS)
+
+            assertFalse(
+                shouldStartNextInitialCue(
+                    moveCompleted = successReward.phase == RewardMovePhase.COMPLETE,
+                    nextVehiclePending = successVehicle.nextVehiclePending,
+                ),
+            )
+
+            val completedReward = successReward.moving().complete()
+            assertTrue(
+                shouldStartNextInitialCue(
+                    moveCompleted = completedReward.phase == RewardMovePhase.COMPLETE,
+                    nextVehiclePending = successVehicle.nextVehiclePending,
+                ),
+            )
+
+            val clearedReward = LessonRewardState()
+            val clearedVehicle = successVehicle.clearCurrentInput()
+            assertEquals(RewardMovePhase.IDLE, clearedReward.phase)
+            assertEquals(0, clearedReward.targetSteps)
+            assertFalse(clearedVehicle.nextVehiclePending)
+            assertTrue(clearedVehicle.successArmed)
+            assertFalse(
+                shouldStartNextInitialCue(
+                    moveCompleted = clearedReward.phase == RewardMovePhase.COMPLETE,
+                    nextVehiclePending = clearedVehicle.nextVehiclePending,
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun rapidCallbacksBackHomeAndRelaunchDoNotLeakWritingStateAcrossMenus() {
+        LearningMenu.entries.forEachIndexed { menuIndex, menu ->
+            val lesson = LearningNavigation.lessons(menu).first()
+            val initialVehicle = VehicleCarouselState(
+                index = menu.visuals().startingVehicleIndex,
+            )
+            val firstReward = LessonRewardState()
+                .onTraceResult(GieokTraceResult.SUCCESS, lesson)
+            val duplicateReward = firstReward
+                .onTraceResult(GieokTraceResult.SUCCESS, lesson)
+            val firstVehicle = initialVehicle.onTraceResult(GieokTraceResult.SUCCESS)
+            val duplicateVehicle = firstVehicle.onTraceResult(GieokTraceResult.SUCCESS)
+
+            assertEquals(firstReward, duplicateReward)
+            assertEquals(lesson.strokeCount, duplicateReward.targetSteps)
+            assertEquals(firstVehicle, duplicateVehicle)
+
+            val completedReward = duplicateReward.moving().complete()
+            val afterFirstNext = duplicateVehicle.prepareNextInput(
+                moveCompleted = completedReward.phase == RewardMovePhase.COMPLETE,
+            )
+            val afterRapidSecondNext = afterFirstNext.prepareNextInput(moveCompleted = true)
+            assertEquals(afterFirstNext, afterRapidSecondNext)
+            assertEquals(
+                (menu.visuals().startingVehicleIndex + 1) % VehicleCarousel.vehicles.size,
+                afterRapidSecondNext.index,
+            )
+
+            val writing = LearningDestination.Writing(
+                menu = menu,
+                lessonId = lesson.id,
+                sessionId = menuIndex + 1,
+            )
+            assertEquals(
+                LearningDestination.Selection(menu),
+                LearningNavigation.back(writing),
+            )
+            assertEquals(
+                LearningDestination.Home,
+                LearningNavigation.back(LearningNavigation.back(writing)),
+            )
+
+            val freshReward = LessonRewardState()
+            val freshVehicle = VehicleCarouselState(
+                index = menu.visuals().startingVehicleIndex,
+            )
+            val relaunchedDestination = LearningDestination.Home
+            assertEquals(RewardMovePhase.IDLE, freshReward.phase)
+            assertEquals(0, freshReward.targetSteps)
+            assertFalse(freshReward.inputLocked)
+            assertTrue(freshVehicle.successArmed)
+            assertFalse(freshVehicle.nextVehiclePending)
+            assertEquals(LearningDestination.Home, relaunchedDestination)
+
+            val reopened = LearningDestination.Writing(
+                menu = menu,
+                lessonId = lesson.id,
+                sessionId = menuIndex + LearningMenu.entries.size + 1,
+            )
+            assertNotEquals(writing, reopened)
+            assertEquals(writing.menu, reopened.menu)
+            assertEquals(writing.lessonId, reopened.lessonId)
         }
     }
 
