@@ -520,7 +520,7 @@ private fun WritingBoardPreview(
     ) {
         WritingCanvas(
             lesson = lesson,
-            contentDescription = "큰 쓰기판. 초록 점에서 시작해 ${lesson.glyph}를 ${lesson.strokeCount}획으로 그려요",
+            contentDescription = writingCanvasDescription(lesson.glyph, lesson.strokeCount),
             clearRequest = clearRequest,
             inputEnabled = inputEnabled,
             demonstrationStrokeIndex = demonstrationStrokeIndex,
