@@ -24,8 +24,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
@@ -245,15 +247,19 @@ internal fun WritingCanvas(
         val glyph = WritingCanvasGeometry.visibleLessonGlyph(size.width, size.height, lesson)
         val pathStroke = glyph.strokeWidth
         glyph.strokes.forEach { stroke ->
-            stroke.zipWithNext().forEach { (start, end) ->
-                drawLine(
-                    color = GieokGuide,
-                    start = Offset(start.x, start.y),
-                    end = Offset(end.x, end.y),
-                    strokeWidth = pathStroke,
-                    cap = StrokeCap.Round,
-                )
+            val glyphPath = Path().apply {
+                moveTo(stroke.first().x, stroke.first().y)
+                stroke.drop(1).forEach { point -> lineTo(point.x, point.y) }
             }
+            drawPath(
+                path = glyphPath,
+                color = GieokGuide,
+                style = Stroke(
+                    width = pathStroke,
+                    cap = StrokeCap.Butt,
+                    join = StrokeJoin.Round,
+                ),
+            )
         }
         val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(size.width, size.height)
         val childStrokes = attempt.completedStrokes + listOf(attempt.stroke)

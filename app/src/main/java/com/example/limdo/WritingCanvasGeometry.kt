@@ -92,20 +92,27 @@ internal object WritingCanvasGeometry {
     )
 
     private val bieupTemplate = listOf(
-        listOf(CanvasPoint(0.18f, 0.08f), CanvasPoint(0.18f, 0.92f)),
-        listOf(CanvasPoint(0.82f, 0.08f), CanvasPoint(0.82f, 0.92f)),
-        listOf(CanvasPoint(0.18f, 0.16f), CanvasPoint(0.82f, 0.16f)),
-        listOf(
-            CanvasPoint(0.18f, 0.50f),
-            CanvasPoint(0.82f, 0.50f),
-            CanvasPoint(0.82f, 0.84f),
-            CanvasPoint(0.18f, 0.84f),
-        ),
+        listOf(CanvasPoint(0.24f, 0.12f), CanvasPoint(0.24f, 0.88f)),
+        listOf(CanvasPoint(0.76f, 0.12f), CanvasPoint(0.76f, 0.88f)),
+        listOf(CanvasPoint(0.24f, 0.50f), CanvasPoint(0.76f, 0.50f)),
+        listOf(CanvasPoint(0.24f, 0.88f), CanvasPoint(0.76f, 0.88f)),
     )
 
     private val siotTemplate = listOf(
-        listOf(CanvasPoint(0.50f, 0.10f), CanvasPoint(0.14f, 0.90f)),
-        listOf(CanvasPoint(0.50f, 0.10f), CanvasPoint(0.86f, 0.90f)),
+        listOf(
+            CanvasPoint(0.50f, 0.12f),
+            CanvasPoint(0.49f, 0.40f),
+            CanvasPoint(0.44f, 0.54f),
+            CanvasPoint(0.34f, 0.65f),
+            CanvasPoint(0.16f, 0.82f),
+        ),
+        listOf(
+            CanvasPoint(0.50f, 0.12f),
+            CanvasPoint(0.51f, 0.40f),
+            CanvasPoint(0.56f, 0.54f),
+            CanvasPoint(0.66f, 0.65f),
+            CanvasPoint(0.84f, 0.82f),
+        ),
     )
 
     private val ieungTemplate = listOf(
@@ -123,16 +130,40 @@ internal object WritingCanvasGeometry {
     )
 
     private val jieutTemplate = listOf(
-        listOf(CanvasPoint(0.16f, 0.12f), CanvasPoint(0.84f, 0.12f)),
-        listOf(CanvasPoint(0.50f, 0.20f), CanvasPoint(0.14f, 0.90f)),
-        listOf(CanvasPoint(0.50f, 0.20f), CanvasPoint(0.86f, 0.90f)),
+        listOf(CanvasPoint(0.16f, 0.18f), CanvasPoint(0.84f, 0.18f)),
+        listOf(
+            CanvasPoint(0.50f, 0.22f),
+            CanvasPoint(0.49f, 0.48f),
+            CanvasPoint(0.43f, 0.58f),
+            CanvasPoint(0.32f, 0.68f),
+            CanvasPoint(0.14f, 0.84f),
+        ),
+        listOf(
+            CanvasPoint(0.50f, 0.22f),
+            CanvasPoint(0.51f, 0.48f),
+            CanvasPoint(0.57f, 0.58f),
+            CanvasPoint(0.68f, 0.68f),
+            CanvasPoint(0.86f, 0.84f),
+        ),
     )
 
     private val chieutTemplate = listOf(
-        listOf(CanvasPoint(0.30f, 0.08f), CanvasPoint(0.70f, 0.08f)),
+        listOf(CanvasPoint(0.34f, 0.07f), CanvasPoint(0.66f, 0.07f)),
         listOf(CanvasPoint(0.16f, 0.28f), CanvasPoint(0.84f, 0.28f)),
-        listOf(CanvasPoint(0.50f, 0.34f), CanvasPoint(0.14f, 0.92f)),
-        listOf(CanvasPoint(0.50f, 0.34f), CanvasPoint(0.86f, 0.92f)),
+        listOf(
+            CanvasPoint(0.50f, 0.32f),
+            CanvasPoint(0.49f, 0.56f),
+            CanvasPoint(0.43f, 0.64f),
+            CanvasPoint(0.32f, 0.74f),
+            CanvasPoint(0.14f, 0.88f),
+        ),
+        listOf(
+            CanvasPoint(0.50f, 0.32f),
+            CanvasPoint(0.51f, 0.56f),
+            CanvasPoint(0.57f, 0.64f),
+            CanvasPoint(0.68f, 0.74f),
+            CanvasPoint(0.86f, 0.88f),
+        ),
     )
 
     private val kieukTemplate = listOf(
@@ -145,41 +176,47 @@ internal object WritingCanvasGeometry {
     )
 
     private val tieutTemplate = listOf(
-        listOf(CanvasPoint(0.14f, 0.12f), CanvasPoint(0.86f, 0.12f)),
-        listOf(CanvasPoint(0.14f, 0.40f), CanvasPoint(0.86f, 0.40f)),
+        listOf(CanvasPoint(0.16f, 0.16f), CanvasPoint(0.84f, 0.16f)),
+        listOf(CanvasPoint(0.16f, 0.50f), CanvasPoint(0.84f, 0.50f)),
         listOf(
-            CanvasPoint(0.14f, 0.40f),
-            CanvasPoint(0.14f, 0.88f),
-            CanvasPoint(0.86f, 0.88f),
+            CanvasPoint(0.16f, 0.16f),
+            CanvasPoint(0.16f, 0.84f),
+            CanvasPoint(0.84f, 0.84f),
         ),
     )
 
     private val pieupTemplate = listOf(
-        listOf(CanvasPoint(0.18f, 0.12f), CanvasPoint(0.18f, 0.88f)),
-        listOf(CanvasPoint(0.82f, 0.12f), CanvasPoint(0.82f, 0.88f)),
-        listOf(CanvasPoint(0.18f, 0.28f), CanvasPoint(0.82f, 0.28f)),
-        listOf(CanvasPoint(0.18f, 0.72f), CanvasPoint(0.82f, 0.72f)),
+        listOf(CanvasPoint(0.14f, 0.20f), CanvasPoint(0.86f, 0.20f)),
+        listOf(CanvasPoint(0.14f, 0.80f), CanvasPoint(0.86f, 0.80f)),
+        listOf(CanvasPoint(0.36f, 0.25f), CanvasPoint(0.40f, 0.75f)),
+        listOf(CanvasPoint(0.64f, 0.25f), CanvasPoint(0.60f, 0.75f)),
     )
 
     private val hieuhTemplate = listOf(
-        listOf(CanvasPoint(0.30f, 0.08f), CanvasPoint(0.70f, 0.08f)),
-        listOf(CanvasPoint(0.18f, 0.28f), CanvasPoint(0.82f, 0.28f)),
+        listOf(CanvasPoint(0.36f, 0.06f), CanvasPoint(0.64f, 0.06f)),
+        listOf(CanvasPoint(0.20f, 0.30f), CanvasPoint(0.80f, 0.30f)),
         listOf(
-            CanvasPoint(0.50f, 0.38f),
-            CanvasPoint(0.82f, 0.50f),
-            CanvasPoint(0.82f, 0.70f),
-            CanvasPoint(0.68f, 0.88f),
-            CanvasPoint(0.50f, 0.94f),
-            CanvasPoint(0.32f, 0.88f),
-            CanvasPoint(0.18f, 0.70f),
-            CanvasPoint(0.18f, 0.50f),
-            CanvasPoint(0.50f, 0.38f),
+            CanvasPoint(0.50f, 0.52f),
+            CanvasPoint(0.68f, 0.55f),
+            CanvasPoint(0.76f, 0.68f),
+            CanvasPoint(0.70f, 0.82f),
+            CanvasPoint(0.50f, 0.90f),
+            CanvasPoint(0.30f, 0.82f),
+            CanvasPoint(0.24f, 0.68f),
+            CanvasPoint(0.32f, 0.55f),
+            CanvasPoint(0.50f, 0.52f),
         ),
     )
 
     private val aTemplate = listOf(
         listOf(CanvasPoint(0.46f, 0.08f), CanvasPoint(0.46f, 0.92f)),
         listOf(CanvasPoint(0.46f, 0.50f), CanvasPoint(0.76f, 0.50f)),
+    )
+
+    private val aeTemplate = listOf(
+        listOf(CanvasPoint(0.32f, 0.08f), CanvasPoint(0.32f, 0.92f)),
+        listOf(CanvasPoint(0.32f, 0.50f), CanvasPoint(0.68f, 0.50f)),
+        listOf(CanvasPoint(0.68f, 0.08f), CanvasPoint(0.68f, 0.92f)),
     )
 
     private val yaTemplate = listOf(
@@ -277,17 +314,29 @@ internal object WritingCanvasGeometry {
     )
 
     private val baTemplate = listOf(
-        listOf(CanvasPoint(0.08f, 0.08f), CanvasPoint(0.08f, 0.92f)),
-        listOf(CanvasPoint(0.46f, 0.08f), CanvasPoint(0.46f, 0.92f)),
-        listOf(CanvasPoint(0.08f, 0.16f), CanvasPoint(0.46f, 0.16f)),
-        listOf(CanvasPoint(0.08f, 0.50f), CanvasPoint(0.46f, 0.50f), CanvasPoint(0.46f, 0.84f), CanvasPoint(0.08f, 0.84f)),
+        listOf(CanvasPoint(0.10f, 0.12f), CanvasPoint(0.10f, 0.88f)),
+        listOf(CanvasPoint(0.44f, 0.12f), CanvasPoint(0.44f, 0.88f)),
+        listOf(CanvasPoint(0.10f, 0.50f), CanvasPoint(0.44f, 0.50f)),
+        listOf(CanvasPoint(0.10f, 0.88f), CanvasPoint(0.44f, 0.88f)),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
     private val saTemplate = listOf(
-        listOf(CanvasPoint(0.27f, 0.10f), CanvasPoint(0.05f, 0.88f)),
-        listOf(CanvasPoint(0.27f, 0.10f), CanvasPoint(0.49f, 0.88f)),
+        listOf(
+            CanvasPoint(0.27f, 0.12f),
+            CanvasPoint(0.27f, 0.40f),
+            CanvasPoint(0.24f, 0.54f),
+            CanvasPoint(0.16f, 0.67f),
+            CanvasPoint(0.05f, 0.84f),
+        ),
+        listOf(
+            CanvasPoint(0.27f, 0.12f),
+            CanvasPoint(0.27f, 0.40f),
+            CanvasPoint(0.30f, 0.54f),
+            CanvasPoint(0.38f, 0.67f),
+            CanvasPoint(0.49f, 0.84f),
+        ),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
@@ -308,18 +357,42 @@ internal object WritingCanvasGeometry {
     )
 
     private val jaTemplate = listOf(
-        listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.49f, 0.12f)),
-        listOf(CanvasPoint(0.27f, 0.20f), CanvasPoint(0.05f, 0.88f)),
-        listOf(CanvasPoint(0.27f, 0.20f), CanvasPoint(0.49f, 0.88f)),
+        listOf(CanvasPoint(0.05f, 0.18f), CanvasPoint(0.49f, 0.18f)),
+        listOf(
+            CanvasPoint(0.27f, 0.22f),
+            CanvasPoint(0.27f, 0.48f),
+            CanvasPoint(0.23f, 0.60f),
+            CanvasPoint(0.16f, 0.70f),
+            CanvasPoint(0.05f, 0.84f),
+        ),
+        listOf(
+            CanvasPoint(0.27f, 0.22f),
+            CanvasPoint(0.27f, 0.48f),
+            CanvasPoint(0.31f, 0.60f),
+            CanvasPoint(0.38f, 0.70f),
+            CanvasPoint(0.49f, 0.84f),
+        ),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
     private val chaTemplate = listOf(
-        listOf(CanvasPoint(0.05f, 0.08f), CanvasPoint(0.49f, 0.08f)),
+        listOf(CanvasPoint(0.11f, 0.07f), CanvasPoint(0.43f, 0.07f)),
         listOf(CanvasPoint(0.05f, 0.28f), CanvasPoint(0.49f, 0.28f)),
-        listOf(CanvasPoint(0.27f, 0.34f), CanvasPoint(0.05f, 0.92f)),
-        listOf(CanvasPoint(0.27f, 0.34f), CanvasPoint(0.49f, 0.92f)),
+        listOf(
+            CanvasPoint(0.27f, 0.32f),
+            CanvasPoint(0.27f, 0.56f),
+            CanvasPoint(0.23f, 0.66f),
+            CanvasPoint(0.16f, 0.74f),
+            CanvasPoint(0.05f, 0.88f),
+        ),
+        listOf(
+            CanvasPoint(0.27f, 0.32f),
+            CanvasPoint(0.27f, 0.56f),
+            CanvasPoint(0.31f, 0.66f),
+            CanvasPoint(0.38f, 0.74f),
+            CanvasPoint(0.49f, 0.88f),
+        ),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
@@ -332,9 +405,9 @@ internal object WritingCanvasGeometry {
     )
 
     private val taTemplate = listOf(
-        listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.49f, 0.12f)),
-        listOf(CanvasPoint(0.05f, 0.40f), CanvasPoint(0.49f, 0.40f)),
-        listOf(CanvasPoint(0.05f, 0.40f), CanvasPoint(0.05f, 0.88f), CanvasPoint(0.49f, 0.88f)),
+        listOf(CanvasPoint(0.05f, 0.16f), CanvasPoint(0.49f, 0.16f)),
+        listOf(CanvasPoint(0.05f, 0.50f), CanvasPoint(0.49f, 0.50f)),
+        listOf(CanvasPoint(0.05f, 0.16f), CanvasPoint(0.05f, 0.84f), CanvasPoint(0.49f, 0.84f)),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
@@ -637,6 +710,7 @@ internal object WritingCanvasGeometry {
         LessonId.PIEUP -> pieupTemplate
         LessonId.HIEUH -> hieuhTemplate
         LessonId.A -> aTemplate
+        LessonId.AE -> aeTemplate
         LessonId.YA -> yaTemplate
         LessonId.EO -> eoTemplate
         LessonId.YEO -> yeoTemplate

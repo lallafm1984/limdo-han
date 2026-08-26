@@ -51,6 +51,7 @@ class KoreanCurriculumTest {
                 CurriculumStage.VOWELS,
                 CurriculumStage.VOWELS,
                 CurriculumStage.VOWELS,
+                CurriculumStage.VOWELS,
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
@@ -71,7 +72,7 @@ class KoreanCurriculumTest {
     @Test
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         assertEquals(
-            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바", "사", "아", "자", "차", "카", "타"),
+            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바", "사", "아", "자", "차", "카", "타"),
             KoreanCurriculum.lessons.map(LessonSpec::glyph),
         )
         assertEquals(0, KoreanCurriculum.nextIndex(KoreanCurriculum.lessons.lastIndex))
@@ -118,15 +119,92 @@ class KoreanCurriculumTest {
     }
 
     @Test
+    fun correctedGlyphsFollowOneSystemSansEducationalShapeContract() {
+        val lessons = listOf(
+            LessonId.BIEUP to 4,
+            LessonId.SIOT to 2,
+            LessonId.AE to 3,
+            LessonId.JIEUT to 3,
+            LessonId.CHIEUT to 4,
+            LessonId.TIEUT to 3,
+            LessonId.PIEUP to 4,
+            LessonId.HIEUH to 3,
+            LessonId.JA to 5,
+            LessonId.CHA to 6,
+            LessonId.TA to 5,
+        ).associate { (id, expectedStrokes) ->
+            val lesson = KoreanCurriculum.lessons.single { it.id == id }
+            assertEquals(expectedStrokes, lesson.strokeCount)
+            id to WritingCanvasGeometry.glyph(lesson, width, height)
+        }
+
+        val bieup = lessons.getValue(LessonId.BIEUP).strokes
+        assertTrue(bieup[0].first().y < bieup[2].first().y)
+        assertEquals(bieup[0].last().y, bieup[3].first().y)
+        assertEquals(bieup[1].last().y, bieup[3].last().y)
+
+        val siot = lessons.getValue(LessonId.SIOT).strokes
+        siot.forEach { leg ->
+            assertTrue(leg.size >= 5)
+            assertTrue(abs(leg[1].x - leg[0].x) < abs(leg[1].y - leg[0].y))
+        }
+
+        val ae = lessons.getValue(LessonId.AE).strokes
+        assertTrue(ae[0].last().y > ae[0].first().y)
+        assertTrue(ae[1].last().x > ae[1].first().x)
+        assertTrue(ae[2].last().y > ae[2].first().y)
+
+        val jieut = lessons.getValue(LessonId.JIEUT).strokes
+        assertTrue(jieut[0].last().x > jieut[0].first().x)
+        jieut.drop(1).forEach { leg ->
+            assertTrue(leg.size >= 5)
+            assertTrue(leg.last().y > leg.first().y)
+        }
+
+        listOf(LessonId.CHIEUT, LessonId.CHA).forEach { id ->
+            val chieut = lessons.getValue(id).strokes
+            val shortTop = chieut[0]
+            val longBar = chieut[1]
+            assertTrue(shortTop.last().x - shortTop.first().x < longBar.last().x - longBar.first().x)
+            assertTrue(chieut[2].last().y > chieut[2].first().y)
+            assertTrue(chieut[3].last().y > chieut[3].first().y)
+        }
+
+        listOf(LessonId.TIEUT, LessonId.TA).forEach { id ->
+            val tieut = lessons.getValue(id).strokes
+            assertTrue(tieut[0].last().x > tieut[0].first().x)
+            assertTrue(tieut[1].last().x > tieut[1].first().x)
+            assertEquals(tieut[0].first(), tieut[2].first())
+            assertEquals(3, tieut[2].size)
+            assertTrue(tieut[2][1].y > tieut[2][0].y)
+            assertTrue(tieut[2][2].x > tieut[2][1].x)
+        }
+
+        val pieup = lessons.getValue(LessonId.PIEUP).strokes
+        assertTrue(pieup[0].last().x > pieup[0].first().x)
+        assertTrue(pieup[1].last().x > pieup[1].first().x)
+        assertTrue(pieup[2].last().y > pieup[2].first().y)
+        assertTrue(pieup[3].last().y > pieup[3].first().y)
+
+        val hieuh = lessons.getValue(LessonId.HIEUH).strokes
+        assertTrue(hieuh[0].last().x - hieuh[0].first().x < hieuh[1].last().x - hieuh[1].first().x)
+        assertTrue(hieuh[2].first().y > hieuh[1].first().y)
+        assertEquals(hieuh[2].first(), hieuh[2].last())
+    }
+
+    @Test
     fun everyLessonRejectsAnOppositeFirstMovement() {
         KoreanCurriculum.lessons.forEach { lesson ->
             val geometry = WritingCanvasGeometry.glyph(lesson, width, height)
             val target = geometry.strokes.first()
             val start = target.first()
             val next = target[1]
+            val dx = next.x - start.x
+            val dy = next.y - start.y
+            val length = kotlin.math.hypot(dx.toDouble(), dy.toDouble()).toFloat()
             val reverse = CanvasPoint(
-                x = start.x - (next.x - start.x) * 0.30f,
-                y = start.y - (next.y - start.y) * 0.30f,
+                x = start.x - (dx / length) * geometry.emSize * 0.15f,
+                y = start.y - (dy / length) * geometry.emSize * 0.15f,
             )
             val stroke = StrokePath(listOf(start, reverse))
 
@@ -149,6 +227,7 @@ class KoreanCurriculumTest {
             assertTrue(lesson.initialCue.utterance.isNotBlank())
             assertTrue(lesson.successCue.utterance.contains(lesson.glyph) || lesson.id in setOf(
                 LessonId.A,
+                LessonId.AE,
                 LessonId.GIEOK,
                 LessonId.NIEUN,
                 LessonId.DIGEUT,
