@@ -67,7 +67,7 @@ internal object KoreanCurriculum {
             strokeCount = 3,
             initialCue = SpokenCue.INITIAL_RIEUL,
             successCue = SpokenCue.SUCCESS_RIEUL,
-            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.LEFT, StrokeDirection.DOWN),
+            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.LEFT, StrokeDirection.RIGHT),
         ),
         LessonSpec(
             id = LessonId.MIEUM,
@@ -108,7 +108,7 @@ internal object KoreanCurriculum {
             strokeCount = 1,
             initialCue = SpokenCue.INITIAL_IEUNG,
             successCue = SpokenCue.SUCCESS_IEUNG,
-            strokeDirections = listOf(StrokeDirection.RIGHT),
+            strokeDirections = listOf(StrokeDirection.LEFT),
         ),
         LessonSpec(
             id = LessonId.JIEUT,
@@ -172,7 +172,7 @@ internal object KoreanCurriculum {
             strokeCount = 3,
             initialCue = SpokenCue.INITIAL_HIEUH,
             successCue = SpokenCue.SUCCESS_HIEUH,
-            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.RIGHT),
+            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.LEFT),
         ),
         LessonSpec(
             id = LessonId.A,
@@ -315,7 +315,7 @@ internal object KoreanCurriculum {
             strokeDirections = listOf(
                 StrokeDirection.RIGHT,
                 StrokeDirection.LEFT,
-                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
                 StrokeDirection.DOWN,
                 StrokeDirection.RIGHT,
             ),
@@ -373,7 +373,7 @@ internal object KoreanCurriculum {
             initialCue = SpokenCue.INITIAL_AH,
             successCue = SpokenCue.SUCCESS_AH,
             strokeDirections = listOf(
-                StrokeDirection.RIGHT,
+                StrokeDirection.LEFT,
                 StrokeDirection.DOWN,
                 StrokeDirection.RIGHT,
             ),
@@ -464,7 +464,7 @@ internal object KoreanCurriculum {
             strokeDirections = listOf(
                 StrokeDirection.RIGHT,
                 StrokeDirection.RIGHT,
-                StrokeDirection.RIGHT,
+                StrokeDirection.LEFT,
                 StrokeDirection.DOWN,
                 StrokeDirection.RIGHT,
             ),
@@ -525,7 +525,7 @@ internal object KoreanCurriculum {
                 StrokeDirection.RIGHT,
                 StrokeDirection.RIGHT,
                 StrokeDirection.LEFT,
-                StrokeDirection.DOWN,
+                StrokeDirection.RIGHT,
             ),
         ),
         LessonSpec(

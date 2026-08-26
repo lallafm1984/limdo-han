@@ -5,6 +5,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
+import kotlin.math.hypot
 
 class KoreanCurriculumTest {
     private val width = 1_962f
@@ -88,7 +89,7 @@ class KoreanCurriculumTest {
     }
 
     @Test
-    fun firstFinalConsonantsKeepGaAboveAndDistinctJongseongBelow() {
+    fun firstFinalConsonantsRecomposeInitialMedialAndFinalByClosedSyllableShape() {
         val finalLessons = listOf(
             LessonId.GAK to 4,
             LessonId.GAN to 4,
@@ -107,8 +108,44 @@ class KoreanCurriculumTest {
             val top = geometry.strokes.take(3)
             val bottom = geometry.strokes.drop(3)
             assertTrue(top.flatten().maxOf { it.y } < bottom.flatten().minOf { it.y })
-            assertEquals(top, geometries.first().strokes.take(3))
+            assertEquals(geometry.emSize * 0.12f, geometry.strokeWidth, 0.001f)
+            assertTrue(
+                bottom.flatten().minOf { it.y } - top.flatten().maxOf { it.y } >=
+                    geometry.strokeWidth,
+            )
         }
+
+        val openGa = WritingCanvasGeometry.ga(width, height)
+        val gal = geometries[3]
+        val openInitial = openGa.strokes.first()
+        val galInitial = gal.strokes.first()
+        assertTrue(galInitial.maxOf { it.y } - galInitial.minOf { it.y } < openInitial.maxOf { it.y } - openInitial.minOf { it.y })
+        assertTrue(galInitial.maxOf { it.x } - galInitial.minOf { it.x } < openInitial.maxOf { it.x } - openInitial.minOf { it.x })
+        assertNotEquals(openGa.strokes.take(3), gal.strokes.take(3))
+
+        val gakTop = geometries[0].strokes.take(3)
+        val ganTop = geometries[1].strokes.take(3)
+        val galTop = geometries[3].strokes.take(3)
+        assertNotEquals(gakTop, ganTop)
+        assertNotEquals(gakTop, galTop)
+
+        val galFinal = gal.strokes.drop(3).flatten()
+        assertEquals(gal.emSize * 0.60f, galFinal.maxOf { it.x } - galFinal.minOf { it.x }, 0.001f)
+        assertEquals(gal.emSize * 0.26f, galFinal.maxOf { it.y } - galFinal.minOf { it.y }, 0.001f)
+        assertEquals(gal.emSize * 0.14f, galFinal.minOf { it.y } - galTop.flatten().maxOf { it.y }, 0.001f)
+
+        val board = WritingCanvasGeometry.learningBoard(width, height)
+        val inkHalf = gal.strokeWidth / 2f
+        val inkLeft = gal.strokes.flatten().minOf { it.x } - inkHalf
+        val inkTop = gal.strokes.flatten().minOf { it.y } - inkHalf
+        val inkRight = gal.strokes.flatten().maxOf { it.x } + inkHalf
+        val inkBottom = gal.strokes.flatten().maxOf { it.y } + inkHalf
+        assertTrue(inkLeft >= board.left + gal.emSize * 0.04f)
+        assertTrue(inkTop >= board.top + gal.emSize * 0.04f)
+        assertTrue(inkRight <= board.right - gal.emSize * 0.04f)
+        assertTrue(inkBottom <= board.bottom - gal.emSize * 0.04f)
+        assertTrue(abs((inkRight - inkLeft) - (inkBottom - inkTop)) <= gal.emSize * 0.03f)
+
         assertNotEquals(geometries[0].strokes.drop(3), geometries[1].strokes.drop(3))
         assertNotEquals(geometries[1].strokes.drop(3), geometries[2].strokes.drop(3))
     }
@@ -119,7 +156,8 @@ class KoreanCurriculumTest {
             val geometry = WritingCanvasGeometry.glyph(lesson, width, height)
             assertEquals(lesson.strokeCount, geometry.strokes.size)
             assertEquals(lesson.strokeCount, lesson.strokeDirections.size)
-            assertTrue(geometry.strokeWidth >= geometry.emSize * 0.20f)
+            val minimumStrokeFraction = if (lesson.stage == CurriculumStage.FINAL_CONSONANTS) 0.12f else 0.20f
+            assertTrue(geometry.strokeWidth >= geometry.emSize * minimumStrokeFraction)
 
             geometry.strokes.zip(lesson.strokeDirections).forEach { (stroke, direction) ->
                 val dx = stroke[1].x - stroke[0].x
@@ -217,18 +255,29 @@ class KoreanCurriculumTest {
         }
 
         listOf(LessonId.PIEUP, LessonId.PA).forEach { id ->
-            val pieup = lessons.getValue(id).strokes
+            val geometry = lessons.getValue(id)
+            val pieup = geometry.strokes
             assertTrue(pieup[0].last().x > pieup[0].first().x)
             assertTrue(pieup[1].last().x > pieup[1].first().x)
             assertTrue(pieup[2].last().y > pieup[2].first().y)
             assertTrue(pieup[3].last().y > pieup[3].first().y)
+            if (id == LessonId.PA) {
+                assertTrue(pieup[3].first().x - pieup[2].first().x > geometry.strokeWidth)
+                assertTrue(pieup[3].last().x - pieup[2].last().x > geometry.strokeWidth)
+            }
         }
 
         listOf(LessonId.HIEUH, LessonId.HA).forEach { id ->
             val hieuh = lessons.getValue(id).strokes
             assertTrue(hieuh[0].last().x - hieuh[0].first().x < hieuh[1].last().x - hieuh[1].first().x)
             assertTrue(hieuh[2].first().y > hieuh[1].first().y)
+            assertEquals(49, hieuh[2].size)
             assertEquals(hieuh[2].first(), hieuh[2].last())
+            assertTrue(hieuh[2][1].x < hieuh[2][0].x)
+            val centerX = (hieuh[2].minOf { it.x } + hieuh[2].maxOf { it.x }) / 2f
+            val centerY = (hieuh[2].minOf { it.y } + hieuh[2].maxOf { it.y }) / 2f
+            val radii = hieuh[2].dropLast(1).map { hypot(it.x - centerX, it.y - centerY) }
+            assertTrue(radii.max() - radii.min() < 0.01f)
         }
     }
 
@@ -329,4 +378,91 @@ class KoreanCurriculumTest {
         assertEquals(signatures.size, signatures.toSet().size)
         assertNotEquals(signatures.first(), signatures.last())
     }
+
+    @Test
+    fun digeutRieulAndIeungUseTheCorrectedEducationalGeometry() {
+        fun geometry(id: LessonId) = WritingCanvasGeometry.glyph(
+            KoreanCurriculum.lessons.single { it.id == id },
+            width,
+            height,
+        )
+
+        listOf(LessonId.DIGEUT, LessonId.DA, LessonId.GAT).forEach { id ->
+            val digeut = geometry(id).strokes
+            val digeutOffset = if (id == LessonId.GAT) 3 else 0
+            assertEquals(digeut[digeutOffset].first(), digeut[digeutOffset + 1].first())
+        }
+
+        listOf(LessonId.RIEUL, LessonId.RA, LessonId.GAL).forEach { id ->
+            val rieul = geometry(id).strokes
+            val offset = if (id == LessonId.GAL) 3 else 0
+            assertEquals(rieul[offset].last(), rieul[offset + 1].first())
+            assertEquals(rieul[offset + 1].last(), rieul[offset + 2].first())
+            assertTrue(rieul[offset + 1][1].x < rieul[offset + 1][0].x)
+            assertTrue(rieul[offset + 1][2].y > rieul[offset + 1][1].y)
+            assertTrue(rieul[offset + 2].last().x > rieul[offset + 2].first().x)
+            assertEquals(rieul[offset + 2].first().y, rieul[offset + 2].last().y, 0.001f)
+        }
+
+        listOf(LessonId.IEUNG, LessonId.AH).forEach { id ->
+            val circle = geometry(id).strokes.first()
+            assertEquals(49, circle.size)
+            assertEquals(circle.first().x, circle.last().x, 0.001f)
+            assertEquals(circle.first().y, circle.last().y, 0.001f)
+            val centerX = (circle.minOf { it.x } + circle.maxOf { it.x }) / 2f
+            val centerY = (circle.minOf { it.y } + circle.maxOf { it.y }) / 2f
+            val radii = circle.dropLast(1).map { hypot(it.x - centerX, it.y - centerY) }
+            assertTrue(radii.max() - radii.min() < 0.01f)
+        }
+    }
+
+    @Test
+    fun haPreservesHieuhProportionsAndMarkersStayInsideTheGuide() {
+        fun geometry(id: LessonId) = WritingCanvasGeometry.glyph(
+            KoreanCurriculum.lessons.single { it.id == id },
+            width,
+            height,
+        )
+
+        val hieuh = geometry(LessonId.HIEUH).strokes
+        val ha = geometry(LessonId.HA).strokes
+        val hieuhCircleWidth = hieuh[2].maxOf { it.x } - hieuh[2].minOf { it.x }
+        val haCircleWidth = ha[2].maxOf { it.x } - ha[2].minOf { it.x }
+        listOf(0, 1).forEach { strokeIndex ->
+            val hieuhWidth = hieuh[strokeIndex].last().x - hieuh[strokeIndex].first().x
+            val haWidth = ha[strokeIndex].last().x - ha[strokeIndex].first().x
+            assertEquals(hieuhWidth / hieuhCircleWidth, haWidth / haCircleWidth, 0.001f)
+        }
+        assertTrue(ha.take(3).flatten().maxOf { it.x } < ha.drop(3).flatten().minOf { it.x })
+
+        val guideStroke = geometry(LessonId.HA).strokeWidth
+        assertTrue(WritingCanvasGeometry.startMarkerRadius(guideStroke) <= guideStroke / 2f)
+        assertTrue(WritingCanvasGeometry.finishMarkerOuterRadius(guideStroke) <= guideStroke / 2f)
+        assertTrue(
+            WritingCanvasGeometry.finishMarkerCenterRadius(guideStroke) <
+                WritingCanvasGeometry.finishMarkerColorRadius(guideStroke),
+        )
+    }
+
+    @Test
+    fun galFinalRieulKeepsThreeRenderedLayersApart() {
+        val gal = WritingCanvasGeometry.glyph(
+            KoreanCurriculum.lessons.single { it.id == LessonId.GAL },
+            width,
+            height,
+        )
+        val finalRieul = gal.strokes.drop(3)
+        val layerCenters = listOf(
+            finalRieul[0].first().y,
+            finalRieul[1][1].y,
+            finalRieul[2].first().y,
+        )
+
+        layerCenters.zipWithNext().forEach { (upper, lower) ->
+            assertTrue(lower - upper >= gal.strokeWidth)
+        }
+        assertEquals(finalRieul[0].last(), finalRieul[1].first())
+        assertEquals(finalRieul[1].last(), finalRieul[2].first())
+    }
+
 }

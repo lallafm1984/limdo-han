@@ -261,6 +261,16 @@ internal fun WritingCanvas(
                 ),
             )
         }
+        val strokeEndpoints = glyph.strokes.flatMap { listOf(it.first(), it.last()) }
+        strokeEndpoints.distinct().filter { endpoint ->
+            strokeEndpoints.count { it == endpoint } > 1
+        }.forEach { junction ->
+            drawCircle(
+                color = GieokGuide,
+                radius = pathStroke / 2f,
+                center = Offset(junction.x, junction.y),
+            )
+        }
         val childStrokeWidth = WritingCanvasGeometry.childStrokeWidth(size.width, size.height)
         val childStrokes = attempt.completedStrokes + listOf(attempt.stroke)
         childStrokes.filter { it.points.size == 1 }.forEach { childStroke ->
@@ -291,7 +301,7 @@ internal fun WritingCanvas(
         )?.let { currentStart ->
             drawCircle(
                 color = StartMarker,
-                radius = pathStroke * 0.62f,
+                radius = WritingCanvasGeometry.startMarkerRadius(pathStroke),
                 center = Offset(currentStart.x, currentStart.y),
             )
         }
@@ -303,17 +313,17 @@ internal fun WritingCanvas(
         )?.let { currentEnd ->
             drawCircle(
                 color = GieokGuide,
-                radius = pathStroke * 0.76f,
+                radius = WritingCanvasGeometry.finishMarkerOuterRadius(pathStroke),
                 center = Offset(currentEnd.x, currentEnd.y),
             )
             drawCircle(
                 color = FinishMarker,
-                radius = pathStroke * 0.44f,
+                radius = WritingCanvasGeometry.finishMarkerColorRadius(pathStroke),
                 center = Offset(currentEnd.x, currentEnd.y),
             )
             drawCircle(
                 color = GieokGuide,
-                radius = pathStroke * 0.18f,
+                radius = WritingCanvasGeometry.finishMarkerCenterRadius(pathStroke),
                 center = Offset(currentEnd.x, currentEnd.y),
             )
         }

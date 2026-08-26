@@ -1,6 +1,9 @@
 package com.example.limdo
 
 import kotlin.math.min
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 internal data class CanvasPoint(
@@ -40,7 +43,36 @@ internal data class DemonstrationGuide(
 internal object WritingCanvasGeometry {
     private const val EM_CANVAS_FRACTION = 0.80f
     private const val GUIDE_STROKE_EM_FRACTION = 0.20f
+    private const val FINAL_CONSONANT_GUIDE_STROKE_EM_FRACTION = 0.12f
     private const val CHILD_STROKE_GUIDE_FRACTION = 0.60f
+
+    /**
+     * 받침 있는 세로 모음 음절은 받침 없는 `가`를 그대로 축소해 붙이지 않는다.
+     * 종성의 높이와 복잡도에 따라 초성·중성이 차지하는 윗칸 비율도 함께 조정한다.
+     */
+    private data class ClosedSyllableLayout(
+        val initialBottom: Float,
+        val medialBottom: Float,
+        val medialBranchY: Float,
+    )
+
+    private val standardClosedSyllable = ClosedSyllableLayout(
+        initialBottom = 0.50f,
+        medialBottom = 0.52f,
+        medialBranchY = 0.29f,
+    )
+
+    private val lowFinalClosedSyllable = ClosedSyllableLayout(
+        initialBottom = 0.54f,
+        medialBottom = 0.56f,
+        medialBranchY = 0.31f,
+    )
+
+    private val tallFinalClosedSyllable = ClosedSyllableLayout(
+        initialBottom = 0.48f,
+        medialBottom = 0.48f,
+        medialBranchY = 0.27f,
+    )
 
     private val gieokTemplate = listOf(
         listOf(
@@ -73,12 +105,12 @@ internal object WritingCanvasGeometry {
             CanvasPoint(0.88f, 0.10f),
             CanvasPoint(0.88f, 0.40f),
         ),
-        listOf(CanvasPoint(0.88f, 0.40f), CanvasPoint(0.12f, 0.40f)),
         listOf(
+            CanvasPoint(0.88f, 0.40f),
             CanvasPoint(0.12f, 0.40f),
             CanvasPoint(0.12f, 0.90f),
-            CanvasPoint(0.88f, 0.90f),
         ),
+        listOf(CanvasPoint(0.12f, 0.90f), CanvasPoint(0.88f, 0.90f)),
     )
 
     private val mieumTemplate = listOf(
@@ -115,19 +147,7 @@ internal object WritingCanvasGeometry {
         ),
     )
 
-    private val ieungTemplate = listOf(
-        listOf(
-            CanvasPoint(0.50f, 0.08f),
-            CanvasPoint(0.92f, 0.22f),
-            CanvasPoint(0.92f, 0.50f),
-            CanvasPoint(0.78f, 0.82f),
-            CanvasPoint(0.50f, 0.92f),
-            CanvasPoint(0.22f, 0.82f),
-            CanvasPoint(0.08f, 0.50f),
-            CanvasPoint(0.22f, 0.18f),
-            CanvasPoint(0.50f, 0.08f),
-        ),
-    )
+    private val ieungTemplate = listOf(circleTemplate(0.50f, 0.50f, 0.42f))
 
     private val jieutTemplate = listOf(
         listOf(CanvasPoint(0.16f, 0.18f), CanvasPoint(0.84f, 0.18f)),
@@ -195,17 +215,7 @@ internal object WritingCanvasGeometry {
     private val hieuhTemplate = listOf(
         listOf(CanvasPoint(0.36f, 0.06f), CanvasPoint(0.64f, 0.06f)),
         listOf(CanvasPoint(0.20f, 0.30f), CanvasPoint(0.80f, 0.30f)),
-        listOf(
-            CanvasPoint(0.50f, 0.52f),
-            CanvasPoint(0.68f, 0.55f),
-            CanvasPoint(0.76f, 0.68f),
-            CanvasPoint(0.70f, 0.82f),
-            CanvasPoint(0.50f, 0.90f),
-            CanvasPoint(0.30f, 0.82f),
-            CanvasPoint(0.24f, 0.68f),
-            CanvasPoint(0.32f, 0.55f),
-            CanvasPoint(0.50f, 0.52f),
-        ),
+        circleTemplate(0.50f, 0.71f, 0.19f),
     )
 
     private val aTemplate = listOf(
@@ -299,8 +309,8 @@ internal object WritingCanvasGeometry {
 
     private val raTemplate = listOf(
         listOf(CanvasPoint(0.05f, 0.10f), CanvasPoint(0.48f, 0.10f), CanvasPoint(0.48f, 0.38f)),
-        listOf(CanvasPoint(0.48f, 0.38f), CanvasPoint(0.05f, 0.38f)),
-        listOf(CanvasPoint(0.05f, 0.38f), CanvasPoint(0.05f, 0.90f), CanvasPoint(0.48f, 0.90f)),
+        listOf(CanvasPoint(0.48f, 0.38f), CanvasPoint(0.05f, 0.38f), CanvasPoint(0.05f, 0.90f)),
+        listOf(CanvasPoint(0.05f, 0.90f), CanvasPoint(0.48f, 0.90f)),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
@@ -342,16 +352,7 @@ internal object WritingCanvasGeometry {
     )
 
     private val ahTemplate = listOf(
-        listOf(
-            CanvasPoint(0.05f, 0.22f),
-            CanvasPoint(0.49f, 0.22f),
-            CanvasPoint(0.49f, 0.50f),
-            CanvasPoint(0.42f, 0.82f),
-            CanvasPoint(0.27f, 0.92f),
-            CanvasPoint(0.12f, 0.82f),
-            CanvasPoint(0.05f, 0.50f),
-            CanvasPoint(0.05f, 0.22f),
-        ),
+        circleTemplate(0.27f, 0.50f, 0.22f),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
@@ -415,60 +416,56 @@ internal object WritingCanvasGeometry {
     private val paTemplate = listOf(
         listOf(CanvasPoint(0.05f, 0.20f), CanvasPoint(0.49f, 0.20f)),
         listOf(CanvasPoint(0.05f, 0.80f), CanvasPoint(0.49f, 0.80f)),
-        listOf(CanvasPoint(0.18f, 0.25f), CanvasPoint(0.20f, 0.75f)),
-        listOf(CanvasPoint(0.36f, 0.25f), CanvasPoint(0.34f, 0.75f)),
+        listOf(CanvasPoint(0.15f, 0.25f), CanvasPoint(0.15f, 0.75f)),
+        listOf(CanvasPoint(0.39f, 0.25f), CanvasPoint(0.39f, 0.75f)),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
     private val haTemplate = listOf(
-        listOf(CanvasPoint(0.18f, 0.06f), CanvasPoint(0.36f, 0.06f)),
-        listOf(CanvasPoint(0.08f, 0.30f), CanvasPoint(0.46f, 0.30f)),
-        listOf(
-            CanvasPoint(0.27f, 0.52f),
-            CanvasPoint(0.39f, 0.55f),
-            CanvasPoint(0.44f, 0.68f),
-            CanvasPoint(0.40f, 0.82f),
-            CanvasPoint(0.27f, 0.90f),
-            CanvasPoint(0.14f, 0.82f),
-            CanvasPoint(0.10f, 0.68f),
-            CanvasPoint(0.15f, 0.55f),
-            CanvasPoint(0.27f, 0.52f),
-        ),
+        listOf(CanvasPoint(0.13f, 0.06f), CanvasPoint(0.41f, 0.06f)),
+        listOf(CanvasPoint(-0.03f, 0.30f), CanvasPoint(0.57f, 0.30f)),
+        circleTemplate(0.27f, 0.71f, 0.19f),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
     private val gakTemplate = finalConsonantTemplate(
-        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.75f, 0.70f), CanvasPoint(0.75f, 0.94f)),
+        standardClosedSyllable,
+        listOf(CanvasPoint(0.20f, 0.66f), CanvasPoint(0.80f, 0.66f), CanvasPoint(0.80f, 0.88f)),
     )
 
     private val ganTemplate = finalConsonantTemplate(
-        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.25f, 0.94f), CanvasPoint(0.75f, 0.94f)),
+        lowFinalClosedSyllable,
+        listOf(CanvasPoint(0.20f, 0.70f), CanvasPoint(0.20f, 0.88f), CanvasPoint(0.80f, 0.88f)),
     )
 
     private val gatTemplate = finalConsonantTemplate(
-        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.75f, 0.70f)),
-        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.25f, 0.94f), CanvasPoint(0.75f, 0.94f)),
+        standardClosedSyllable,
+        listOf(CanvasPoint(0.20f, 0.66f), CanvasPoint(0.80f, 0.66f)),
+        listOf(CanvasPoint(0.20f, 0.66f), CanvasPoint(0.20f, 0.88f), CanvasPoint(0.80f, 0.88f)),
     )
 
     private val galTemplate = finalConsonantTemplate(
-        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.75f, 0.70f), CanvasPoint(0.75f, 0.79f)),
-        listOf(CanvasPoint(0.75f, 0.79f), CanvasPoint(0.25f, 0.79f)),
-        listOf(CanvasPoint(0.25f, 0.79f), CanvasPoint(0.25f, 0.94f), CanvasPoint(0.75f, 0.94f)),
+        tallFinalClosedSyllable,
+        listOf(CanvasPoint(0.20f, 0.62f), CanvasPoint(0.80f, 0.62f), CanvasPoint(0.80f, 0.75f)),
+        listOf(CanvasPoint(0.80f, 0.75f), CanvasPoint(0.20f, 0.75f), CanvasPoint(0.20f, 0.88f)),
+        listOf(CanvasPoint(0.20f, 0.88f), CanvasPoint(0.80f, 0.88f)),
     )
 
     private val gamTemplate = finalConsonantTemplate(
-        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.25f, 0.94f)),
-        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.75f, 0.70f), CanvasPoint(0.75f, 0.94f)),
-        listOf(CanvasPoint(0.25f, 0.94f), CanvasPoint(0.75f, 0.94f)),
+        standardClosedSyllable,
+        listOf(CanvasPoint(0.20f, 0.66f), CanvasPoint(0.20f, 0.88f)),
+        listOf(CanvasPoint(0.20f, 0.66f), CanvasPoint(0.80f, 0.66f), CanvasPoint(0.80f, 0.88f)),
+        listOf(CanvasPoint(0.20f, 0.88f), CanvasPoint(0.80f, 0.88f)),
     )
 
     private val gapTemplate = finalConsonantTemplate(
-        listOf(CanvasPoint(0.32f, 0.70f), CanvasPoint(0.32f, 0.94f)),
-        listOf(CanvasPoint(0.68f, 0.70f), CanvasPoint(0.68f, 0.94f)),
-        listOf(CanvasPoint(0.32f, 0.82f), CanvasPoint(0.68f, 0.82f)),
-        listOf(CanvasPoint(0.32f, 0.94f), CanvasPoint(0.68f, 0.94f)),
+        tallFinalClosedSyllable,
+        listOf(CanvasPoint(0.30f, 0.63f), CanvasPoint(0.30f, 0.88f)),
+        listOf(CanvasPoint(0.70f, 0.63f), CanvasPoint(0.70f, 0.88f)),
+        listOf(CanvasPoint(0.30f, 0.76f), CanvasPoint(0.70f, 0.76f)),
+        listOf(CanvasPoint(0.30f, 0.88f), CanvasPoint(0.70f, 0.88f)),
     )
 
     fun gieok(width: Float, height: Float): GlyphGeometry =
@@ -538,7 +535,16 @@ internal object WritingCanvasGeometry {
         transform(gaTemplate, width, height)
 
     fun glyph(lesson: LessonSpec, width: Float, height: Float): GlyphGeometry =
-        transform(templateFor(lesson), width, height)
+        transform(
+            template = templateFor(lesson),
+            width = width,
+            height = height,
+            guideStrokeEmFraction = if (lesson.stage == CurriculumStage.FINAL_CONSONANTS) {
+                FINAL_CONSONANT_GUIDE_STROKE_EM_FRACTION
+            } else {
+                GUIDE_STROKE_EM_FRACTION
+            },
+        )
 
     fun gaInputDirectionGuide(
         width: Float,
@@ -630,6 +636,14 @@ internal object WritingCanvasGeometry {
     ): CanvasPoint? = visibleLessonGlyph(width, height, lesson).strokes
         .getOrNull(completedStrokeCount)
         ?.last()
+
+    fun startMarkerRadius(pathStroke: Float): Float = pathStroke * 0.48f
+
+    fun finishMarkerOuterRadius(pathStroke: Float): Float = pathStroke * 0.48f
+
+    fun finishMarkerColorRadius(pathStroke: Float): Float = pathStroke * 0.32f
+
+    fun finishMarkerCenterRadius(pathStroke: Float): Float = pathStroke * 0.14f
 
     fun gaDemonstrationGuide(width: Float, height: Float, progress: Float): DemonstrationGuide =
         demonstrationGuide(GaLesson, width, height, progress)
@@ -802,17 +816,23 @@ internal object WritingCanvasGeometry {
     }
 
     private fun finalConsonantTemplate(
+        layout: ClosedSyllableLayout,
         vararg finalStrokes: List<CanvasPoint>,
     ): List<List<CanvasPoint>> = listOf(
-        listOf(CanvasPoint(0.08f, 0.06f), CanvasPoint(0.43f, 0.06f), CanvasPoint(0.43f, 0.58f)),
-        listOf(CanvasPoint(0.68f, 0.04f), CanvasPoint(0.68f, 0.62f)),
-        listOf(CanvasPoint(0.68f, 0.34f), CanvasPoint(0.90f, 0.34f)),
+        listOf(
+            CanvasPoint(0.12f, 0.12f),
+            CanvasPoint(0.50f, 0.12f),
+            CanvasPoint(0.50f, layout.initialBottom),
+        ),
+        listOf(CanvasPoint(0.70f, 0.12f), CanvasPoint(0.70f, layout.medialBottom)),
+        listOf(CanvasPoint(0.70f, layout.medialBranchY), CanvasPoint(0.86f, layout.medialBranchY)),
     ) + finalStrokes
 
     private fun transform(
         template: List<List<CanvasPoint>>,
         width: Float,
         height: Float,
+        guideStrokeEmFraction: Float = GUIDE_STROKE_EM_FRACTION,
     ): GlyphGeometry {
         require(width > 0f) { "width must be positive" }
         require(height > 0f) { "height must be positive" }
@@ -823,7 +843,7 @@ internal object WritingCanvasGeometry {
         val originY = board.top
         return GlyphGeometry(
             emSize = emSize,
-            strokeWidth = emSize * GUIDE_STROKE_EM_FRACTION,
+            strokeWidth = emSize * guideStrokeEmFraction,
             strokes = template.map { stroke ->
                 stroke.map { point ->
                     CanvasPoint(originX + point.x * emSize, originY + point.y * emSize)
@@ -842,3 +862,15 @@ internal object WritingCanvasGeometry {
         val length: Float,
     )
 }
+    private fun circleTemplate(
+        centerX: Float,
+        centerY: Float,
+        radius: Float,
+        sampleCount: Int = 48,
+    ): List<CanvasPoint> = (0..sampleCount).map { index ->
+        val angle = -PI / 2.0 - (2.0 * PI * index / sampleCount)
+        CanvasPoint(
+            x = centerX + radius * cos(angle).toFloat(),
+            y = centerY + radius * sin(angle).toFloat(),
+        )
+    }
