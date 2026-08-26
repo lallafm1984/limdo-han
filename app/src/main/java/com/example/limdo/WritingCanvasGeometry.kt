@@ -452,6 +452,25 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.25f, 0.94f), CanvasPoint(0.75f, 0.94f)),
     )
 
+    private val galTemplate = finalConsonantTemplate(
+        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.75f, 0.70f), CanvasPoint(0.75f, 0.79f)),
+        listOf(CanvasPoint(0.75f, 0.79f), CanvasPoint(0.25f, 0.79f)),
+        listOf(CanvasPoint(0.25f, 0.79f), CanvasPoint(0.25f, 0.94f), CanvasPoint(0.75f, 0.94f)),
+    )
+
+    private val gamTemplate = finalConsonantTemplate(
+        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.25f, 0.94f)),
+        listOf(CanvasPoint(0.25f, 0.70f), CanvasPoint(0.75f, 0.70f), CanvasPoint(0.75f, 0.94f)),
+        listOf(CanvasPoint(0.25f, 0.94f), CanvasPoint(0.75f, 0.94f)),
+    )
+
+    private val gapTemplate = finalConsonantTemplate(
+        listOf(CanvasPoint(0.32f, 0.70f), CanvasPoint(0.32f, 0.94f)),
+        listOf(CanvasPoint(0.68f, 0.70f), CanvasPoint(0.68f, 0.94f)),
+        listOf(CanvasPoint(0.32f, 0.82f), CanvasPoint(0.68f, 0.82f)),
+        listOf(CanvasPoint(0.32f, 0.94f), CanvasPoint(0.68f, 0.94f)),
+    )
+
     fun gieok(width: Float, height: Float): GlyphGeometry =
         transform(gieokTemplate, width, height)
 
@@ -777,6 +796,9 @@ internal object WritingCanvasGeometry {
         LessonId.GAK -> gakTemplate
         LessonId.GAN -> ganTemplate
         LessonId.GAT -> gatTemplate
+        LessonId.GAL -> galTemplate
+        LessonId.GAM -> gamTemplate
+        LessonId.GAP -> gapTemplate
     }
 
     private fun finalConsonantTemplate(

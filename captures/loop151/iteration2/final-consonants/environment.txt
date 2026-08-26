@@ -1,0 +1,9 @@
+AVD: alarmquest-qa
+물리 화면: 1080 × 2340
+user_rotation: 1
+앱 화면: 2340 × 1080
+전면 Activity: com.example.limdo/.MainActivity
+WritingCanvas: [189,63][2151,1017] = 1962 × 954 px
+APK SHA-256: b56f109a05e864918716bf40482bbaff84378425e63b78af443cc3fd963e8adf
+아이 대리 점검: 핵심 학습 흐름 통과
+실제 아이 관찰: 실행 안 함

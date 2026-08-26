@@ -69,6 +69,9 @@ class KoreanCurriculumTest {
                 CurriculumStage.FINAL_CONSONANTS,
                 CurriculumStage.FINAL_CONSONANTS,
                 CurriculumStage.FINAL_CONSONANTS,
+                CurriculumStage.FINAL_CONSONANTS,
+                CurriculumStage.FINAL_CONSONANTS,
+                CurriculumStage.FINAL_CONSONANTS,
             ),
             KoreanCurriculum.lessons.map(LessonSpec::stage),
         )
@@ -77,7 +80,7 @@ class KoreanCurriculumTest {
     @Test
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         assertEquals(
-            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바", "사", "아", "자", "차", "카", "타", "파", "하", "각", "간", "갇"),
+            listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "다", "라", "마", "바", "사", "아", "자", "차", "카", "타", "파", "하", "각", "간", "갇", "갈", "감", "갑"),
             KoreanCurriculum.lessons.map(LessonSpec::glyph),
         )
         assertEquals(0, KoreanCurriculum.nextIndex(KoreanCurriculum.lessons.lastIndex))
@@ -90,6 +93,9 @@ class KoreanCurriculumTest {
             LessonId.GAK to 4,
             LessonId.GAN to 4,
             LessonId.GAT to 5,
+            LessonId.GAL to 6,
+            LessonId.GAM to 6,
+            LessonId.GAP to 7,
         ).map { (id, strokeCount) ->
             KoreanCurriculum.lessons.single { it.id == id }.also {
                 assertEquals(CurriculumStage.FINAL_CONSONANTS, it.stage)
