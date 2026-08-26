@@ -45,6 +45,7 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -156,8 +157,12 @@ private fun LearningShell(
         LearningDestination.Home -> LearningMenuHome(
             onSelect = {
                 speak(it.spokenCue)
-                destination = LearningDestination.Selection(it)
+                destination = LearningDestination.MenuTransition(it)
             },
+        )
+        is LearningDestination.MenuTransition -> MenuSelectionTransition(
+            menu = current.menu,
+            onFinished = { destination = LearningDestination.Selection(current.menu) },
         )
         is LearningDestination.Selection -> LessonSelection(
             menu = current.menu,
@@ -189,6 +194,50 @@ private fun LearningShell(
 }
 
 @Composable
+private fun MenuSelectionTransition(
+    menu: LearningMenu,
+    onFinished: () -> Unit,
+) {
+    val progress = remember(menu) { Animatable(0f) }
+    LaunchedEffect(menu) {
+        progress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(LimDoPlaygroundTokens.MENU_TRANSITION_DURATION_MS),
+        )
+        onFinished()
+    }
+    val transition = menuTransitionVisuals(progress.value)
+    val visuals = menu.visuals()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(visuals.softSurface)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "${menu.label} 선택 이동, ${menu.icon}"
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = menu.icon,
+                fontSize = 112.sp,
+                modifier = Modifier.graphicsLayer {
+                    scaleX = transition.vehicleScale
+                    scaleY = transition.vehicleScale
+                },
+            )
+            Text(
+                text = menu.symbol,
+                color = visuals.accent,
+                fontSize = 64.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.graphicsLayer { alpha = transition.symbolAlpha },
+            )
+        }
+    }
+}
+
+@Composable
 private fun LearningMenuHome(onSelect: (LearningMenu) -> Unit) {
     Row(
         modifier = Modifier
@@ -198,13 +247,37 @@ private fun LearningMenuHome(onSelect: (LearningMenu) -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(LimDoPlaygroundTokens.CARD_GAP_DP.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        LearningMenu.entries.forEach { menu ->
+        LearningMenu.entries.forEachIndexed { index, menu ->
             val visuals = menu.visuals()
+            val interactionSource = remember { MutableInteractionSource() }
+            val isPressed by interactionSource.collectIsPressedAsState()
+            val press = homeCardPressVisuals(isPressed)
+            val entranceProgress = remember(menu) { Animatable(0f) }
+            LaunchedEffect(menu) {
+                delay(index * LimDoPlaygroundTokens.HOME_ENTRANCE_STAGGER_MS.toLong())
+                entranceProgress.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(LimDoPlaygroundTokens.HOME_ENTRANCE_DURATION_MS),
+                )
+            }
+            val entrance = homeEntranceVisuals(entranceProgress.value)
             Surface(
                 onClick = { onSelect(menu) },
+                interactionSource = interactionSource,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
+                    .graphicsLayer {
+                        alpha = entrance.alpha
+                        scaleX = entrance.scale * press.scale
+                        scaleY = entrance.scale * press.scale
+                        translationY = entrance.offsetDp.dp.toPx()
+                    }
+                    .border(
+                        press.glowBorderDp.dp,
+                        Color.White,
+                        RoundedCornerShape(LimDoPlaygroundTokens.CARD_CORNER_DP.dp),
+                    )
                     .border(
                         LimDoPlaygroundTokens.CARD_BORDER_DP.dp,
                         visuals.accent,
@@ -334,6 +407,9 @@ private fun WritingLesson(
         mutableStateOf(LessonRewardState())
     }
     val rewardOffset = rememberSaveable(saver = RewardOffsetSaver) { Animatable(0f) }
+    val celebrationProgress = remember { Animatable(0f) }
+    val retryProgress = remember { Animatable(1f) }
+    var retryEvent by rememberSaveable { mutableIntStateOf(0) }
     var initialSpeechRequested by rememberSaveable { mutableStateOf(false) }
     var initialSpeechPending by rememberSaveable { mutableStateOf(false) }
     var successSpeechPending by rememberSaveable { mutableStateOf(false) }
@@ -346,6 +422,27 @@ private fun WritingLesson(
     val currentLesson = KoreanCurriculum.lessons[lessonIndex]
     val currentCue = SpokenCueModel.forResult(traceResult, traceStrokeIndex, currentLesson)
     val currentVehicle = VehicleCarousel.vehicles[vehicleIndex]
+    val retryVisuals = retryAnimationVisuals(retryProgress.value)
+
+    LaunchedEffect(retryEvent) {
+        if (retryEvent > 0) {
+            retryProgress.snapTo(0f)
+            retryProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(RetryAnimationSpec.DURATION_MS),
+            )
+        }
+    }
+
+    LaunchedEffect(traceResult) {
+        celebrationProgress.snapTo(0f)
+        if (traceResult == GieokTraceResult.SUCCESS) {
+            celebrationProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(SuccessCelebrationSpec.DURATION_MS),
+            )
+        }
+    }
 
     LaunchedEffect(rewardState.targetSteps) {
         if (rewardState.phase == RewardMovePhase.START) {
@@ -435,6 +532,7 @@ private fun WritingLesson(
             clearRequest = clearRequest,
             inputEnabled = !rewardState.inputLocked,
             demonstrationStrokeIndex = demonstrationStrokeIndex,
+            retryStartMarkerScale = retryVisuals.startMarkerScale,
             onTraceResult = { result, strokeIndex ->
                 restoredSuccessSpeechHandled = true
                 successSpeechPending = result == GieokTraceResult.SUCCESS
@@ -448,6 +546,7 @@ private fun WritingLesson(
                 nextVehiclePending = vehicleState.nextVehiclePending
                 traceResult = result
                 traceStrokeIndex = strokeIndex
+                if (result.isRetryResult()) retryEvent += 1
                 rewardState = rewardState.onTraceResult(result, currentLesson)
                 if (result != null) {
                     speak(SpokenCueModel.forResult(result, strokeIndex, currentLesson))
@@ -455,6 +554,7 @@ private fun WritingLesson(
             },
             modifier = Modifier
                 .fillMaxSize()
+                .graphicsLayer { translationX = retryVisuals.offsetDp.dp.toPx() }
                 .padding(
                     horizontal = LearningShellSpec.CANVAS_HORIZONTAL_PADDING_DP.dp,
                     vertical = LearningShellSpec.CANVAS_VERTICAL_PADDING_DP.dp,
@@ -472,6 +572,17 @@ private fun WritingLesson(
         )
 
         if (traceResult != null && traceResult != GieokTraceResult.EMPTY) {
+            if (traceResult == GieokTraceResult.SUCCESS) {
+                SuccessCelebration(
+                    progress = celebrationProgress.value,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .offset(
+                            x = (successMarkerCenter.x - maxWidth.value / 2f).dp,
+                            y = (successMarkerCenter.y - maxHeight.value / 2f).dp,
+                        ),
+                )
+            }
             Text(
                 text = if (traceResult == GieokTraceResult.SUCCESS) "★  ✓" else "↻",
                 modifier = if (traceResult == GieokTraceResult.SUCCESS) {
@@ -557,6 +668,50 @@ private fun WritingLesson(
             },
             modifier = Modifier
                 .fillMaxSize(),
+        )
+    }
+}
+
+@Composable
+private fun SuccessCelebration(
+    progress: Float,
+    modifier: Modifier = Modifier,
+) {
+    val visuals = successCelebrationVisuals(progress)
+    Box(
+        modifier = modifier
+            .size(width = 156.dp, height = 112.dp)
+            .semantics { contentDescription = "성공 별빛과 종이조각" },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "✦",
+            color = Color(0xFFFFD23F),
+            fontSize = 88.sp,
+            modifier = Modifier.graphicsLayer {
+                alpha = visuals.glowAlpha
+                scaleX = 1.25f
+                scaleY = 1.25f
+            },
+        )
+        Text(
+            text = "◆  ●  ◆\n  ●  ◆",
+            color = Color(0xFFE86A5A),
+            fontSize = 19.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.graphicsLayer {
+                alpha = visuals.confettiAlpha
+                translationY = -22.dp.toPx() * progress
+            },
+        )
+        Text(
+            text = "★",
+            color = Color(0xFF276B50),
+            fontSize = 50.sp,
+            modifier = Modifier.graphicsLayer {
+                scaleX = visuals.starScale
+                scaleY = visuals.starScale
+            },
         )
     }
 }
@@ -695,6 +850,7 @@ private fun WritingBoardPreview(
     clearRequest: Int,
     inputEnabled: Boolean,
     demonstrationStrokeIndex: Int?,
+    retryStartMarkerScale: Float,
     onTraceResult: (GieokTraceResult?, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -708,10 +864,20 @@ private fun WritingBoardPreview(
             clearRequest = clearRequest,
             inputEnabled = inputEnabled,
             demonstrationStrokeIndex = demonstrationStrokeIndex,
+            retryStartMarkerScale = retryStartMarkerScale,
             onTraceResult = onTraceResult,
             modifier = Modifier.fillMaxSize(),
         )
     }
+}
+
+private fun GieokTraceResult?.isRetryResult(): Boolean = when (this) {
+    GieokTraceResult.WRONG_START,
+    GieokTraceResult.WRONG_DIRECTION,
+    GieokTraceResult.OFF_GUIDE,
+    GieokTraceResult.INCOMPLETE,
+    -> true
+    GieokTraceResult.SUCCESS, GieokTraceResult.EMPTY, null -> false
 }
 
 private data class ChildFeedback(

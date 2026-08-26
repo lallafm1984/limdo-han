@@ -102,6 +102,7 @@ internal fun WritingCanvas(
     clearRequest: Int,
     inputEnabled: Boolean,
     demonstrationStrokeIndex: Int?,
+    retryStartMarkerScale: Float,
     onTraceResult: (GieokTraceResult?, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -301,7 +302,7 @@ internal fun WritingCanvas(
         )?.let { currentStart ->
             drawCircle(
                 color = StartMarker,
-                radius = WritingCanvasGeometry.startMarkerRadius(pathStroke),
+                radius = WritingCanvasGeometry.startMarkerRadius(pathStroke) * retryStartMarkerScale,
                 center = Offset(currentStart.x, currentStart.y),
             )
         }

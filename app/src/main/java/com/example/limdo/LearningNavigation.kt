@@ -13,6 +13,7 @@ internal enum class LearningMenu(
 
 internal sealed interface LearningDestination {
     data object Home : LearningDestination
+    data class MenuTransition(val menu: LearningMenu) : LearningDestination
     data class Selection(val menu: LearningMenu) : LearningDestination
     data class Writing(
         val menu: LearningMenu,
@@ -42,6 +43,7 @@ internal object LearningNavigation {
 
     fun back(destination: LearningDestination): LearningDestination = when (destination) {
         LearningDestination.Home -> LearningDestination.Home
+        is LearningDestination.MenuTransition -> LearningDestination.Home
         is LearningDestination.Selection -> LearningDestination.Home
         is LearningDestination.Writing -> LearningDestination.Selection(destination.menu)
     }

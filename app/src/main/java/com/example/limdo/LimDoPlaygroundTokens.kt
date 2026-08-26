@@ -8,10 +8,54 @@ internal object LimDoPlaygroundTokens {
     const val CARD_CORNER_DP = 32f
     const val CARD_BORDER_DP = 4f
     const val CARD_SHADOW_DP = 8f
+    const val HOME_ENTRANCE_DURATION_MS = 360
+    const val HOME_ENTRANCE_STAGGER_MS = 90
+    const val HOME_ENTRANCE_OFFSET_DP = 28f
+    const val HOME_CARD_PRESSED_SCALE = 0.94f
+    const val HOME_CARD_GLOW_BORDER_DP = 10f
+    const val MENU_TRANSITION_DURATION_MS = 480
 
     val playgroundBackground = Color(0xFFFFD85A)
     val cardSurface = Color(0xFFFFFEFA)
     val cardOutline = Color(0xFF6B4A24)
+}
+
+internal data class MenuTransitionVisuals(
+    val vehicleScale: Float,
+    val symbolAlpha: Float,
+)
+
+internal fun menuTransitionVisuals(progress: Float): MenuTransitionVisuals {
+    val bounded = progress.coerceIn(0f, 1f)
+    return MenuTransitionVisuals(
+        vehicleScale = 0.82f + (0.18f * bounded),
+        symbolAlpha = bounded,
+    )
+}
+
+internal data class HomeCardPressVisuals(
+    val scale: Float,
+    val glowBorderDp: Float,
+)
+
+internal fun homeCardPressVisuals(isPressed: Boolean) = HomeCardPressVisuals(
+    scale = if (isPressed) LimDoPlaygroundTokens.HOME_CARD_PRESSED_SCALE else 1f,
+    glowBorderDp = if (isPressed) LimDoPlaygroundTokens.HOME_CARD_GLOW_BORDER_DP else 0f,
+)
+
+internal data class HomeEntranceVisuals(
+    val alpha: Float,
+    val scale: Float,
+    val offsetDp: Float,
+)
+
+internal fun homeEntranceVisuals(progress: Float): HomeEntranceVisuals {
+    val bounded = progress.coerceIn(0f, 1f)
+    return HomeEntranceVisuals(
+        alpha = bounded,
+        scale = 0.92f + (0.08f * bounded),
+        offsetDp = LimDoPlaygroundTokens.HOME_ENTRANCE_OFFSET_DP * (1f - bounded),
+    )
 }
 
 internal data class LearningMenuVisuals(
