@@ -430,15 +430,13 @@ class KoreanCurriculumTest {
             assertEquals(digeut[digeutOffset].first(), digeut[digeutOffset + 1].first())
         }
 
-        listOf(LessonId.RIEUL, LessonId.RA, LessonId.GAL).forEach { id ->
+        listOf(LessonId.RIEUL, LessonId.RA).forEach { id ->
             val rieul = geometry(id).strokes
-            val offset = if (id == LessonId.GAL) 3 else 0
-            assertEquals(rieul[offset].last(), rieul[offset + 1].first())
-            assertEquals(rieul[offset + 1].last(), rieul[offset + 2].first())
-            assertTrue(rieul[offset + 1][1].x < rieul[offset + 1][0].x)
-            assertTrue(rieul[offset + 1][2].y > rieul[offset + 1][1].y)
-            assertTrue(rieul[offset + 2].last().x > rieul[offset + 2].first().x)
-            assertEquals(rieul[offset + 2].first().y, rieul[offset + 2].last().y, 0.001f)
+            assertEquals(rieul[0].last().y, rieul[1].first().y, 0.001f)
+            assertTrue(rieul[1].last().x > rieul[1].first().x)
+            assertEquals(rieul[1].first(), rieul[2].first())
+            assertTrue(rieul[2][1].y > rieul[2][0].y)
+            assertTrue(rieul[2].last().x > rieul[2][1].x)
         }
 
         listOf(LessonId.IEUNG, LessonId.AH).forEach { id ->
@@ -451,6 +449,58 @@ class KoreanCurriculumTest {
             val radii = circle.dropLast(1).map { hypot(it.x - centerX, it.y - centerY) }
             assertTrue(radii.max() - radii.min() < 0.01f)
         }
+    }
+
+    @Test
+    fun rieulAndRaShareTheThreeStrokeOrderDirectionAndJudgmentContract() {
+        listOf(RieulLesson, RaLesson).forEach { lesson ->
+            val rieulStrokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes.take(3)
+            assertEquals(
+                listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN),
+                lesson.strokeDirections.take(3),
+            )
+            rieulStrokes.forEachIndexed { strokeIndex, points ->
+                assertEquals(
+                    "${lesson.glyph} ${strokeIndex + 1}획 정방향",
+                    GieokTraceResult.SUCCESS,
+                    LessonTraceEvaluator.evaluateStroke(
+                        lesson,
+                        width,
+                        height,
+                        strokeIndex,
+                        StrokePath(points),
+                    ),
+                )
+            }
+
+            val middleReversed = rieulStrokes[1].reversed()
+            assertEquals(
+                "${lesson.glyph} 가운데 가로 역방향",
+                GieokTraceResult.WRONG_START,
+                LessonTraceEvaluator.evaluateStroke(
+                    lesson,
+                    width,
+                    height,
+                    1,
+                    StrokePath(middleReversed),
+                ),
+            )
+            assertEquals(
+                "${lesson.glyph} 잘못된 첫 획 순서",
+                GieokTraceResult.WRONG_START,
+                LessonTraceEvaluator.evaluateStroke(
+                    lesson,
+                    width,
+                    height,
+                    0,
+                    StrokePath(rieulStrokes[2]),
+                ),
+            )
+        }
+        assertEquals(3, RieulLesson.strokeCount)
+        assertEquals(5, RaLesson.strokeCount)
+        assertTrue(SpokenCue.INITIAL_RIEUL.utterance.contains("가운데를 오른쪽"))
+        assertTrue(SpokenCue.INITIAL_RA.utterance.contains("가운데를 오른쪽"))
     }
 
     @Test

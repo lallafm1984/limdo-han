@@ -99,19 +99,17 @@ internal object WritingCanvasGeometry {
         ),
     )
 
-    private val rieulTemplate = listOf(
+    private fun rieulTemplate(left: Float, right: Float): List<List<CanvasPoint>> = listOf(
         listOf(
-            CanvasPoint(0.12f, 0.10f),
-            CanvasPoint(0.88f, 0.10f),
-            CanvasPoint(0.88f, 0.40f),
+            CanvasPoint(left, 0.10f),
+            CanvasPoint(right, 0.10f),
+            CanvasPoint(right, 0.40f),
         ),
-        listOf(
-            CanvasPoint(0.88f, 0.40f),
-            CanvasPoint(0.12f, 0.40f),
-            CanvasPoint(0.12f, 0.90f),
-        ),
-        listOf(CanvasPoint(0.12f, 0.90f), CanvasPoint(0.88f, 0.90f)),
+        listOf(CanvasPoint(left, 0.40f), CanvasPoint(right, 0.40f)),
+        listOf(CanvasPoint(left, 0.40f), CanvasPoint(left, 0.90f), CanvasPoint(right, 0.90f)),
     )
+
+    private val rieulTemplate = rieulTemplate(left = 0.12f, right = 0.88f)
 
     private val mieumTemplate = listOf(
         listOf(CanvasPoint(0.12f, 0.12f), CanvasPoint(0.12f, 0.88f)),
@@ -350,10 +348,7 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
-    private val raTemplate = listOf(
-        listOf(CanvasPoint(0.05f, 0.10f), CanvasPoint(0.48f, 0.10f), CanvasPoint(0.48f, 0.38f)),
-        listOf(CanvasPoint(0.48f, 0.38f), CanvasPoint(0.05f, 0.38f), CanvasPoint(0.05f, 0.90f)),
-        listOf(CanvasPoint(0.05f, 0.90f), CanvasPoint(0.48f, 0.90f)),
+    private val raTemplate = rieulTemplate(left = 0.05f, right = 0.48f) + listOf(
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )

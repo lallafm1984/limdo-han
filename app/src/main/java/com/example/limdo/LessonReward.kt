@@ -67,7 +67,7 @@ internal object KoreanCurriculum {
             strokeCount = 3,
             initialCue = SpokenCue.INITIAL_RIEUL,
             successCue = SpokenCue.SUCCESS_RIEUL,
-            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.LEFT, StrokeDirection.RIGHT),
+            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN),
         ),
         LessonSpec(
             id = LessonId.MIEUM,
@@ -332,8 +332,8 @@ internal object KoreanCurriculum {
             successCue = SpokenCue.SUCCESS_RA,
             strokeDirections = listOf(
                 StrokeDirection.RIGHT,
-                StrokeDirection.LEFT,
                 StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
                 StrokeDirection.DOWN,
                 StrokeDirection.RIGHT,
             ),
