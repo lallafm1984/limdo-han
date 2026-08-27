@@ -31,10 +31,10 @@ class KoreanCurriculumTest {
             "ㅎ" to listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.LEFT),
             "ㅏ" to listOf(StrokeDirection.DOWN, StrokeDirection.RIGHT),
             "ㅑ" to listOf(StrokeDirection.DOWN, StrokeDirection.RIGHT, StrokeDirection.RIGHT),
-            "ㅓ" to listOf(StrokeDirection.DOWN, StrokeDirection.LEFT),
-            "ㅕ" to listOf(StrokeDirection.DOWN, StrokeDirection.LEFT, StrokeDirection.LEFT),
-            "ㅗ" to listOf(StrokeDirection.RIGHT, StrokeDirection.UP),
-            "ㅛ" to listOf(StrokeDirection.RIGHT, StrokeDirection.UP, StrokeDirection.UP),
+            "ㅓ" to listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN),
+            "ㅕ" to listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN),
+            "ㅗ" to listOf(StrokeDirection.DOWN, StrokeDirection.RIGHT),
+            "ㅛ" to listOf(StrokeDirection.DOWN, StrokeDirection.DOWN, StrokeDirection.RIGHT),
             "ㅜ" to listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN),
             "ㅠ" to listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.DOWN),
             "ㅡ" to listOf(StrokeDirection.RIGHT),
@@ -93,6 +93,41 @@ class KoreanCurriculumTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun correctedVowelsMatchTheReferenceStrokeOrderAndJunctions() {
+        fun strokes(id: LessonId) = WritingCanvasGeometry.glyph(
+            KoreanCurriculum.lessons.single { it.id == id },
+            width,
+            height,
+        ).strokes
+
+        val eo = strokes(LessonId.EO)
+        assertEquals(eo[0].last().x, eo[1].first().x, 0.01f)
+        assertTrue(eo[0].last().y in eo[1].first().y..eo[1].last().y)
+        assertTrue(eo[0].last().x > eo[0].first().x)
+        assertTrue(eo[1].last().y > eo[1].first().y)
+
+        val yeo = strokes(LessonId.YEO)
+        assertTrue(yeo[0].last().x > yeo[0].first().x)
+        assertTrue(yeo[1].last().x > yeo[1].first().x)
+        assertTrue(yeo[2].last().y > yeo[2].first().y)
+        assertEquals(yeo[0].last().x, yeo[2].first().x, 0.01f)
+        assertEquals(yeo[1].last().x, yeo[2].first().x, 0.01f)
+
+        val o = strokes(LessonId.O)
+        assertTrue(o[0].last().y > o[0].first().y)
+        assertTrue(o[1].last().x > o[1].first().x)
+        assertTrue(o[0].last().x in o[1].first().x..o[1].last().x)
+        assertEquals(o[0].last().y, o[1].first().y, 0.01f)
+
+        val yo = strokes(LessonId.YO)
+        assertTrue(yo[0].last().y > yo[0].first().y)
+        assertTrue(yo[1].last().y > yo[1].first().y)
+        assertTrue(yo[2].last().x > yo[2].first().x)
+        assertEquals(yo[0].last().y, yo[2].first().y, 0.01f)
+        assertEquals(yo[1].last().y, yo[2].first().y, 0.01f)
     }
 
     @Test

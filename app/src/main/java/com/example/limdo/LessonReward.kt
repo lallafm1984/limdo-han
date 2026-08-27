@@ -207,7 +207,7 @@ internal object KoreanCurriculum {
             strokeCount = 2,
             initialCue = SpokenCue.INITIAL_EO,
             successCue = SpokenCue.SUCCESS_EO,
-            strokeDirections = listOf(StrokeDirection.DOWN, StrokeDirection.LEFT),
+            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN),
         ),
         LessonSpec(
             id = LessonId.YEO,
@@ -216,7 +216,7 @@ internal object KoreanCurriculum {
             strokeCount = 3,
             initialCue = SpokenCue.INITIAL_YEO,
             successCue = SpokenCue.SUCCESS_YEO,
-            strokeDirections = listOf(StrokeDirection.DOWN, StrokeDirection.LEFT, StrokeDirection.LEFT),
+            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN),
         ),
         LessonSpec(
             id = LessonId.O,
@@ -225,7 +225,7 @@ internal object KoreanCurriculum {
             strokeCount = 2,
             initialCue = SpokenCue.INITIAL_O,
             successCue = SpokenCue.SUCCESS_O,
-            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.UP),
+            strokeDirections = listOf(StrokeDirection.DOWN, StrokeDirection.RIGHT),
         ),
         LessonSpec(
             id = LessonId.YO,
@@ -234,7 +234,7 @@ internal object KoreanCurriculum {
             strokeCount = 3,
             initialCue = SpokenCue.INITIAL_YO,
             successCue = SpokenCue.SUCCESS_YO,
-            strokeDirections = listOf(StrokeDirection.RIGHT, StrokeDirection.UP, StrokeDirection.UP),
+            strokeDirections = listOf(StrokeDirection.DOWN, StrokeDirection.DOWN, StrokeDirection.RIGHT),
         ),
         LessonSpec(
             id = LessonId.U,

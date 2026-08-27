@@ -22,6 +22,11 @@ internal sealed interface LearningDestination {
 }
 
 internal object LearningNavigation {
+    private val basicVowelIds = listOf(
+        LessonId.A, LessonId.YA, LessonId.EO, LessonId.YEO, LessonId.O,
+        LessonId.YO, LessonId.U, LessonId.YU, LessonId.EU, LessonId.I,
+    )
+
     private val ganadoIds = listOf(
         LessonId.GA, LessonId.NA, LessonId.DA, LessonId.RA, LessonId.MA, LessonId.BA,
         LessonId.SA, LessonId.AH, LessonId.JA, LessonId.CHA, LessonId.KA, LessonId.TA,
@@ -32,8 +37,8 @@ internal object LearningNavigation {
         LearningMenu.CONSONANTS -> KoreanCurriculum.lessons.filter {
             it.stage == CurriculumStage.CONSONANTS
         }
-        LearningMenu.VOWELS -> KoreanCurriculum.lessons.filter {
-            it.stage == CurriculumStage.VOWELS
+        LearningMenu.VOWELS -> basicVowelIds.map { id ->
+            KoreanCurriculum.lessons.single { it.id == id }
         }
         LearningMenu.GANADA -> ganadoIds.map { id ->
             KoreanCurriculum.lessons.single { it.id == id }

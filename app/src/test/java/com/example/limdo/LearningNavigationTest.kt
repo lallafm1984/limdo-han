@@ -86,8 +86,11 @@ class LearningNavigationTest {
             LearningNavigation.lessons(LearningMenu.CONSONANTS),
         )
         assertEquals(
-            KoreanCurriculum.lessons.filter { it.stage == CurriculumStage.VOWELS },
-            LearningNavigation.lessons(LearningMenu.VOWELS),
+            listOf(
+                LessonId.A, LessonId.YA, LessonId.EO, LessonId.YEO, LessonId.O,
+                LessonId.YO, LessonId.U, LessonId.YU, LessonId.EU, LessonId.I,
+            ),
+            LearningNavigation.lessons(LearningMenu.VOWELS).map(LessonSpec::id),
         )
         assertEquals(
             listOf(
@@ -109,6 +112,16 @@ class LearningNavigationTest {
         val actual = LearningNavigation.lessons(LearningMenu.GANADA)
             .map { LearningNavigation.nextLesson(LearningMenu.GANADA, it).id }
         assertEquals(expected, actual)
+
+        val vowelCycle = LearningNavigation.lessons(LearningMenu.VOWELS)
+            .map { LearningNavigation.nextLesson(LearningMenu.VOWELS, it).id }
+        assertEquals(
+            listOf(
+                LessonId.YA, LessonId.EO, LessonId.YEO, LessonId.O, LessonId.YO,
+                LessonId.U, LessonId.YU, LessonId.EU, LessonId.I, LessonId.A,
+            ),
+            vowelCycle,
+        )
 
         LearningMenu.entries.forEach { menu ->
             val lessons = LearningNavigation.lessons(menu)

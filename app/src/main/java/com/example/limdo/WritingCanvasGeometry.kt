@@ -272,25 +272,25 @@ internal object WritingCanvasGeometry {
     )
 
     private val eoTemplate = listOf(
+        listOf(CanvasPoint(0.24f, 0.50f), CanvasPoint(0.54f, 0.50f)),
         listOf(CanvasPoint(0.54f, 0.08f), CanvasPoint(0.54f, 0.92f)),
-        listOf(CanvasPoint(0.54f, 0.50f), CanvasPoint(0.24f, 0.50f)),
     )
 
     private val yeoTemplate = listOf(
+        listOf(CanvasPoint(0.24f, 0.38f), CanvasPoint(0.54f, 0.38f)),
+        listOf(CanvasPoint(0.24f, 0.62f), CanvasPoint(0.54f, 0.62f)),
         listOf(CanvasPoint(0.54f, 0.08f), CanvasPoint(0.54f, 0.92f)),
-        listOf(CanvasPoint(0.54f, 0.38f), CanvasPoint(0.24f, 0.38f)),
-        listOf(CanvasPoint(0.54f, 0.62f), CanvasPoint(0.24f, 0.62f)),
     )
 
     private val oTemplate = listOf(
+        listOf(CanvasPoint(0.50f, 0.18f), CanvasPoint(0.50f, 0.62f)),
         listOf(CanvasPoint(0.12f, 0.62f), CanvasPoint(0.88f, 0.62f)),
-        listOf(CanvasPoint(0.50f, 0.62f), CanvasPoint(0.50f, 0.18f)),
     )
 
     private val yoTemplate = listOf(
+        listOf(CanvasPoint(0.38f, 0.28f), CanvasPoint(0.38f, 0.68f)),
+        listOf(CanvasPoint(0.62f, 0.28f), CanvasPoint(0.62f, 0.68f)),
         listOf(CanvasPoint(0.12f, 0.68f), CanvasPoint(0.88f, 0.68f)),
-        listOf(CanvasPoint(0.38f, 0.68f), CanvasPoint(0.38f, 0.28f)),
-        listOf(CanvasPoint(0.62f, 0.68f), CanvasPoint(0.62f, 0.28f)),
     )
 
     private val uTemplate = listOf(
