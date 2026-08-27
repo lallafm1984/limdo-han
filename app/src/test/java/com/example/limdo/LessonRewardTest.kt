@@ -6,6 +6,17 @@ import org.junit.Test
 
 class LessonRewardTest {
     @Test
+    fun actionButtonAtlasKeepsNineSquareCellsAndDistinctStates() {
+        assertEquals(3, ActionButtonAtlasSpec.COLUMNS)
+        assertEquals(3, ActionButtonAtlasSpec.ROWS)
+        assertEquals(ActionButtonAtlasSpec.CELL_SIZE_PX * 3, ActionButtonAtlasSpec.SOURCE_WIDTH_PX)
+        assertEquals(ActionButtonAtlasSpec.CELL_SIZE_PX * 3, ActionButtonAtlasSpec.SOURCE_HEIGHT_PX)
+        assertTrue(ActionButtonAtlasSpec.BUTTON_MIN_DP >= 64f)
+        assertTrue(ActionButtonAtlasSpec.PRESSED_SCALE < 1f)
+        assertTrue(LearningShellSpec.ACTION_COLUMN_SPACING_DP >= 12f)
+    }
+
+    @Test
     fun allRemainingPlaygroundAnimationsStayFiniteAndBounded() {
         val animationDurations = listOf(
             LimDoPlaygroundTokens.HOME_ENTRANCE_DURATION_MS,

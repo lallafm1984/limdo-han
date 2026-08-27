@@ -686,17 +686,18 @@ private fun HomeAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
     Surface(
         onClick = onClick,
+        interactionSource = interactionSource,
         modifier = modifier
             .heightIn(min = 64.dp)
             .semantics { contentDescription = "홈으로 돌아가기" },
         color = Color(0xFFFFFEFA),
         shape = RoundedCornerShape(20.dp),
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text("⌂", color = Color(0xFF7A4A22), fontSize = 30.sp, fontWeight = FontWeight.Bold)
-        }
+        ActionAtlasIcon(ActionButtonAtlasSpec.HOME_COLUMN, isPressed)
     }
 }
 
@@ -707,32 +708,18 @@ private fun ClearAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
     Surface(
         onClick = onClick,
+        interactionSource = interactionSource,
         modifier = modifier
             .heightIn(min = 64.dp)
             .semantics { this.contentDescription = contentDescription },
         color = Color(0xFFFFF3E6),
         shape = RoundedCornerShape(20.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = "⌫",
-                color = Color(0xFF7A4A22),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                text = label,
-                color = Color(0xFF7A4A22),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
+        ActionAtlasIcon(ActionButtonAtlasSpec.CLEAR_COLUMN, isPressed)
     }
 }
 
@@ -743,9 +730,12 @@ private fun NextAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
     Surface(
         onClick = onClick,
         enabled = available,
+        interactionSource = interactionSource,
         modifier = modifier
             .heightIn(min = 64.dp)
             .semantics {
@@ -759,22 +749,38 @@ private fun NextAction(
         color = if (available) Color(0xFFDCEDE5) else Color(0xFFD8D4CC),
         shape = RoundedCornerShape(20.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = "▶",
-                color = if (available) Color(0xFF285A46) else Color(0xFF68645E),
-                fontSize = 24.sp,
-            )
-            Text(
-                text = label,
-                color = if (available) Color(0xFF285A46) else Color(0xFF68645E),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
+        ActionAtlasIcon(
+            column = ActionButtonAtlasSpec.NEXT_COLUMN,
+            isPressed = isPressed,
+            disabled = !available,
+        )
+    }
+}
+
+@Composable
+private fun ActionAtlasIcon(column: Int, isPressed: Boolean, disabled: Boolean = false) {
+    val atlas = ImageBitmap.imageResource(R.drawable.limdo_action_button_atlas)
+    val row = when {
+        disabled -> ActionButtonAtlasSpec.DISABLED_ROW
+        isPressed -> ActionButtonAtlasSpec.PRESSED_ROW
+        else -> ActionButtonAtlasSpec.DEFAULT_ROW
+    }
+    Canvas(
+        modifier = Modifier
+            .size(ActionButtonAtlasSpec.ICON_DP.dp)
+            .graphicsLayer {
+                val scale = if (isPressed && !disabled) ActionButtonAtlasSpec.PRESSED_SCALE else 1f
+                scaleX = scale
+                scaleY = scale
+            },
+    ) {
+        val side = minOf(size.width, size.height)
+        drawImage(
+            image = atlas,
+            srcOffset = IntOffset(column * ActionButtonAtlasSpec.CELL_SIZE_PX, row * ActionButtonAtlasSpec.CELL_SIZE_PX),
+            srcSize = IntSize(ActionButtonAtlasSpec.CELL_SIZE_PX, ActionButtonAtlasSpec.CELL_SIZE_PX),
+            dstOffset = IntOffset(((size.width - side) / 2f).roundToInt(), ((size.height - side) / 2f).roundToInt()),
+            dstSize = IntSize(side.roundToInt(), side.roundToInt()),
+        )
     }
 }
