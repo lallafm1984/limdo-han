@@ -65,9 +65,10 @@ class BootstrapTest {
         val vertical = points[2].y - points[1].y
 
         assertEquals(620f, glyph.emSize, 0.01f)
-        assertEquals(582.8f, horizontal, 0.01f)
-        assertEquals(582.8f, vertical, 0.01f)
-        assertTrue(horizontal >= 580f && vertical >= 580f)
+        assertEquals(471.2f, horizontal, 0.01f)
+        assertEquals(471.2f, vertical, 0.01f)
+        assertEquals(glyph.emSize * 0.76f, horizontal, 0.01f)
+        assertEquals(glyph.emSize * 0.76f, vertical, 0.01f)
         assertEquals(0.20f, glyph.strokeWidth / glyph.emSize, 0.001f)
         assertEquals(124f, glyph.strokeWidth, 0.001f)
         assertEquals(horizontal / vertical, 1f, 0.001f)

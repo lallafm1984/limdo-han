@@ -74,6 +74,8 @@ class GieokTraceEvaluatorTest {
     fun sparseDiagonalOutsideVisibleCorridorRequestsRetry() {
         val actualWidth = 1_962f
         val actualHeight = 775f
+        val (actualStart, actualCorner, actualEnd) =
+            WritingCanvasGeometry.gieokPoints(actualWidth, actualHeight)
 
         assertEquals(
             GieokTraceResult.OFF_GUIDE,
@@ -82,13 +84,15 @@ class GieokTraceEvaluatorTest {
                 height = actualHeight,
                 stroke = StrokePath(
                     listOf(
-                        CanvasPoint(690f, 96f),
-                        CanvasPoint(861f, 96f),
-                        CanvasPoint(1_011f, 246f),
-                        CanvasPoint(1_161f, 246f),
-                        CanvasPoint(1_272f, 246f),
-                        CanvasPoint(1_272f, 387f),
-                        CanvasPoint(1_272f, 679f),
+                        actualStart,
+                        CanvasPoint(actualStart.x + 140f, actualStart.y),
+                        CanvasPoint(actualStart.x + 200f, actualStart.y + 220f),
+                        CanvasPoint(actualStart.x + 270f, actualStart.y + 220f),
+                        CanvasPoint(actualStart.x + 340f, actualStart.y + 220f),
+                        CanvasPoint(actualCorner.x - 80f, actualStart.y + 220f),
+                        CanvasPoint(actualCorner.x, actualStart.y + 220f),
+                        CanvasPoint(actualCorner.x, (actualCorner.y + actualEnd.y) / 2f),
+                        actualEnd,
                     ),
                 ),
             ),
@@ -97,51 +101,92 @@ class GieokTraceEvaluatorTest {
 
     @Test
     fun shortSixCrossingBoundaryJitterStillSucceeds() {
+        val (actualStart, actualCorner, actualEnd) = actualScreenGuide()
+        val horizontalLength = actualCorner.first - actualStart.first
         assertActualCanvasResult(
             GieokTraceResult.SUCCESS,
             listOf(
-                879f to 159f, 1000f to 159f, 1050f to 270f, 1100f to 295f,
-                1150f to 270f, 1200f to 295f, 1250f to 270f, 1300f to 295f,
-                1350f to 270f, 1400f to 159f, 1461f to 159f, 1461f to 350f,
-                1461f to 550f, 1461f to 742f,
+                actualStart,
+                actualStart.first + horizontalLength * 0.20f to actualStart.second,
+                actualStart.first + horizontalLength * 0.30f to actualStart.second + 111f,
+                actualStart.first + horizontalLength * 0.40f to actualStart.second + 136f,
+                actualStart.first + horizontalLength * 0.50f to actualStart.second + 111f,
+                actualStart.first + horizontalLength * 0.60f to actualStart.second + 136f,
+                actualStart.first + horizontalLength * 0.70f to actualStart.second + 111f,
+                actualStart.first + horizontalLength * 0.80f to actualStart.second + 136f,
+                actualStart.first + horizontalLength * 0.90f to actualStart.second + 111f,
+                actualCorner,
+                actualCorner.first to actualCorner.second + (actualEnd.second - actualCorner.second) * 0.33f,
+                actualCorner.first to actualCorner.second + (actualEnd.second - actualCorner.second) * 0.67f,
+                actualEnd,
             ),
         )
     }
 
     @Test
     fun shortEightCrossingBoundaryJitterStillSucceeds() {
+        val (actualStart, actualCorner, actualEnd) = actualScreenGuide()
+        val horizontalLength = actualCorner.first - actualStart.first
         assertActualCanvasResult(
             GieokTraceResult.SUCCESS,
             listOf(
-                879f to 159f, 1000f to 159f, 1040f to 270f, 1080f to 295f,
-                1120f to 270f, 1160f to 295f, 1200f to 270f, 1240f to 295f,
-                1280f to 270f, 1320f to 295f, 1360f to 270f, 1410f to 159f,
-                1461f to 159f, 1461f to 350f, 1461f to 550f, 1461f to 742f,
+                actualStart,
+                actualStart.first + horizontalLength * 0.18f to actualStart.second,
+                actualStart.first + horizontalLength * 0.26f to actualStart.second + 111f,
+                actualStart.first + horizontalLength * 0.34f to actualStart.second + 136f,
+                actualStart.first + horizontalLength * 0.42f to actualStart.second + 111f,
+                actualStart.first + horizontalLength * 0.50f to actualStart.second + 136f,
+                actualStart.first + horizontalLength * 0.58f to actualStart.second + 111f,
+                actualStart.first + horizontalLength * 0.66f to actualStart.second + 136f,
+                actualStart.first + horizontalLength * 0.74f to actualStart.second + 111f,
+                actualStart.first + horizontalLength * 0.82f to actualStart.second + 136f,
+                actualStart.first + horizontalLength * 0.90f to actualStart.second + 111f,
+                actualCorner,
+                actualCorner.first to actualCorner.second + (actualEnd.second - actualCorner.second) * 0.33f,
+                actualCorner.first to actualCorner.second + (actualEnd.second - actualCorner.second) * 0.67f,
+                actualEnd,
             ),
         )
     }
 
     @Test
     fun repeatedLargeBoundaryDepartureReportsOffGuide() {
+        val (actualStart, actualCorner, actualEnd) = actualScreenGuide()
+        val horizontalLength = actualCorner.first - actualStart.first
         assertActualCanvasResult(
             GieokTraceResult.OFF_GUIDE,
             listOf(
-                879f to 159f, 1000f to 159f, 1050f to 250f, 1100f to 340f,
-                1150f to 250f, 1200f to 340f, 1250f to 250f, 1300f to 340f,
-                1350f to 250f, 1400f to 159f, 1461f to 159f, 1461f to 350f,
-                1461f to 550f, 1461f to 742f,
+                actualStart,
+                actualStart.first + horizontalLength * 0.20f to actualStart.second,
+                actualStart.first + horizontalLength * 0.30f to actualStart.second + 91f,
+                actualStart.first + horizontalLength * 0.40f to actualStart.second + 181f,
+                actualStart.first + horizontalLength * 0.50f to actualStart.second + 91f,
+                actualStart.first + horizontalLength * 0.60f to actualStart.second + 181f,
+                actualStart.first + horizontalLength * 0.70f to actualStart.second + 91f,
+                actualStart.first + horizontalLength * 0.80f to actualStart.second + 181f,
+                actualStart.first + horizontalLength * 0.90f to actualStart.second + 91f,
+                actualCorner,
+                actualCorner.first to actualCorner.second + (actualEnd.second - actualCorner.second) * 0.33f,
+                actualCorner.first to actualCorner.second + (actualEnd.second - actualCorner.second) * 0.67f,
+                actualEnd,
             ),
         )
     }
 
     @Test
     fun exactBacktrackBoundarySucceedsAcrossDifferentSampleSpacing() {
-        listOf(350f, 550f).forEach { penultimateY ->
+        val (actualStart, actualCorner, actualEnd) = actualScreenGuide()
+        listOf(0.33f, 0.67f).forEach { penultimateProgress ->
             assertActualCanvasResult(
                 GieokTraceResult.SUCCESS,
                 listOf(
-                    879f to 159f, 1100f to 159f, 1300f to 159f, 1461f to 159f,
-                    1461f to penultimateY, 1461f to 742f, 1461f to 587f,
+                    actualStart,
+                    (actualStart.first + actualCorner.first) / 2f to actualStart.second,
+                    actualCorner,
+                    actualCorner.first to
+                        actualCorner.second + (actualEnd.second - actualCorner.second) * penultimateProgress,
+                    actualEnd,
+                    actualEnd.first to actualEnd.second - 155f,
                 ),
             )
         }
@@ -149,11 +194,17 @@ class GieokTraceEvaluatorTest {
 
     @Test
     fun onePixelBeyondBacktrackBoundaryRequestsDirectionRetry() {
+        val (actualStart, actualCorner, actualEnd) = actualScreenGuide()
         assertActualCanvasResult(
             GieokTraceResult.WRONG_DIRECTION,
             listOf(
-                879f to 159f, 1100f to 159f, 1300f to 159f, 1461f to 159f,
-                1461f to 350f, 1461f to 550f, 1461f to 742f, 1461f to 586f,
+                actualStart,
+                (actualStart.first + actualCorner.first) / 2f to actualStart.second,
+                actualCorner,
+                actualCorner.first to actualCorner.second + (actualEnd.second - actualCorner.second) * 0.33f,
+                actualCorner.first to actualCorner.second + (actualEnd.second - actualCorner.second) * 0.67f,
+                actualEnd,
+                actualEnd.first to actualEnd.second - 156f,
             ),
         )
     }
@@ -207,6 +258,11 @@ class GieokTraceEvaluatorTest {
             ),
         )
     }
+
+    private fun actualScreenGuide(): List<Pair<Float, Float>> =
+        WritingCanvasGeometry.gieokPoints(width = 1_962f, height = 775f).map { point ->
+            point.x + 189f to point.y + 63f
+        }
 
     private fun midpoint(first: CanvasPoint, second: CanvasPoint): CanvasPoint = CanvasPoint(
         x = (first.x + second.x) / 2f,

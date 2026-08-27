@@ -707,6 +707,52 @@ class KoreanCurriculumTest {
     }
 
     @Test
+    fun rightAngleConsonantsShareTheSameVisibleOuterFrame() {
+        val lessons = KoreanCurriculum.lessons.associateBy { it.id }
+        fun geometry(id: LessonId) = WritingCanvasGeometry.glyph(
+            lessons.getValue(id),
+            width,
+            height,
+        )
+
+        val geometries = listOf(
+            LessonId.GIEOK,
+            LessonId.NIEUN,
+            LessonId.DIGEUT,
+        ).associateWith(::geometry)
+        val reference = geometries.getValue(LessonId.DIGEUT)
+        val referencePoints = reference.strokes.flatten()
+        val referenceInkWidth =
+            referencePoints.maxOf { it.x } - referencePoints.minOf { it.x } + reference.strokeWidth
+        val referenceInkHeight =
+            referencePoints.maxOf { it.y } - referencePoints.minOf { it.y } + reference.strokeWidth
+
+        geometries.forEach { (id, glyph) ->
+            val points = glyph.strokes.flatten()
+            val centerlineWidth = points.maxOf { it.x } - points.minOf { it.x }
+            val centerlineHeight = points.maxOf { it.y } - points.minOf { it.y }
+            val inkWidth = centerlineWidth + glyph.strokeWidth
+            val inkHeight = centerlineHeight + glyph.strokeWidth
+            assertEquals("$id 중심선 가로", glyph.emSize * 0.76f, centerlineWidth, 0.001f)
+            assertEquals("$id 중심선 세로", glyph.emSize * 0.76f, centerlineHeight, 0.001f)
+            assertEquals("$id 보이는 가로 외곽", referenceInkWidth, inkWidth, 0.001f)
+            assertEquals("$id 보이는 세로 외곽", referenceInkHeight, inkHeight, 0.001f)
+            assertEquals(
+                "$id 가로 중심",
+                width / 2f,
+                (points.maxOf { it.x } + points.minOf { it.x }) / 2f,
+                0.001f,
+            )
+            assertEquals(
+                "$id 세로 중심",
+                height / 2f,
+                (points.maxOf { it.y } + points.minOf { it.y }) / 2f,
+                0.001f,
+            )
+        }
+    }
+
+    @Test
     fun rieulJieutAndChieutKeepBalancedVisibleExtents() {
         val lessons = KoreanCurriculum.lessons.associateBy { it.id }
         fun geometry(id: LessonId) = WritingCanvasGeometry.glyph(

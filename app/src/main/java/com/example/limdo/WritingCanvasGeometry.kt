@@ -110,15 +110,15 @@ internal object WritingCanvasGeometry {
 
     private val gieokTemplate = listOf(
         listOf(
-            CanvasPoint(0.03f, 0.03f),
-            CanvasPoint(0.97f, 0.03f),
-            CanvasPoint(0.97f, 0.97f),
+            CanvasPoint(0.12f, 0.12f),
+            CanvasPoint(0.88f, 0.12f),
+            CanvasPoint(0.88f, 0.88f),
         ),
     )
 
     private val nieunTemplate = listOf(
         listOf(
-            CanvasPoint(0.12f, 0.08f),
+            CanvasPoint(0.12f, 0.12f),
             CanvasPoint(0.12f, 0.88f),
             CanvasPoint(0.88f, 0.88f),
         ),
