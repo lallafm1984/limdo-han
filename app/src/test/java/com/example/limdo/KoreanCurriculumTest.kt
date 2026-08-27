@@ -505,15 +505,6 @@ class KoreanCurriculumTest {
     }
 
     @Test
-    fun successOverlayStaysInsideTheCurrentLessonScreen() {
-        KoreanCurriculum.lessons.forEach { lesson ->
-            val marker = SuccessMarkerGeometry.center(891.43f, 411.43f, lesson)
-            assertTrue(marker.x in 0f..891.43f)
-            assertTrue(marker.y in 0f..411.43f)
-        }
-    }
-
-    @Test
     fun visuallyDifferentLessonsDoNotReuseOneHardcodedGeometry() {
         val signatures = KoreanCurriculum.lessons.map { lesson ->
             WritingCanvasGeometry.glyph(lesson, width, height).strokes.flatten()

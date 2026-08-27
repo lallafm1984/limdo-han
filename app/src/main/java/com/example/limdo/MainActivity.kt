@@ -15,7 +15,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -57,7 +56,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -370,16 +368,11 @@ private fun WritingLesson(
         }
     }
 
-    BoxWithConstraints(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(menu.visuals().softSurface),
     ) {
-        val successMarkerCenter = SuccessMarkerGeometry.center(
-            containerWidth = maxWidth.value,
-            containerHeight = maxHeight.value,
-            lesson = currentLesson,
-        )
         Image(
             painter = painterResource(R.drawable.limdo_sunny_flower_background),
             contentDescription = null,
@@ -410,53 +403,31 @@ private fun WritingLesson(
 
         if (traceResult != null && traceResult != GieokTraceResult.EMPTY) {
             if (traceResult == GieokTraceResult.SUCCESS) {
-                SuccessCelebration(
+                SuccessFeedbackOverlay(
                     progress = celebrationProgress.value,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(
-                            x = (successMarkerCenter.x - maxWidth.value / 2f).dp,
-                            y = (successMarkerCenter.y - maxHeight.value / 2f).dp,
-                        ),
-                )
-            }
-            if (traceResult == GieokTraceResult.SUCCESS) {
-                Text(
-                    text = "✓",
-                    modifier =
-                    Modifier
-                        .align(Alignment.Center)
-                        .offset(
-                            x = (successMarkerCenter.x - maxWidth.value / 2f).dp,
-                            y = (successMarkerCenter.y - maxHeight.value / 2f).dp,
-                        )
-                        .size(
-                            width = SuccessMarkerGeometry.WIDTH.dp,
-                            height = SuccessMarkerGeometry.HEIGHT.dp,
-                        ),
-                    textAlign = TextAlign.Center,
-                    color = Color(0xFF276B50),
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxSize(),
                 )
             } else {
-                RetryFeedback(
+                RetryFeedbackOverlay(
                     visuals = retryVisuals,
-                    modifier = Modifier.align(Alignment.TopCenter),
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
 
         EdgeActionColumns(
-            nextAvailable = traceResult == GieokTraceResult.SUCCESS,
             onHome = onHome,
             onClear = {
                 clearRequest += 1
                 traceResult = null
             },
-            onNext = next@{
-                if (traceResult != GieokTraceResult.SUCCESS) return@next
-
+            onPrevious = {
+                clearRequest += 1
+                traceResult = null
+                val previousLesson = LearningNavigation.previousLesson(menu, currentLesson)
+                lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == previousLesson.id }
+            },
+            onNext = {
                 clearRequest += 1
                 traceResult = null
                 val nextLesson = LearningNavigation.nextLesson(menu, currentLesson)
@@ -469,101 +440,39 @@ private fun WritingLesson(
 }
 
 @Composable
-private fun RetryFeedback(
+private fun RetryFeedbackOverlay(
     visuals: RetryAnimationVisuals,
     modifier: Modifier = Modifier,
 ) {
-    val atlas = ImageBitmap.imageResource(R.drawable.limdo_retry_feedback_atlas)
-    Canvas(
+    Image(
+        painter = painterResource(R.drawable.limdo_retry_fullscreen_feedback),
+        contentDescription = stringResource(R.string.retry_feedback_description),
         modifier = modifier
-            .size(
-                width = RetryFeedbackAtlasSpec.CONTAINER_WIDTH_DP.dp,
-                height = RetryFeedbackAtlasSpec.CONTAINER_HEIGHT_DP.dp,
-            )
-            .semantics { contentDescription = "부드러운 되돌림 화살표, 시작점에서 다시 시도" },
-    ) {
-        val cellSize = RetryFeedbackAtlasSpec.CELL_SIZE_PX
-        val sparkleSize = RetryFeedbackAtlasSpec.SPARKLES_SIZE_DP.dp.toPx()
-        drawImage(
-            image = atlas,
-            srcOffset = IntOffset(RetryFeedbackAtlasSpec.SPARKLES_CELL * cellSize, 0),
-            srcSize = IntSize(cellSize, cellSize),
-            dstOffset = IntOffset(
-                ((size.width - sparkleSize) / 2f + 22.dp.toPx()).roundToInt(),
-                ((size.height - sparkleSize) / 2f).roundToInt(),
-            ),
-            dstSize = IntSize(sparkleSize.roundToInt(), sparkleSize.roundToInt()),
-            alpha = visuals.sparkleAlpha,
-        )
-
-        val arrowSize = RetryFeedbackAtlasSpec.RETURN_ARROW_SIZE_DP.dp.toPx() * visuals.feedbackScale
-        drawImage(
-            image = atlas,
-            srcOffset = IntOffset(RetryFeedbackAtlasSpec.RETURN_ARROW_CELL * cellSize, 0),
-            srcSize = IntSize(cellSize, cellSize),
-            dstOffset = IntOffset(
-                ((size.width - arrowSize) / 2f - 12.dp.toPx()).roundToInt(),
-                ((size.height - arrowSize) / 2f).roundToInt(),
-            ),
-            dstSize = IntSize(arrowSize.roundToInt(), arrowSize.roundToInt()),
-            alpha = visuals.feedbackAlpha,
-        )
-    }
+            .graphicsLayer {
+                scaleX = visuals.feedbackScale
+                scaleY = visuals.feedbackScale
+            },
+        contentScale = ContentScale.Fit,
+    )
 }
 
 @Composable
-private fun SuccessCelebration(
+private fun SuccessFeedbackOverlay(
     progress: Float,
     modifier: Modifier = Modifier,
 ) {
     val visuals = successCelebrationVisuals(progress)
-    val atlas = ImageBitmap.imageResource(R.drawable.limdo_success_feedback_atlas)
-    Box(
+    Image(
+        painter = painterResource(R.drawable.limdo_success_fullscreen_feedback),
+        contentDescription = stringResource(R.string.success_feedback_description),
         modifier = modifier
-            .size(
-                width = SuccessFeedbackAtlasSpec.CONTAINER_WIDTH_DP.dp,
-                height = SuccessFeedbackAtlasSpec.CONTAINER_HEIGHT_DP.dp,
-            )
-            .semantics { contentDescription = "성공 별빛과 종이조각" },
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val cellSize = SuccessFeedbackAtlasSpec.CELL_SIZE_PX
-            val confettiSize = SuccessFeedbackAtlasSpec.CONFETTI_SIZE_DP.dp.toPx()
-            val confettiTravel = SuccessFeedbackAtlasSpec.CONFETTI_TRAVEL_DP.dp.toPx()
-            drawImage(
-                image = atlas,
-                srcOffset = IntOffset(
-                    x = SuccessFeedbackAtlasSpec.CONFETTI_CELL * cellSize,
-                    y = 0,
-                ),
-                srcSize = IntSize(cellSize, cellSize),
-                dstOffset = IntOffset(
-                    x = ((size.width - confettiSize) / 2f).roundToInt(),
-                    y = ((size.height - confettiSize) / 2f - confettiTravel * progress)
-                        .roundToInt(),
-                ),
-                dstSize = IntSize(confettiSize.roundToInt(), confettiSize.roundToInt()),
-                alpha = visuals.confettiAlpha,
-            )
-
-            val starSize = SuccessFeedbackAtlasSpec.STAR_SIZE_DP.dp.toPx() * visuals.starScale
-            drawImage(
-                image = atlas,
-                srcOffset = IntOffset(
-                    x = SuccessFeedbackAtlasSpec.STAR_CELL * cellSize,
-                    y = 0,
-                ),
-                srcSize = IntSize(cellSize, cellSize),
-                dstOffset = IntOffset(
-                    x = ((size.width - starSize) / 2f).roundToInt(),
-                    y = ((size.height - starSize) / 2f).roundToInt(),
-                ),
-                dstSize = IntSize(starSize.roundToInt(), starSize.roundToInt()),
-                alpha = visuals.glowAlpha.coerceAtLeast(visuals.starScale.coerceAtMost(1f)),
-            )
-        }
-    }
+            .graphicsLayer {
+                alpha = visuals.alpha
+                scaleX = visuals.scale
+                scaleY = visuals.scale
+            },
+        contentScale = ContentScale.Fit,
+    )
 }
 
 @Composable
@@ -640,9 +549,9 @@ private fun GieokTraceResult?.isRetryResult(): Boolean = when (this) {
 
 @Composable
 private fun EdgeActionColumns(
-    nextAvailable: Boolean,
     onHome: () -> Unit,
     onClear: () -> Unit,
+    onPrevious: () -> Unit,
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -658,8 +567,7 @@ private fun EdgeActionColumns(
                 modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
             )
             ClearAction(
-                label = stringResource(R.string.action_clear),
-                contentDescription = stringResource(R.string.action_clear_description),
+                contentDescription = stringResource(R.string.action_rewrite_description),
                 onClick = onClear,
                 modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
             )
@@ -668,10 +576,17 @@ private fun EdgeActionColumns(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(LearningShellSpec.ACTION_COLUMN_SPACING_DP.dp),
         ) {
-            NextAction(
-                label = stringResource(R.string.action_next),
-                available = nextAvailable,
+            LessonNavigationAction(
+                contentDescription = stringResource(R.string.action_previous_description),
+                previous = true,
+                onClick = onPrevious,
+                modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
+            )
+            LessonNavigationAction(
+                contentDescription = stringResource(R.string.action_next_description),
+                previous = false,
                 onClick = onNext,
                 modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
             )
@@ -701,7 +616,6 @@ private fun HomeAction(
 
 @Composable
 private fun ClearAction(
-    label: String,
     contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -722,9 +636,9 @@ private fun ClearAction(
 }
 
 @Composable
-private fun NextAction(
-    label: String,
-    available: Boolean,
+private fun LessonNavigationAction(
+    contentDescription: String,
+    previous: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -732,43 +646,35 @@ private fun NextAction(
     val isPressed by interactionSource.collectIsPressedAsState()
     Surface(
         onClick = onClick,
-        enabled = available,
         interactionSource = interactionSource,
         modifier = modifier
             .heightIn(min = 64.dp)
-            .semantics {
-                contentDescription = if (available) {
-                    "다음 쓰기, 사용 가능"
-                } else {
-                    "다음 쓰기, 사용 불가"
-                }
-                stateDescription = if (available) "다음 쓰기 사용 가능" else "다음 쓰기 사용 불가"
-            },
-        color = if (available) Color(0xFFDCEDE5) else Color(0xFFD8D4CC),
+            .semantics { this.contentDescription = contentDescription },
+        color = Color(0xFFDCEDE5),
         shape = RoundedCornerShape(20.dp),
     ) {
         ActionAtlasIcon(
             column = ActionButtonAtlasSpec.NEXT_COLUMN,
             isPressed = isPressed,
-            disabled = !available,
+            mirrorHorizontal = previous,
         )
     }
 }
 
 @Composable
-private fun ActionAtlasIcon(column: Int, isPressed: Boolean, disabled: Boolean = false) {
+private fun ActionAtlasIcon(
+    column: Int,
+    isPressed: Boolean,
+    mirrorHorizontal: Boolean = false,
+) {
     val atlas = ImageBitmap.imageResource(R.drawable.limdo_action_button_atlas)
-    val row = when {
-        disabled -> ActionButtonAtlasSpec.DISABLED_ROW
-        isPressed -> ActionButtonAtlasSpec.PRESSED_ROW
-        else -> ActionButtonAtlasSpec.DEFAULT_ROW
-    }
+    val row = if (isPressed) ActionButtonAtlasSpec.PRESSED_ROW else ActionButtonAtlasSpec.DEFAULT_ROW
     Canvas(
         modifier = Modifier
             .size(ActionButtonAtlasSpec.ICON_DP.dp)
             .graphicsLayer {
-                val scale = if (isPressed && !disabled) ActionButtonAtlasSpec.PRESSED_SCALE else 1f
-                scaleX = scale
+                val scale = if (isPressed) ActionButtonAtlasSpec.PRESSED_SCALE else 1f
+                scaleX = if (mirrorHorizontal) -scale else scale
                 scaleY = scale
             },
     ) {

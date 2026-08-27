@@ -40,12 +40,9 @@ class LessonRewardTest {
             assertTrue(transition.symbolAlpha in 0f..1f)
             assertTrue(kotlin.math.abs(retry.offsetDp) <= RetryAnimationSpec.MAX_OFFSET_DP)
             assertTrue(retry.startMarkerScale in 1f..RetryAnimationSpec.START_MARKER_MAX_SCALE)
-            assertTrue(retry.feedbackScale in 0.78f..1f)
-            assertTrue(retry.feedbackAlpha in 0f..1f)
-            assertTrue(retry.sparkleAlpha in 0f..1f)
-            assertTrue(celebration.starScale in 0f..1.1f)
-            assertTrue(celebration.glowAlpha in 0f..1f)
-            assertTrue(celebration.confettiAlpha in 0f..1f)
+            assertTrue(retry.feedbackScale in 1f..1.06f)
+            assertTrue(celebration.scale in 0.72f..1.08f)
+            assertTrue(celebration.alpha in 0f..1f)
         }
     }
 
@@ -64,26 +61,22 @@ class LessonRewardTest {
         assertTrue(middle.startMarkerScale > start.startMarkerScale)
         assertEquals(1f, end.startMarkerScale, 0.001f)
         assertEquals(0f, end.offsetDp, 0.001f)
-        assertEquals(0f, end.feedbackAlpha, 0.001f)
-        assertEquals(0f, end.sparkleAlpha, 0.001f)
+        assertEquals(1f, end.feedbackScale, 0.001f)
     }
 
     @Test
-    fun retryFeedbackAtlasKeepsTwoSquareCellsAndBoundedPresentation() {
-        assertEquals(2, RetryFeedbackAtlasSpec.COLUMNS)
-        assertEquals(1, RetryFeedbackAtlasSpec.ROWS)
-        assertEquals(
-            RetryFeedbackAtlasSpec.CELL_SIZE_PX * RetryFeedbackAtlasSpec.COLUMNS,
-            RetryFeedbackAtlasSpec.SOURCE_WIDTH_PX,
+    fun fullScreenFeedbackAssetsStayLargeAndSquare() {
+        assertEquals(1_024, FullScreenFeedbackSpec.SOURCE_SIZE_PX)
+        assertTrue(
+            FullScreenFeedbackSpec.SUCCESS_VISIBLE_FRACTION >=
+                FullScreenFeedbackSpec.MIN_WRITING_BOARD_HEIGHT_FRACTION,
         )
-        assertEquals(
-            RetryFeedbackAtlasSpec.CELL_SIZE_PX * RetryFeedbackAtlasSpec.ROWS,
-            RetryFeedbackAtlasSpec.SOURCE_HEIGHT_PX,
+        assertTrue(
+            FullScreenFeedbackSpec.RETRY_VISIBLE_FRACTION >=
+                FullScreenFeedbackSpec.MIN_WRITING_BOARD_HEIGHT_FRACTION,
         )
-        assertEquals(0, RetryFeedbackAtlasSpec.RETURN_ARROW_CELL)
-        assertEquals(1, RetryFeedbackAtlasSpec.SPARKLES_CELL)
-        assertTrue(RetryFeedbackAtlasSpec.CONTAINER_WIDTH_DP < 160f)
-        assertTrue(RetryFeedbackAtlasSpec.CONTAINER_HEIGHT_DP < 100f)
+        assertTrue(FullScreenFeedbackSpec.SUCCESS_VISIBLE_FRACTION <= 1f)
+        assertTrue(FullScreenFeedbackSpec.RETRY_VISIBLE_FRACTION <= 1f)
         assertTrue(RetryAnimationSpec.DURATION_MS <= 1_500)
     }
 
@@ -95,35 +88,14 @@ class LessonRewardTest {
         val confetti = successCelebrationVisuals(0.7f)
         val end = successCelebrationVisuals(1f)
 
-        assertEquals(0f, start.starScale)
-        assertEquals(0f, start.glowAlpha)
-        assertEquals(0f, start.confettiAlpha)
-        assertTrue(star.starScale > start.starScale)
-        assertTrue(glow.glowAlpha > star.glowAlpha)
-        assertTrue(confetti.confettiAlpha > glow.confettiAlpha)
-        assertEquals(0f, end.glowAlpha)
-        assertEquals(0f, end.confettiAlpha)
-    }
-
-    @Test
-    fun successFeedbackAtlasKeepsTwoSquareCellsAndBoundedPresentation() {
-        assertEquals(2, SuccessFeedbackAtlasSpec.COLUMNS)
-        assertEquals(1, SuccessFeedbackAtlasSpec.ROWS)
-        assertEquals(
-            SuccessFeedbackAtlasSpec.CELL_SIZE_PX * SuccessFeedbackAtlasSpec.COLUMNS,
-            SuccessFeedbackAtlasSpec.SOURCE_WIDTH_PX,
-        )
-        assertEquals(
-            SuccessFeedbackAtlasSpec.CELL_SIZE_PX * SuccessFeedbackAtlasSpec.ROWS,
-            SuccessFeedbackAtlasSpec.SOURCE_HEIGHT_PX,
-        )
-        assertEquals(0, SuccessFeedbackAtlasSpec.STAR_CELL)
-        assertEquals(1, SuccessFeedbackAtlasSpec.CONFETTI_CELL)
-        assertTrue(
-            SuccessFeedbackAtlasSpec.CONTAINER_WIDTH_DP <= SuccessMarkerGeometry.WIDTH,
-        )
-        assertTrue(SuccessFeedbackAtlasSpec.STAR_SIZE_DP <= SuccessFeedbackAtlasSpec.CONTAINER_HEIGHT_DP)
-        assertTrue(SuccessFeedbackAtlasSpec.CONFETTI_SIZE_DP <= SuccessFeedbackAtlasSpec.CONTAINER_HEIGHT_DP)
+        assertEquals(0f, start.alpha)
+        assertTrue(star.scale > start.scale)
+        assertTrue(star.alpha > start.alpha)
+        assertTrue(star.scale > 1f)
+        assertEquals(1f, glow.scale, 0.001f)
+        assertEquals(1f, confetti.alpha)
+        assertEquals(1f, end.scale, 0.001f)
+        assertEquals(1f, end.alpha, 0.001f)
     }
 
     @Test
@@ -138,16 +110,4 @@ class LessonRewardTest {
         }
     }
 
-    @Test
-    fun successMarkerStaysVisibleForEveryProductionGlyph() {
-        val containerWidth = 2340f / 2.625f
-        val containerHeight = 1080f / 2.625f
-        KoreanCurriculum.lessons.forEach { lesson ->
-            val center = SuccessMarkerGeometry.center(containerWidth, containerHeight, lesson)
-            assertTrue(center.x - SuccessMarkerGeometry.WIDTH / 2f >= 0f)
-            assertTrue(center.x + SuccessMarkerGeometry.WIDTH / 2f <= containerWidth)
-            assertTrue(center.y - SuccessMarkerGeometry.HEIGHT / 2f >= 0f)
-            assertTrue(center.y + SuccessMarkerGeometry.HEIGHT / 2f <= containerHeight)
-        }
-    }
 }

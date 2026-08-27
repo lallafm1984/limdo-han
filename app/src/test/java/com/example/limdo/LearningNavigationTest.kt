@@ -103,7 +103,7 @@ class LearningNavigationTest {
     }
 
     @Test
-    fun nextLessonStaysInsideEachMenuAndGanadaUsesTheFourteenLessonCycle() {
+    fun previousAndNextLessonsStayInsideEachMenuAndWrapBothDirections() {
         val expected = listOf(
             LessonId.NA, LessonId.DA, LessonId.RA, LessonId.MA, LessonId.BA, LessonId.SA,
             LessonId.AH, LessonId.JA, LessonId.CHA, LessonId.KA, LessonId.TA, LessonId.PA,
@@ -128,8 +128,24 @@ class LearningNavigationTest {
             val lessonIds = lessons.map(LessonSpec::id).toSet()
             lessons.forEach { lesson ->
                 assertTrue(LearningNavigation.nextLesson(menu, lesson).id in lessonIds)
+                assertTrue(LearningNavigation.previousLesson(menu, lesson).id in lessonIds)
+                assertEquals(
+                    lesson,
+                    LearningNavigation.nextLesson(
+                        menu,
+                        LearningNavigation.previousLesson(menu, lesson),
+                    ),
+                )
+                assertEquals(
+                    lesson,
+                    LearningNavigation.previousLesson(
+                        menu,
+                        LearningNavigation.nextLesson(menu, lesson),
+                    ),
+                )
             }
             assertEquals(lessons.first(), LearningNavigation.nextLesson(menu, lessons.last()))
+            assertEquals(lessons.last(), LearningNavigation.previousLesson(menu, lessons.first()))
         }
     }
 

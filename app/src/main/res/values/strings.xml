@@ -12,8 +12,13 @@
     <string name="trace_retry_guide">괜찮아! 초록 길을 따라가보자!</string>
     <string name="trace_retry_finish">조금만 더! 끝까지 이어보자!</string>
     <string name="writing_canvas_description">큰 쓰기판. 초록 점에서 시작해 가를 세 획으로 그려요</string>
-    <string name="action_clear">지우기</string>
-    <string name="action_clear_description">내가 그린 선 지우기</string>
+    <string name="action_rewrite">다시쓰기</string>
+    <string name="action_rewrite_description">현재 글자 다시 쓰기</string>
+    <string name="action_previous">이전</string>
+    <string name="action_previous_description">이전 글자로 이동</string>
     <string name="action_next">다음</string>
+    <string name="action_next_description">다음 글자로 이동</string>
+    <string name="success_feedback_description">아주 잘했어요, 큰 축하 동그라미</string>
+    <string name="retry_feedback_description">괜찮아요, 웃는 구름 친구와 다시 해보기</string>
     <string name="not_available_yet">준비 중</string>
 </resources>
