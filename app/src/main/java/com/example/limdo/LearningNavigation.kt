@@ -3,12 +3,11 @@ package com.example.limdo
 internal enum class LearningMenu(
     val label: String,
     val symbol: String,
-    val icon: String,
     val spokenCue: SpokenCue,
 ) {
-    CONSONANTS("자음", "ㄱ ㄴ ㄷ", "🚓", SpokenCue.MENU_CONSONANTS),
-    VOWELS("모음", "ㅏ ㅑ ㅓ", "🚒", SpokenCue.MENU_VOWELS),
-    GANADA("가나다", "가 나 다", "🚌", SpokenCue.MENU_GANADA),
+    CONSONANTS("자음", "ㄱ ㄴ ㄷ", SpokenCue.MENU_CONSONANTS),
+    VOWELS("모음", "ㅏ ㅑ ㅓ", SpokenCue.MENU_VOWELS),
+    GANADA("가나다", "가 나 다", SpokenCue.MENU_GANADA),
 }
 
 internal sealed interface LearningDestination {

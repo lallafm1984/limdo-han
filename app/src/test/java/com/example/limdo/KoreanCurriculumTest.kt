@@ -286,7 +286,7 @@ class KoreanCurriculumTest {
                     StrokeDirection.RIGHT -> assertTrue(dx > 0f && abs(dx) > abs(dy))
                     StrokeDirection.LEFT -> assertTrue(dx < 0f && abs(dx) > abs(dy))
                     StrokeDirection.UP -> assertTrue(dy < 0f && abs(dy) > abs(dx))
-                    StrokeDirection.DOWN -> assertTrue(dy > 0f && abs(dy) > abs(dx))
+                    StrokeDirection.DOWN -> assertTrue(dy > 0f && abs(dy) >= abs(dx) * 0.75f)
                 }
             }
         }
@@ -470,20 +470,9 @@ class KoreanCurriculumTest {
     }
 
     @Test
-    fun rewardStepsAndSafeOverlaysFollowTheCurrentLesson() {
+    fun successOverlayStaysInsideTheCurrentLessonScreen() {
         KoreanCurriculum.lessons.forEach { lesson ->
-            val reward = LessonRewardState().onTraceResult(GieokTraceResult.SUCCESS, lesson)
-            assertEquals(lesson.strokeCount, reward.targetSteps)
-
-            val vehicleCenter = RewardPathGeometry.vehicleCenterX(
-                containerWidth = 891.43f,
-                containerHeight = 411.43f,
-                completedSteps = lesson.strokeCount.toFloat(),
-                targetSteps = lesson.strokeCount,
-                lesson = lesson,
-            )
             val marker = SuccessMarkerGeometry.center(891.43f, 411.43f, lesson)
-            assertTrue(vehicleCenter > 0f)
             assertTrue(marker.x in 0f..891.43f)
             assertTrue(marker.y in 0f..411.43f)
         }
@@ -680,6 +669,92 @@ class KoreanCurriculumTest {
     }
 
     @Test
+    fun basicConsonantsShareOneOpticalFrame() {
+        val consonantIds = listOf(
+            LessonId.GIEOK,
+            LessonId.NIEUN,
+            LessonId.DIGEUT,
+            LessonId.RIEUL,
+            LessonId.MIEUM,
+            LessonId.BIEUP,
+            LessonId.SIOT,
+            LessonId.IEUNG,
+            LessonId.JIEUT,
+            LessonId.CHIEUT,
+            LessonId.KIEUK,
+            LessonId.TIEUT,
+            LessonId.PIEUP,
+            LessonId.HIEUH,
+        )
+        val lessons = KoreanCurriculum.lessons.associateBy { it.id }
+        val geometries = consonantIds.map { id ->
+            WritingCanvasGeometry.glyph(lessons.getValue(id), width, height)
+        }
+        val reference = geometries.first()
+        geometries.forEachIndexed { index, geometry ->
+            assertEquals("${consonantIds[index]} em", reference.emSize, geometry.emSize, 0.001f)
+            assertEquals("${consonantIds[index]} 굵기", reference.strokeWidth, geometry.strokeWidth, 0.001f)
+            val points = geometry.strokes.flatten()
+            val spanX = points.maxOf { it.x } - points.minOf { it.x }
+            val spanY = points.maxOf { it.y } - points.minOf { it.y }
+            val centerX = (points.maxOf { it.x } + points.minOf { it.x }) / 2f
+            val centerY = (points.maxOf { it.y } + points.minOf { it.y }) / 2f
+            assertTrue("${consonantIds[index]} 가로 점유", spanX in geometry.emSize * 0.50f..geometry.emSize * 0.95f)
+            assertTrue("${consonantIds[index]} 세로 점유", spanY in geometry.emSize * 0.60f..geometry.emSize * 0.95f)
+            assertTrue("${consonantIds[index]} 가로 중심", abs(centerX - width / 2f) <= geometry.emSize * 0.06f)
+            assertTrue("${consonantIds[index]} 세로 중심", abs(centerY - height / 2f) <= geometry.emSize * 0.06f)
+        }
+    }
+
+    @Test
+    fun rieulJieutAndChieutKeepBalancedVisibleExtents() {
+        val lessons = KoreanCurriculum.lessons.associateBy { it.id }
+        fun geometry(id: LessonId) = WritingCanvasGeometry.glyph(
+            lessons.getValue(id),
+            width,
+            height,
+        )
+
+        listOf(LessonId.RIEUL, LessonId.RA).forEach { id ->
+            val strokes = geometry(id).strokes.take(3)
+            assertEquals("$id 왼쪽 축", strokes[0].first().x, strokes[2].first().x, 0.001f)
+            assertEquals("$id 오른쪽 축", strokes[0][1].x, strokes[2].last().x, 0.001f)
+            assertEquals("$id 가운데 왼쪽 축", strokes[0].first().x, strokes[1].first().x, 0.001f)
+            assertEquals("$id 가운데 오른쪽 축", strokes[0][1].x, strokes[1].last().x, 0.001f)
+        }
+
+        listOf(
+            Triple(LessonId.JIEUT, 0, 1),
+            Triple(LessonId.JA, 0, 1),
+            Triple(LessonId.CHIEUT, 1, 2),
+            Triple(LessonId.CHA, 1, 2),
+        ).forEach { (id, bodyIndex, rightLegIndex) ->
+            val strokes = geometry(id).strokes
+            val body = strokes[bodyIndex]
+            val rightLeg = strokes[rightLegIndex]
+            val topLeft = body[0]
+            val topRight = body[1]
+            val junction = body[2]
+            val leftBottom = body[3]
+            val rightBottom = rightLeg.last()
+            val topWidth = topRight.x - topLeft.x
+            val bottomWidth = rightBottom.x - leftBottom.x
+            assertEquals("$id 왼쪽 끝", topLeft.x, leftBottom.x, 0.001f)
+            assertEquals("$id 오른쪽 끝", topRight.x, rightBottom.x, 0.001f)
+            assertEquals("$id 상하 폭", topWidth, bottomWidth, 0.001f)
+            assertEquals("$id 접합부 공유", junction, rightLeg.first())
+            val incomingX = junction.x - topRight.x
+            val incomingY = junction.y - topRight.y
+            val wholeX = leftBottom.x - topRight.x
+            val wholeY = leftBottom.y - topRight.y
+            assertEquals("$id 왼쪽 내려쓰기 공선", 0f, incomingX * wholeY - incomingY * wholeX, 0.01f)
+            val leftLegLength = hypot(junction.x - leftBottom.x, junction.y - leftBottom.y)
+            val rightLegLength = hypot(rightBottom.x - junction.x, rightBottom.y - junction.y)
+            assertEquals("$id 양쪽 다리 길이", leftLegLength, rightLegLength, 0.001f)
+        }
+    }
+
+    @Test
     fun pieupAndPaShareTheFourStrokeOrderDirectionAndJudgmentContract() {
         listOf(PieupLesson, PaLesson).forEach { lesson ->
             val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes.take(4)
@@ -754,8 +829,11 @@ class KoreanCurriculumTest {
         assertTrue(WritingCanvasGeometry.finishMarkerOuterRadius(guideStroke) * 2f <= guideStroke * 0.40f)
         assertTrue(
             WritingCanvasGeometry.demonstrationMarkerOuterRadius(guideStroke) * 2f <=
-                guideStroke * 0.40f,
+                guideStroke * 0.28f,
         )
+        assertEquals(0.08f, WritingCanvasGeometry.demonstrationMarkerTravelProgress(0f), 0.001f)
+        assertEquals(0.50f, WritingCanvasGeometry.demonstrationMarkerTravelProgress(0.5f), 0.001f)
+        assertEquals(0.92f, WritingCanvasGeometry.demonstrationMarkerTravelProgress(1f), 0.001f)
         assertTrue(
             WritingCanvasGeometry.finishMarkerCenterRadius(guideStroke) <
                 WritingCanvasGeometry.finishMarkerColorRadius(guideStroke),

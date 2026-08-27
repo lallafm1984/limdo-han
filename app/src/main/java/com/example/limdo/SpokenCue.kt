@@ -214,8 +214,3 @@ internal fun shouldResumeInitialCue(
 ): Boolean = speechState == SpeechPlaybackState.Ready &&
     initialSpeechPending &&
     !alreadyHandled
-
-internal fun shouldStartNextInitialCue(
-    moveCompleted: Boolean,
-    nextVehiclePending: Boolean,
-): Boolean = moveCompleted && nextVehiclePending

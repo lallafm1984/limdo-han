@@ -21,14 +21,14 @@ internal object LimDoPlaygroundTokens {
 }
 
 internal data class MenuTransitionVisuals(
-    val vehicleScale: Float,
+    val symbolScale: Float,
     val symbolAlpha: Float,
 )
 
 internal fun menuTransitionVisuals(progress: Float): MenuTransitionVisuals {
     val bounded = progress.coerceIn(0f, 1f)
     return MenuTransitionVisuals(
-        vehicleScale = 0.82f + (0.18f * bounded),
+        symbolScale = 0.82f + (0.18f * bounded),
         symbolAlpha = bounded,
     )
 }
@@ -61,7 +61,6 @@ internal fun homeEntranceVisuals(progress: Float): HomeEntranceVisuals {
 internal data class LearningMenuVisuals(
     val accent: Color,
     val softSurface: Color,
-    val startingVehicleIndex: Int,
 )
 
 internal enum class LessonCardVisualState {
@@ -109,16 +108,13 @@ internal fun LearningMenu.visuals(): LearningMenuVisuals = when (this) {
     LearningMenu.CONSONANTS -> LearningMenuVisuals(
         accent = Color(0xFF2878B8),
         softSurface = Color(0xFFE5F3FF),
-        startingVehicleIndex = 0,
     )
     LearningMenu.VOWELS -> LearningMenuVisuals(
         accent = Color(0xFFE86B2D),
         softSurface = Color(0xFFFFE8D2),
-        startingVehicleIndex = 1,
     )
     LearningMenu.GANADA -> LearningMenuVisuals(
         accent = Color(0xFF3F8A45),
         softSurface = Color(0xFFE4F4DE),
-        startingVehicleIndex = 5,
     )
 }

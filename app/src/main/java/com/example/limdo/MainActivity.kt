@@ -43,8 +43,6 @@ import androidx.compose.runtime.key
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -92,25 +90,6 @@ private val LimDoColorScheme = lightColorScheme(
     background = Color(0xFFFFF8EC),
     surface = Color(0xFFFFFEFA),
     onSurface = Color(0xFF26332D),
-)
-
-private val LessonRewardStateSaver = listSaver<LessonRewardState, Any>(
-    save = {
-        listOf(it.completedSteps, it.targetSteps, it.successConsumed, it.phase.name)
-    },
-    restore = {
-        LessonRewardState(
-            completedSteps = it[0] as Int,
-            targetSteps = it[1] as Int,
-            successConsumed = it[2] as Boolean,
-            phase = RewardMovePhase.valueOf(it[3] as String),
-        )
-    },
-)
-
-private val RewardOffsetSaver = Saver<Animatable<Float, *>, Float>(
-    save = { it.value },
-    restore = { Animatable(it) },
 )
 
 @Composable
@@ -188,27 +167,21 @@ private fun MenuSelectionTransition(
             .fillMaxSize()
             .background(visuals.softSurface)
             .semantics(mergeDescendants = true) {
-                contentDescription = "${menu.label} 선택 이동, ${menu.icon}"
+                contentDescription = "${menu.label} 선택 이동, ${menu.symbol}"
             },
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = menu.icon,
-                fontSize = 112.sp,
-                modifier = Modifier.graphicsLayer {
-                    scaleX = transition.vehicleScale
-                    scaleY = transition.vehicleScale
-                },
-            )
-            Text(
-                text = menu.symbol,
-                color = visuals.accent,
-                fontSize = 64.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.graphicsLayer { alpha = transition.symbolAlpha },
-            )
-        }
+        Text(
+            text = menu.symbol,
+            color = visuals.accent,
+            fontSize = 96.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.graphicsLayer {
+                alpha = transition.symbolAlpha
+                scaleX = transition.symbolScale
+                scaleY = transition.symbolScale
+            },
+        )
     }
 }
 
@@ -269,8 +242,7 @@ private fun LearningMenuHome(onSelect: (LearningMenu) -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Text(menu.icon, fontSize = 72.sp)
-                    Text(menu.symbol, fontSize = 54.sp, fontWeight = FontWeight.Bold)
+                    Text(menu.symbol, fontSize = 76.sp, fontWeight = FontWeight.Bold)
                     Text(menu.label, fontSize = 26.sp, fontWeight = FontWeight.Bold)
                 }
             }
@@ -304,7 +276,7 @@ private fun LessonSelection(
                 color = Color.White,
                 shape = CircleShape,
             ) { Box(contentAlignment = Alignment.Center) { Text("⌂", fontSize = 36.sp) } }
-            Text("${menu.icon}  ${menu.symbol}", fontSize = 40.sp, fontWeight = FontWeight.Bold)
+            Text(menu.symbol, fontSize = 40.sp, fontWeight = FontWeight.Bold)
         }
         lessons.chunked(7).forEach { rowLessons ->
             Row(
@@ -368,20 +340,10 @@ private fun WritingLesson(
     var lessonIndex by rememberSaveable {
         mutableIntStateOf(KoreanCurriculum.lessons.indexOfFirst { it.id == initialLessonId })
     }
-    var vehicleIndex by rememberSaveable {
-        mutableIntStateOf(menu.visuals().startingVehicleIndex)
-    }
-    var vehicleSuccessArmed by rememberSaveable { mutableStateOf(true) }
-    var nextVehiclePending by rememberSaveable { mutableStateOf(false) }
-    var rewardState by rememberSaveable(stateSaver = LessonRewardStateSaver) {
-        mutableStateOf(LessonRewardState())
-    }
-    val rewardOffset = rememberSaveable(saver = RewardOffsetSaver) { Animatable(0f) }
     val celebrationProgress = remember { Animatable(0f) }
     val retryProgress = remember { Animatable(1f) }
     var retryEvent by rememberSaveable { mutableIntStateOf(0) }
     val currentLesson = KoreanCurriculum.lessons[lessonIndex]
-    val currentVehicle = VehicleCarousel.vehicles[vehicleIndex]
     val retryVisuals = retryAnimationVisuals(retryProgress.value)
 
     LaunchedEffect(retryEvent) {
@@ -404,37 +366,11 @@ private fun WritingLesson(
         }
     }
 
-    LaunchedEffect(rewardState.targetSteps) {
-        if (rewardState.phase == RewardMovePhase.START) {
-            delay(120)
-            rewardState = rewardState.moving()
-        }
-        if (rewardState.phase == RewardMovePhase.MOVING) {
-            for (step in (rewardState.completedSteps + 1)..rewardState.targetSteps) {
-                rewardOffset.animateTo(
-                    targetValue = step.toFloat(),
-                    animationSpec = tween(durationMillis = 280),
-                )
-                if (step < rewardState.targetSteps) delay(100)
-            }
-            rewardState = rewardState.complete()
-        } else if (rewardState.targetSteps == 0) {
-            rewardOffset.snapTo(0f)
-        }
-    }
-
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(menu.visuals().softSurface),
     ) {
-        val rewardVehicleCenterX = RewardPathGeometry.vehicleCenterX(
-            containerWidth = maxWidth.value,
-            containerHeight = maxHeight.value,
-            completedSteps = rewardOffset.value,
-            targetSteps = currentLesson.strokeCount,
-            lesson = currentLesson,
-        )
         val successMarkerCenter = SuccessMarkerGeometry.center(
             containerWidth = maxWidth.value,
             containerHeight = maxHeight.value,
@@ -452,21 +388,12 @@ private fun WritingLesson(
         WritingBoardPreview(
             lesson = currentLesson,
             clearRequest = clearRequest,
-            inputEnabled = !rewardState.inputLocked,
+            inputEnabled = traceResult != GieokTraceResult.SUCCESS,
             demonstrationStrokeIndex = null,
             retryStartMarkerScale = retryVisuals.startMarkerScale,
             onTraceResult = { result, _ ->
-                val vehicleState = VehicleCarouselState(
-                    index = vehicleIndex,
-                    successArmed = vehicleSuccessArmed,
-                    nextVehiclePending = nextVehiclePending,
-                ).onTraceResult(result)
-                vehicleIndex = vehicleState.index
-                vehicleSuccessArmed = vehicleState.successArmed
-                nextVehiclePending = vehicleState.nextVehiclePending
                 traceResult = result
                 if (result.isRetryResult()) retryEvent += 1
-                rewardState = rewardState.onTraceResult(result, currentLesson)
             },
             modifier = Modifier
                 .fillMaxSize()
@@ -475,16 +402,6 @@ private fun WritingLesson(
                     horizontal = LearningShellSpec.CANVAS_HORIZONTAL_PADDING_DP.dp,
                     vertical = LearningShellSpec.CANVAS_VERTICAL_PADDING_DP.dp,
                 ),
-        )
-
-        Image(
-            painter = painterResource(currentVehicle.drawableRes),
-            contentDescription = "${currentVehicle.koreanName} 안내",
-            modifier = Modifier
-                .align(Alignment.Center)
-                .offset(x = (rewardVehicleCenterX - maxWidth.value / 2f).dp, y = (-139).dp)
-                .size(width = 128.dp, height = 86.dp),
-            contentScale = ContentScale.Fit,
         )
 
         if (traceResult != null && traceResult != GieokTraceResult.EMPTY) {
@@ -527,38 +444,16 @@ private fun WritingLesson(
         }
 
         EdgeActionColumns(
-            nextAvailable = rewardState.phase == RewardMovePhase.COMPLETE,
+            nextAvailable = traceResult == GieokTraceResult.SUCCESS,
             onHome = onHome,
             onClear = {
                 clearRequest += 1
-                val vehicleState = VehicleCarouselState(
-                    index = vehicleIndex,
-                    successArmed = vehicleSuccessArmed,
-                    nextVehiclePending = nextVehiclePending,
-                ).clearCurrentInput()
-                vehicleIndex = vehicleState.index
-                vehicleSuccessArmed = vehicleState.successArmed
-                nextVehiclePending = vehicleState.nextVehiclePending
-                rewardState = LessonRewardState()
                 traceResult = null
             },
             onNext = next@{
-                if (!shouldStartNextInitialCue(
-                        moveCompleted = rewardState.phase == RewardMovePhase.COMPLETE,
-                        nextVehiclePending = nextVehiclePending,
-                    )
-                ) return@next
+                if (traceResult != GieokTraceResult.SUCCESS) return@next
 
                 clearRequest += 1
-                val vehicleState = VehicleCarouselState(
-                    index = vehicleIndex,
-                    successArmed = vehicleSuccessArmed,
-                    nextVehiclePending = nextVehiclePending,
-                ).prepareNextInput(moveCompleted = true)
-                vehicleIndex = vehicleState.index
-                vehicleSuccessArmed = vehicleState.successArmed
-                nextVehiclePending = vehicleState.nextVehiclePending
-                rewardState = LessonRewardState()
                 traceResult = null
                 val nextLesson = LearningNavigation.nextLesson(menu, currentLesson)
                 lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == nextLesson.id }

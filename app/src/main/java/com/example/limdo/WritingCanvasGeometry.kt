@@ -192,14 +192,10 @@ internal object WritingCanvasGeometry {
         right: Float,
         apexX: Float,
         barY: Float,
-        apexY: Float,
         bottom: Float,
     ): List<List<CanvasPoint>> {
-        val junction = CanvasPoint(apexX, apexY + (bottom - apexY) * 0.42f)
-        val rightBottom = CanvasPoint(
-            x = junction.x + (right - junction.x) * 0.88f,
-            y = bottom,
-        )
+        val junction = CanvasPoint(apexX, (barY + bottom) / 2f)
+        val rightBottom = CanvasPoint(right, bottom)
         return listOf(
             listOf(
                 CanvasPoint(left, barY),
@@ -215,11 +211,11 @@ internal object WritingCanvasGeometry {
 
     private val ieungTemplate = listOf(circleTemplate(0.50f, 0.50f, 0.42f))
 
-    private val jieutTemplate = jieutBody(0.14f, 0.86f, 0.50f, 0.18f, 0.22f, 0.84f)
+    private val jieutTemplate = jieutBody(0.14f, 0.86f, 0.50f, 0.18f, 0.84f)
 
     private val chieutTemplate = listOf(
         listOf(CanvasPoint(0.34f, 0.07f), CanvasPoint(0.66f, 0.07f)),
-    ) + jieutBody(0.14f, 0.86f, 0.50f, 0.28f, 0.32f, 0.88f)
+    ) + jieutBody(0.14f, 0.86f, 0.50f, 0.28f, 0.88f)
 
     private val kieukTemplate = listOf(
         listOf(
@@ -423,14 +419,14 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
-    private val jaTemplate = jieutBody(0.05f, 0.49f, 0.27f, 0.18f, 0.22f, 0.84f) + listOf(
+    private val jaTemplate = jieutBody(0.05f, 0.49f, 0.27f, 0.18f, 0.84f) + listOf(
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
     private val chaTemplate = listOf(
         listOf(CanvasPoint(0.11f, 0.07f), CanvasPoint(0.43f, 0.07f)),
-    ) + jieutBody(0.05f, 0.49f, 0.27f, 0.28f, 0.32f, 0.88f) + listOf(
+    ) + jieutBody(0.05f, 0.49f, 0.27f, 0.28f, 0.88f) + listOf(
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
@@ -678,7 +674,10 @@ internal object WritingCanvasGeometry {
 
     fun finishMarkerCenterRadius(pathStroke: Float): Float = pathStroke * 0.055f
 
-    fun demonstrationMarkerOuterRadius(pathStroke: Float): Float = pathStroke * 0.20f
+    fun demonstrationMarkerOuterRadius(pathStroke: Float): Float = pathStroke * 0.14f
+
+    fun demonstrationMarkerTravelProgress(progress: Float): Float =
+        0.08f + progress.coerceIn(0f, 1f) * 0.84f
 
     fun gaDemonstrationGuide(width: Float, height: Float, progress: Float): DemonstrationGuide =
         demonstrationGuide(GaLesson, width, height, progress)

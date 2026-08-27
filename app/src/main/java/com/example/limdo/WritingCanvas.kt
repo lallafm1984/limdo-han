@@ -45,7 +45,9 @@ private val StartMarker = Color(0xFF35A77B)
 private val FinishMarker = Color(0xFFFFA93A)
 private val ChildStroke = Color(0xFF174F73)
 private val DirectionArrow = Color(0xFF176B52)
-private val DemonstrationMarker = Color(0xFF0B6F88)
+private val DemonstrationMarker = Color(0xFF36BFAF)
+private val DemonstrationMarkerOutline = Color(0xFF0E5862)
+private val DemonstrationMarkerGlyph = Color(0xFFFFF3C4)
 private val MarkerOutline = Color(0xFF5B3A1C)
 
 private val TraceAttemptSaver = listSaver<TraceAttempt, Any>(
@@ -118,7 +120,7 @@ internal fun WritingCanvas(
     val drawingStateDescription = "선을 그리고 있어요"
     val demonstrationProgress = if (attempt.stroke.points.isEmpty() && attempt.result == null) {
         val transition = rememberInfiniteTransition(label = "${lesson.glyph} 현재 획 시범")
-        val progress by transition.animateFloat(
+        val rawProgress by transition.animateFloat(
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
@@ -133,6 +135,7 @@ internal fun WritingCanvas(
             ),
             label = "시작에서 끝까지",
         )
+        val progress = WritingCanvasGeometry.demonstrationMarkerTravelProgress(rawProgress)
         demonstrationStrokeIndex?.let { strokeIndex ->
             WritingCanvasGeometry.strokeDemonstrationProgress(lesson, strokeIndex, progress)
         } ?: WritingCanvasGeometry.currentStrokeDemonstrationProgress(
@@ -259,7 +262,7 @@ internal fun WritingCanvas(
                 color = GieokGuide,
                 style = Stroke(
                     width = pathStroke,
-                    cap = StrokeCap.Butt,
+                    cap = StrokeCap.Round,
                     join = StrokeJoin.Round,
                 ),
             )
@@ -351,33 +354,44 @@ internal fun WritingCanvas(
                 height = size.height,
                 progress = progress,
             )
-            val markerOutlineWidth = pathStroke * 0.08f * marker.visualScale
             val markerOuterRadius =
                 WritingCanvasGeometry.demonstrationMarkerOuterRadius(pathStroke) * marker.visualScale
             drawCircle(
-                color = MarkerOutline,
-                radius = markerOuterRadius - markerOutlineWidth / 2f,
+                color = DemonstrationMarkerOutline,
+                radius = markerOuterRadius,
                 center = Offset(marker.center.x, marker.center.y),
-                style = Stroke(width = markerOutlineWidth),
             )
             drawCircle(
                 color = DemonstrationMarker,
-                radius = pathStroke * 0.11f * marker.visualScale,
+                radius = markerOuterRadius * 0.72f,
                 center = Offset(marker.center.x, marker.center.y),
-                style = Stroke(width = pathStroke * 0.06f * marker.visualScale),
             )
-            drawDirectionArrow(
-                center = Offset(marker.center.x, marker.center.y),
-                direction = Offset(marker.direction.x, marker.direction.y),
-                length = arrowLength * 0.58f * marker.visualScale,
-                headLength = WritingCanvasGeometry.directionArrowHeadLength(
-                    lesson = lesson,
-                    width = size.width,
-                    height = size.height,
-                    strokeIndex = marker.strokeIndex,
-                    arrowLength = arrowLength * 0.58f * marker.visualScale,
-                ),
-                strokeWidth = arrowStroke * marker.visualScale,
+            val direction = Offset(marker.direction.x, marker.direction.y)
+            val perpendicular = Offset(-direction.y, direction.x)
+            val glyphTip = Offset(
+                x = marker.center.x + direction.x * markerOuterRadius * 0.62f,
+                y = marker.center.y + direction.y * markerOuterRadius * 0.62f,
+            )
+            val glyphBack = Offset(
+                x = marker.center.x - direction.x * markerOuterRadius * 0.36f,
+                y = marker.center.y - direction.y * markerOuterRadius * 0.36f,
+            )
+            val glyphHalfWidth = markerOuterRadius * 0.34f
+            val markerGlyph = Path().apply {
+                moveTo(glyphTip.x, glyphTip.y)
+                lineTo(
+                    glyphBack.x + perpendicular.x * glyphHalfWidth,
+                    glyphBack.y + perpendicular.y * glyphHalfWidth,
+                )
+                lineTo(
+                    glyphBack.x - perpendicular.x * glyphHalfWidth,
+                    glyphBack.y - perpendicular.y * glyphHalfWidth,
+                )
+                close()
+            }
+            drawPath(
+                path = markerGlyph,
+                color = DemonstrationMarkerGlyph,
             )
         }
 

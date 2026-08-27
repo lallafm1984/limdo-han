@@ -4,7 +4,7 @@
     <string name="journey_label">첫 번째 여행</string>
     <string name="lesson_prompt">초록 점에서 시작해 ㄱ을 그려봐!</string>
     <string name="lesson_progress">첫 단계</string>
-    <string name="guide_character">경찰차 안내</string>
+    <string name="guide_character">쓰기 안내</string>
     <string name="guide_message">초록 점에서 시작! 오른쪽, 아래로!</string>
     <string name="trace_success">해냈다! ㄱ 완성!</string>
     <string name="trace_retry_start">괜찮아! 초록 점에서 시작해보자!</string>
