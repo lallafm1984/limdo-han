@@ -294,12 +294,12 @@ class KoreanCurriculumTest {
             val geometry = lessons.getValue(id)
             val pieup = geometry.strokes
             assertTrue(pieup[0].last().x > pieup[0].first().x)
-            assertTrue(pieup[1].last().x > pieup[1].first().x)
+            assertTrue(pieup[1].last().y > pieup[1].first().y)
             assertTrue(pieup[2].last().y > pieup[2].first().y)
-            assertTrue(pieup[3].last().y > pieup[3].first().y)
+            assertTrue(pieup[3].last().x > pieup[3].first().x)
             if (id == LessonId.PA) {
-                assertTrue(pieup[3].first().x - pieup[2].first().x > geometry.strokeWidth)
-                assertTrue(pieup[3].last().x - pieup[2].last().x > geometry.strokeWidth)
+                assertTrue(pieup[2].first().x - pieup[1].first().x > geometry.strokeWidth)
+                assertTrue(pieup[2].last().x - pieup[1].last().x > geometry.strokeWidth)
             }
         }
 
@@ -576,6 +576,57 @@ class KoreanCurriculumTest {
         assertEquals(5, RaLesson.strokeCount)
         assertTrue(SpokenCue.INITIAL_RIEUL.utterance.contains("가운데를 오른쪽"))
         assertTrue(SpokenCue.INITIAL_RA.utterance.contains("가운데를 오른쪽"))
+    }
+
+    @Test
+    fun pieupAndPaShareTheFourStrokeOrderDirectionAndJudgmentContract() {
+        listOf(PieupLesson, PaLesson).forEach { lesson ->
+            val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes.take(4)
+            assertEquals(
+                listOf(
+                    StrokeDirection.RIGHT,
+                    StrokeDirection.DOWN,
+                    StrokeDirection.DOWN,
+                    StrokeDirection.RIGHT,
+                ),
+                lesson.strokeDirections.take(4),
+            )
+            strokes.forEachIndexed { strokeIndex, points ->
+                assertEquals(
+                    "${lesson.glyph} ${strokeIndex + 1}획 정방향",
+                    GieokTraceResult.SUCCESS,
+                    LessonTraceEvaluator.evaluateStroke(
+                        lesson,
+                        width,
+                        height,
+                        strokeIndex,
+                        StrokePath(points),
+                    ),
+                )
+            }
+            assertEquals(
+                "${lesson.glyph} 왼쪽 세로 역방향",
+                GieokTraceResult.WRONG_START,
+                LessonTraceEvaluator.evaluateStroke(
+                    lesson,
+                    width,
+                    height,
+                    1,
+                    StrokePath(strokes[1].reversed()),
+                ),
+            )
+            assertNotEquals(
+                "${lesson.glyph} 아래 가로 선행",
+                GieokTraceResult.SUCCESS,
+                LessonTraceEvaluator.evaluateStroke(
+                    lesson,
+                    width,
+                    height,
+                    0,
+                    StrokePath(strokes[3]),
+                ),
+            )
+        }
     }
 
     @Test

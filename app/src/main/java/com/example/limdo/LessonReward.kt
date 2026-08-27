@@ -159,9 +159,9 @@ internal object KoreanCurriculum {
             successCue = SpokenCue.SUCCESS_PIEUP,
             strokeDirections = listOf(
                 StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.DOWN,
                 StrokeDirection.RIGHT,
-                StrokeDirection.DOWN,
-                StrokeDirection.DOWN,
             ),
         ),
         LessonSpec(
@@ -462,9 +462,9 @@ internal object KoreanCurriculum {
             successCue = SpokenCue.SUCCESS_PA,
             strokeDirections = listOf(
                 StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.DOWN,
                 StrokeDirection.RIGHT,
-                StrokeDirection.DOWN,
-                StrokeDirection.DOWN,
                 StrokeDirection.DOWN,
                 StrokeDirection.RIGHT,
             ),

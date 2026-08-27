@@ -195,12 +195,17 @@ internal object WritingCanvasGeometry {
         ),
     )
 
-    private val pieupTemplate = listOf(
-        listOf(CanvasPoint(0.14f, 0.20f), CanvasPoint(0.86f, 0.20f)),
-        listOf(CanvasPoint(0.14f, 0.80f), CanvasPoint(0.86f, 0.80f)),
-        listOf(CanvasPoint(0.36f, 0.25f), CanvasPoint(0.40f, 0.75f)),
-        listOf(CanvasPoint(0.64f, 0.25f), CanvasPoint(0.60f, 0.75f)),
-    )
+    private fun pieupTemplate(left: Float, right: Float): List<List<CanvasPoint>> {
+        val width = right - left
+        return listOf(
+            listOf(CanvasPoint(left, 0.20f), CanvasPoint(right, 0.20f)),
+            listOf(CanvasPoint(left + width * 0.23f, 0.25f), CanvasPoint(left + width * 0.23f, 0.75f)),
+            listOf(CanvasPoint(left + width * 0.77f, 0.25f), CanvasPoint(left + width * 0.77f, 0.75f)),
+            listOf(CanvasPoint(left, 0.80f), CanvasPoint(right, 0.80f)),
+        )
+    }
+
+    private val pieupTemplate = pieupTemplate(left = 0.14f, right = 0.86f)
 
     private val hieuhTemplate = listOf(
         listOf(CanvasPoint(0.36f, 0.06f), CanvasPoint(0.64f, 0.06f)),
@@ -400,11 +405,7 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
-    private val paTemplate = listOf(
-        listOf(CanvasPoint(0.05f, 0.20f), CanvasPoint(0.49f, 0.20f)),
-        listOf(CanvasPoint(0.05f, 0.80f), CanvasPoint(0.49f, 0.80f)),
-        listOf(CanvasPoint(0.15f, 0.25f), CanvasPoint(0.15f, 0.75f)),
-        listOf(CanvasPoint(0.39f, 0.25f), CanvasPoint(0.39f, 0.75f)),
+    private val paTemplate = pieupTemplate(left = 0.05f, right = 0.49f) + listOf(
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
