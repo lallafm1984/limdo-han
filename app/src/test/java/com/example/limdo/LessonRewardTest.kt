@@ -29,6 +29,9 @@ class LessonRewardTest {
             assertTrue(transition.symbolAlpha in 0f..1f)
             assertTrue(kotlin.math.abs(retry.offsetDp) <= RetryAnimationSpec.MAX_OFFSET_DP)
             assertTrue(retry.startMarkerScale in 1f..RetryAnimationSpec.START_MARKER_MAX_SCALE)
+            assertTrue(retry.feedbackScale in 0.78f..1f)
+            assertTrue(retry.feedbackAlpha in 0f..1f)
+            assertTrue(retry.sparkleAlpha in 0f..1f)
             assertTrue(celebration.starScale in 0f..1.1f)
             assertTrue(celebration.glowAlpha in 0f..1f)
             assertTrue(celebration.confettiAlpha in 0f..1f)
@@ -50,6 +53,27 @@ class LessonRewardTest {
         assertTrue(middle.startMarkerScale > start.startMarkerScale)
         assertEquals(1f, end.startMarkerScale, 0.001f)
         assertEquals(0f, end.offsetDp, 0.001f)
+        assertEquals(0f, end.feedbackAlpha, 0.001f)
+        assertEquals(0f, end.sparkleAlpha, 0.001f)
+    }
+
+    @Test
+    fun retryFeedbackAtlasKeepsTwoSquareCellsAndBoundedPresentation() {
+        assertEquals(2, RetryFeedbackAtlasSpec.COLUMNS)
+        assertEquals(1, RetryFeedbackAtlasSpec.ROWS)
+        assertEquals(
+            RetryFeedbackAtlasSpec.CELL_SIZE_PX * RetryFeedbackAtlasSpec.COLUMNS,
+            RetryFeedbackAtlasSpec.SOURCE_WIDTH_PX,
+        )
+        assertEquals(
+            RetryFeedbackAtlasSpec.CELL_SIZE_PX * RetryFeedbackAtlasSpec.ROWS,
+            RetryFeedbackAtlasSpec.SOURCE_HEIGHT_PX,
+        )
+        assertEquals(0, RetryFeedbackAtlasSpec.RETURN_ARROW_CELL)
+        assertEquals(1, RetryFeedbackAtlasSpec.SPARKLES_CELL)
+        assertTrue(RetryFeedbackAtlasSpec.CONTAINER_WIDTH_DP < 160f)
+        assertTrue(RetryFeedbackAtlasSpec.CONTAINER_HEIGHT_DP < 100f)
+        assertTrue(RetryAnimationSpec.DURATION_MS <= 1_500)
     }
 
     @Test

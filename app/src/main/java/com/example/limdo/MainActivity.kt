@@ -422,9 +422,10 @@ private fun WritingLesson(
                         ),
                 )
             }
-            Text(
-                text = if (traceResult == GieokTraceResult.SUCCESS) "✓" else "↻",
-                modifier = if (traceResult == GieokTraceResult.SUCCESS) {
+            if (traceResult == GieokTraceResult.SUCCESS) {
+                Text(
+                    text = "✓",
+                    modifier =
                     Modifier
                         .align(Alignment.Center)
                         .offset(
@@ -434,19 +435,18 @@ private fun WritingLesson(
                         .size(
                             width = SuccessMarkerGeometry.WIDTH.dp,
                             height = SuccessMarkerGeometry.HEIGHT.dp,
-                        )
-                } else {
-                    Modifier.align(Alignment.TopCenter)
-                },
-                textAlign = TextAlign.Center,
-                color = if (traceResult == GieokTraceResult.SUCCESS) {
-                    Color(0xFF276B50)
-                } else {
-                    Color(0xFF9A5527)
-                },
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-            )
+                        ),
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFF276B50),
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            } else {
+                RetryFeedback(
+                    visuals = retryVisuals,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                )
+            }
         }
 
         EdgeActionColumns(
@@ -466,6 +466,49 @@ private fun WritingLesson(
             },
             modifier = Modifier
                 .fillMaxSize(),
+        )
+    }
+}
+
+@Composable
+private fun RetryFeedback(
+    visuals: RetryAnimationVisuals,
+    modifier: Modifier = Modifier,
+) {
+    val atlas = ImageBitmap.imageResource(R.drawable.limdo_retry_feedback_atlas)
+    Canvas(
+        modifier = modifier
+            .size(
+                width = RetryFeedbackAtlasSpec.CONTAINER_WIDTH_DP.dp,
+                height = RetryFeedbackAtlasSpec.CONTAINER_HEIGHT_DP.dp,
+            )
+            .semantics { contentDescription = "부드러운 되돌림 화살표, 시작점에서 다시 시도" },
+    ) {
+        val cellSize = RetryFeedbackAtlasSpec.CELL_SIZE_PX
+        val sparkleSize = RetryFeedbackAtlasSpec.SPARKLES_SIZE_DP.dp.toPx()
+        drawImage(
+            image = atlas,
+            srcOffset = IntOffset(RetryFeedbackAtlasSpec.SPARKLES_CELL * cellSize, 0),
+            srcSize = IntSize(cellSize, cellSize),
+            dstOffset = IntOffset(
+                ((size.width - sparkleSize) / 2f + 22.dp.toPx()).roundToInt(),
+                ((size.height - sparkleSize) / 2f).roundToInt(),
+            ),
+            dstSize = IntSize(sparkleSize.roundToInt(), sparkleSize.roundToInt()),
+            alpha = visuals.sparkleAlpha,
+        )
+
+        val arrowSize = RetryFeedbackAtlasSpec.RETURN_ARROW_SIZE_DP.dp.toPx() * visuals.feedbackScale
+        drawImage(
+            image = atlas,
+            srcOffset = IntOffset(RetryFeedbackAtlasSpec.RETURN_ARROW_CELL * cellSize, 0),
+            srcSize = IntSize(cellSize, cellSize),
+            dstOffset = IntOffset(
+                ((size.width - arrowSize) / 2f - 12.dp.toPx()).roundToInt(),
+                ((size.height - arrowSize) / 2f).roundToInt(),
+            ),
+            dstSize = IntSize(arrowSize.roundToInt(), arrowSize.roundToInt()),
+            alpha = visuals.feedbackAlpha,
         )
     }
 }
@@ -562,98 +605,6 @@ private fun LessonHeader() {
 }
 
 @Composable
-private fun GuideCharacterCard(
-    traceResult: GieokTraceResult?,
-    modifier: Modifier = Modifier,
-) {
-    val feedback = when (traceResult) {
-        null, GieokTraceResult.EMPTY -> ChildFeedback(
-            symbol = "🐰",
-            visualCue = "●  →  ↓",
-            message = stringResource(R.string.guide_message),
-            backgroundColor = Color(0xFFFFEBCB),
-        )
-        GieokTraceResult.SUCCESS -> ChildFeedback(
-            symbol = "★",
-            visualCue = "✓",
-            message = stringResource(R.string.trace_success),
-            backgroundColor = Color(0xFFDDF2E5),
-        )
-        GieokTraceResult.WRONG_START -> ChildFeedback(
-            symbol = "↻",
-            visualCue = "●  →  ↓",
-            message = stringResource(R.string.trace_retry_start),
-            backgroundColor = Color(0xFFFFEBCB),
-        )
-        GieokTraceResult.WRONG_DIRECTION -> ChildFeedback(
-            symbol = "↻",
-            visualCue = "→  ↓",
-            message = stringResource(R.string.trace_retry_direction),
-            backgroundColor = Color(0xFFFFEBCB),
-        )
-        GieokTraceResult.OFF_GUIDE -> ChildFeedback(
-            symbol = "↻",
-            visualCue = "ㄱ",
-            message = stringResource(R.string.trace_retry_guide),
-            backgroundColor = Color(0xFFFFEBCB),
-        )
-        GieokTraceResult.INCOMPLETE -> ChildFeedback(
-            symbol = "↻",
-            visualCue = "…  ↓",
-            message = stringResource(R.string.trace_retry_finish),
-            backgroundColor = Color(0xFFFFEBCB),
-        )
-    }
-
-    Surface(
-        modifier = modifier.semantics { stateDescription = feedback.message },
-        color = feedback.backgroundColor,
-        shape = RoundedCornerShape(30.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .background(Color(0xFFFFF8EC), CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = feedback.symbol,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 42.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-            Text(
-                modifier = Modifier.padding(top = 6.dp),
-                text = stringResource(R.string.guide_character),
-                color = Color(0xFF7A4A22),
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                modifier = Modifier.padding(top = 4.dp),
-                text = feedback.visualCue,
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 23.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                modifier = Modifier.padding(top = 3.dp),
-                text = feedback.message,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center,
-            )
-        }
-    }
-}
-
-@Composable
 private fun WritingBoardPreview(
     lesson: LessonSpec,
     clearRequest: Int,
@@ -688,13 +639,6 @@ private fun GieokTraceResult?.isRetryResult(): Boolean = when (this) {
     -> true
     GieokTraceResult.SUCCESS, GieokTraceResult.EMPTY, null -> false
 }
-
-private data class ChildFeedback(
-    val symbol: String,
-    val visualCue: String,
-    val message: String,
-    val backgroundColor: Color,
-)
 
 @Composable
 private fun EdgeActionColumns(
