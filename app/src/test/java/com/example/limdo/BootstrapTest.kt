@@ -6,6 +6,26 @@ import org.junit.Test
 
 class BootstrapTest {
     @Test
+    fun guideDotsStayEvenAcrossPolylineCorners() {
+        val dots = WritingCanvasGeometry.evenlySpacedGuideDots(
+            stroke = listOf(
+                CanvasPoint(0f, 0f),
+                CanvasPoint(100f, 0f),
+                CanvasPoint(100f, 100f),
+            ),
+            targetSpacing = 24f,
+        )
+
+        assertEquals(CanvasPoint(0f, 0f), dots.first())
+        assertEquals(CanvasPoint(100f, 100f), dots.last())
+        val pathDistances = dots.map { point ->
+            if (point.y == 0f) point.x else 100f + point.y
+        }
+        val gaps = pathDistances.zipWithNext { start, end -> end - start }
+        gaps.forEach { gap -> assertEquals(gaps.first(), gap, 0.001f) }
+    }
+
+    @Test
     fun testEnvironmentRuns() {
         assertTrue(true)
     }

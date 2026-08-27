@@ -46,6 +46,40 @@ internal object WritingCanvasGeometry {
     private const val FINAL_CONSONANT_GUIDE_STROKE_EM_FRACTION = 0.12f
     private const val CHILD_STROKE_GUIDE_FRACTION = 0.60f
 
+    fun evenlySpacedGuideDots(
+        stroke: List<CanvasPoint>,
+        targetSpacing: Float,
+    ): List<CanvasPoint> {
+        if (stroke.size < 2 || targetSpacing <= 0f) return stroke
+        val segmentLengths = stroke.zipWithNext().map { (start, end) ->
+            sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y))
+        }
+        val totalLength = segmentLengths.sum()
+        if (totalLength == 0f) return listOf(stroke.first())
+        val intervalCount = (totalLength / targetSpacing).toInt().coerceAtLeast(1)
+        val spacing = totalLength / intervalCount
+        return List(intervalCount + 1) { dotIndex ->
+            val distance = spacing * dotIndex
+            var traversed = 0f
+            var segmentIndex = 0
+            while (
+                segmentIndex < segmentLengths.lastIndex &&
+                traversed + segmentLengths[segmentIndex] < distance
+            ) {
+                traversed += segmentLengths[segmentIndex]
+                segmentIndex++
+            }
+            val start = stroke[segmentIndex]
+            val end = stroke[segmentIndex + 1]
+            val segmentLength = segmentLengths[segmentIndex]
+            val fraction = if (segmentLength == 0f) 0f else (distance - traversed) / segmentLength
+            CanvasPoint(
+                x = start.x + (end.x - start.x) * fraction,
+                y = start.y + (end.y - start.y) * fraction,
+            )
+        }
+    }
+
     /**
      * 받침 있는 세로 모음 음절은 받침 없는 `가`를 그대로 축소해 붙이지 않는다.
      * 종성의 높이와 복잡도에 따라 초성·중성이 차지하는 윗칸 비율도 함께 조정한다.
@@ -134,22 +168,24 @@ internal object WritingCanvasGeometry {
         left: Float,
         right: Float,
         bottom: Float,
-    ) = listOf(
-        listOf(
+    ): List<List<CanvasPoint>> {
+        val junction = CanvasPoint(apexX, apexY + (bottom - apexY) * 0.42f)
+        val leftLeg = listOf(
             CanvasPoint(apexX, apexY),
-            CanvasPoint(apexX - 0.01f, apexY + (bottom - apexY) * 0.40f),
-            CanvasPoint(apexX - 0.06f, apexY + (bottom - apexY) * 0.60f),
-            CanvasPoint(apexX - 0.16f, apexY + (bottom - apexY) * 0.76f),
+            CanvasPoint(apexX, apexY + (bottom - apexY) * 0.20f),
+            junction,
+            CanvasPoint(apexX - 0.05f, apexY + (bottom - apexY) * 0.62f),
+            CanvasPoint(apexX - 0.16f, apexY + (bottom - apexY) * 0.80f),
             CanvasPoint(left, bottom),
-        ),
-        listOf(
-            CanvasPoint(apexX, apexY),
-            CanvasPoint(apexX + 0.01f, apexY + (bottom - apexY) * 0.40f),
-            CanvasPoint(apexX + 0.06f, apexY + (bottom - apexY) * 0.60f),
-            CanvasPoint(apexX + 0.16f, apexY + (bottom - apexY) * 0.76f),
+        )
+        val rightLeg = listOf(
+            junction,
+            CanvasPoint(junction.x + (right - junction.x) * 0.18f, junction.y + (bottom - junction.y) * 0.34f),
+            CanvasPoint(junction.x + (right - junction.x) * 0.48f, junction.y + (bottom - junction.y) * 0.62f),
             CanvasPoint(right, bottom),
-        ),
-    )
+        )
+        return listOf(leftLeg, rightLeg)
+    }
 
     private fun jieutBody(
         left: Float,
@@ -160,8 +196,15 @@ internal object WritingCanvasGeometry {
         bottom: Float,
     ): List<List<CanvasPoint>> {
         val legs = siotLegs(apexX, apexY, left, right, bottom)
+        val junction = legs[1].first()
         return listOf(
-            listOf(CanvasPoint(left, barY), CanvasPoint(right, barY), legs[0].first()) + legs[0].drop(1),
+            listOf(
+                CanvasPoint(left, barY),
+                CanvasPoint(right, barY),
+                CanvasPoint(right - (right - apexX) * 0.18f, barY + (junction.y - barY) * 0.34f),
+                CanvasPoint(apexX + (right - apexX) * 0.18f, barY + (junction.y - barY) * 0.72f),
+                junction,
+            ) + legs[0].drop(3),
             legs[1],
         )
     }
@@ -625,13 +668,15 @@ internal object WritingCanvasGeometry {
         .getOrNull(completedStrokeCount)
         ?.last()
 
-    fun startMarkerRadius(pathStroke: Float): Float = pathStroke * 0.48f
+    fun startMarkerRadius(pathStroke: Float): Float = pathStroke * 0.20f
 
-    fun finishMarkerOuterRadius(pathStroke: Float): Float = pathStroke * 0.48f
+    fun finishMarkerOuterRadius(pathStroke: Float): Float = pathStroke * 0.20f
 
-    fun finishMarkerColorRadius(pathStroke: Float): Float = pathStroke * 0.32f
+    fun finishMarkerColorRadius(pathStroke: Float): Float = pathStroke * 0.13f
 
-    fun finishMarkerCenterRadius(pathStroke: Float): Float = pathStroke * 0.14f
+    fun finishMarkerCenterRadius(pathStroke: Float): Float = pathStroke * 0.055f
+
+    fun demonstrationMarkerOuterRadius(pathStroke: Float): Float = pathStroke * 0.20f
 
     fun gaDemonstrationGuide(width: Float, height: Float, progress: Float): DemonstrationGuide =
         demonstrationGuide(GaLesson, width, height, progress)

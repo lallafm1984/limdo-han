@@ -40,11 +40,13 @@ private val PracticeSurface = Color(0x5CFFD84F)
 private val PracticeBorder = Color(0x66FFF4C2)
 private val PracticeGuide = Color(0x4D9B7620)
 private val GieokGuide = Color(0xFFFFFEF6)
+private val TraceCenterGuide = Color(0xFF176B52)
 private val StartMarker = Color(0xFF35A77B)
 private val FinishMarker = Color(0xFFFFA93A)
 private val ChildStroke = Color(0xFF174F73)
 private val DirectionArrow = Color(0xFF176B52)
 private val DemonstrationMarker = Color(0xFF0B6F88)
+private val MarkerOutline = Color(0xFF5B3A1C)
 
 private val TraceAttemptSaver = listSaver<TraceAttempt, Any>(
     save = { attempt ->
@@ -262,6 +264,19 @@ internal fun WritingCanvas(
                 ),
             )
         }
+        glyph.strokes.getOrNull(attempt.completedStrokes.size)?.let { currentStroke ->
+            val dotRadius = pathStroke * 0.04f
+            WritingCanvasGeometry.evenlySpacedGuideDots(
+                stroke = currentStroke,
+                targetSpacing = pathStroke * 0.20f,
+            ).forEach { dot ->
+                drawCircle(
+                    color = TraceCenterGuide,
+                    radius = dotRadius,
+                    center = Offset(dot.x, dot.y),
+                )
+            }
+        }
         val strokeEndpoints = glyph.strokes.flatMap { listOf(it.first(), it.last()) }
         strokeEndpoints.distinct().filter { endpoint ->
             strokeEndpoints.count { it == endpoint } > 1
@@ -313,7 +328,7 @@ internal fun WritingCanvas(
             lesson = lesson,
         )?.let { currentEnd ->
             drawCircle(
-                color = GieokGuide,
+                color = MarkerOutline,
                 radius = WritingCanvasGeometry.finishMarkerOuterRadius(pathStroke),
                 center = Offset(currentEnd.x, currentEnd.y),
             )
@@ -323,7 +338,7 @@ internal fun WritingCanvas(
                 center = Offset(currentEnd.x, currentEnd.y),
             )
             drawCircle(
-                color = GieokGuide,
+                color = MarkerOutline,
                 radius = WritingCanvasGeometry.finishMarkerCenterRadius(pathStroke),
                 center = Offset(currentEnd.x, currentEnd.y),
             )
@@ -336,17 +351,20 @@ internal fun WritingCanvas(
                 height = size.height,
                 progress = progress,
             )
+            val markerOutlineWidth = pathStroke * 0.08f * marker.visualScale
+            val markerOuterRadius =
+                WritingCanvasGeometry.demonstrationMarkerOuterRadius(pathStroke) * marker.visualScale
             drawCircle(
-                color = GieokGuide,
-                radius = pathStroke * 0.27f * marker.visualScale,
+                color = MarkerOutline,
+                radius = markerOuterRadius - markerOutlineWidth / 2f,
                 center = Offset(marker.center.x, marker.center.y),
-                style = Stroke(width = pathStroke * 0.12f * marker.visualScale),
+                style = Stroke(width = markerOutlineWidth),
             )
             drawCircle(
                 color = DemonstrationMarker,
-                radius = pathStroke * 0.20f * marker.visualScale,
+                radius = pathStroke * 0.11f * marker.visualScale,
                 center = Offset(marker.center.x, marker.center.y),
-                style = Stroke(width = pathStroke * 0.08f * marker.visualScale),
+                style = Stroke(width = pathStroke * 0.06f * marker.visualScale),
             )
             drawDirectionArrow(
                 center = Offset(marker.center.x, marker.center.y),

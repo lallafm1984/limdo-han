@@ -338,10 +338,11 @@ class KoreanCurriculumTest {
         assertEquals(bieup[1].last().y, bieup[3].last().y)
 
         val siot = lessons.getValue(LessonId.SIOT).strokes
-        siot.forEach { leg ->
-            assertTrue(leg.size >= 5)
-            assertTrue(abs(leg[1].x - leg[0].x) < abs(leg[1].y - leg[0].y))
-        }
+        assertTrue(siot[0].size >= 5)
+        assertTrue(abs(siot[0][1].x - siot[0][0].x) < abs(siot[0][1].y - siot[0][0].y))
+        assertTrue(siot[1].size >= 4)
+        assertTrue(siot[1][1].x > siot[1][0].x)
+        assertTrue(siot[1][1].y > siot[1][0].y)
 
         val ae = lessons.getValue(LessonId.AE).strokes
         assertTrue(ae[0].last().y > ae[0].first().y)
@@ -540,9 +541,21 @@ class KoreanCurriculumTest {
         listOf(LessonId.SIOT, LessonId.SA).forEach { id ->
             val lesson = lessonById.getValue(id)
             val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
-            assertEquals(strokes[0].first(), strokes[1].first())
+            assertEquals(strokes[0][2], strokes[1].first())
+            assertTrue(strokes[1].first().y > strokes[0].first().y)
             assertTrue(strokes[0].last().x < strokes[0].first().x)
             assertTrue(strokes[1].last().x > strokes[1].first().x)
+            assertEquals(
+                "${lesson.glyph} 둘째 획의 옛 첫 시작점 거부",
+                GieokTraceResult.WRONG_START,
+                LessonTraceEvaluator.evaluateStroke(
+                    lesson,
+                    width,
+                    height,
+                    1,
+                    StrokePath(listOf(strokes[0].first()) + strokes[1].drop(1)),
+                ),
+            )
         }
 
         listOf(LessonId.JIEUT, LessonId.JA).forEach { id ->
@@ -550,8 +563,10 @@ class KoreanCurriculumTest {
             val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
             assertEquals(2, lesson.strokeCount - if (id == LessonId.JA) 2 else 0)
             assertTrue(strokes[0][1].x > strokes[0][0].x)
-            assertEquals(strokes[0][2], strokes[1].first())
-            assertTrue(strokes[0].last().x < strokes[0][2].x)
+            assertEquals(strokes[0][4], strokes[1].first())
+            assertTrue(strokes[0][2].x < strokes[0][1].x)
+            assertTrue(strokes[0][3].x < strokes[0][2].x)
+            assertTrue(strokes[0].last().x < strokes[0][4].x)
             assertTrue(strokes[1].last().x > strokes[1].first().x)
         }
 
@@ -561,7 +576,7 @@ class KoreanCurriculumTest {
             assertEquals(3, lesson.strokeCount - if (id == LessonId.CHA) 2 else 0)
             assertTrue(strokes[0].last().x > strokes[0].first().x)
             assertTrue(strokes[1][1].x > strokes[1][0].x)
-            assertEquals(strokes[1][2], strokes[2].first())
+            assertEquals(strokes[1][4], strokes[2].first())
         }
 
         listOf(LessonId.SIOT, LessonId.SA, LessonId.JIEUT, LessonId.JA, LessonId.CHIEUT, LessonId.CHA)
@@ -732,8 +747,12 @@ class KoreanCurriculumTest {
         assertTrue(ha.take(3).flatten().maxOf { it.x } < ha.drop(3).flatten().minOf { it.x })
 
         val guideStroke = geometry(LessonId.HA).strokeWidth
-        assertTrue(WritingCanvasGeometry.startMarkerRadius(guideStroke) <= guideStroke / 2f)
-        assertTrue(WritingCanvasGeometry.finishMarkerOuterRadius(guideStroke) <= guideStroke / 2f)
+        assertTrue(WritingCanvasGeometry.startMarkerRadius(guideStroke) * 2f <= guideStroke * 0.40f)
+        assertTrue(WritingCanvasGeometry.finishMarkerOuterRadius(guideStroke) * 2f <= guideStroke * 0.40f)
+        assertTrue(
+            WritingCanvasGeometry.demonstrationMarkerOuterRadius(guideStroke) * 2f <=
+                guideStroke * 0.40f,
+        )
         assertTrue(
             WritingCanvasGeometry.finishMarkerCenterRadius(guideStroke) <
                 WritingCanvasGeometry.finishMarkerColorRadius(guideStroke),
