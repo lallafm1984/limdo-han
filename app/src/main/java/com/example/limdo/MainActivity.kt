@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
@@ -59,32 +62,26 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
-    private lateinit var localSpeech: LocalKoreanSpeech
-    private var speechState by mutableStateOf<SpeechPlaybackState>(SpeechPlaybackState.Initializing)
-    private var demonstrationStrokeIndex by mutableStateOf<Int?>(null)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        localSpeech = LocalKoreanSpeech(
-            context = this,
-            onDemonstrationStrokeChanged = { strokeIndex ->
-                runOnUiThread { demonstrationStrokeIndex = strokeIndex }
-            },
-            onStateChanged = { newState -> runOnUiThread { speechState = newState } },
-        )
+        hideSystemBars()
         setContent {
-            LimDoApp(
-                speechState = speechState,
-                demonstrationStrokeIndex = demonstrationStrokeIndex,
-                speak = localSpeech::speakLatest,
-                stopSpeech = localSpeech::stop,
-            )
+            LimDoApp()
         }
     }
 
-    override fun onDestroy() {
-        localSpeech.release()
-        super.onDestroy()
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) hideSystemBars()
+    }
+
+    private fun hideSystemBars() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.systemBars())
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
     }
 }
 
@@ -117,46 +114,29 @@ private val RewardOffsetSaver = Saver<Animatable<Float, *>, Float>(
 )
 
 @Composable
-private fun LimDoApp(
-    speechState: SpeechPlaybackState,
-    demonstrationStrokeIndex: Int?,
-    speak: (SpokenCue) -> Boolean,
-    stopSpeech: () -> Unit,
-) {
+private fun LimDoApp() {
     MaterialTheme(colorScheme = LimDoColorScheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            LearningShell(
-                speechState = speechState,
-                demonstrationStrokeIndex = demonstrationStrokeIndex,
-                speak = speak,
-                stopSpeech = stopSpeech,
-            )
+            LearningShell()
         }
     }
 }
 
 @Composable
-private fun LearningShell(
-    speechState: SpeechPlaybackState,
-    demonstrationStrokeIndex: Int?,
-    speak: (SpokenCue) -> Boolean,
-    stopSpeech: () -> Unit,
-) {
+private fun LearningShell() {
     var destination by remember { mutableStateOf<LearningDestination>(LearningDestination.Home) }
     var nextWritingSessionId by rememberSaveable { mutableIntStateOf(0) }
 
     BackHandler(enabled = destination != LearningDestination.Home) {
-        stopSpeech()
         destination = LearningNavigation.back(destination)
     }
 
     when (val current = destination) {
         LearningDestination.Home -> LearningMenuHome(
             onSelect = {
-                speak(it.spokenCue)
                 destination = LearningDestination.MenuTransition(it)
             },
         )
@@ -180,12 +160,7 @@ private fun LearningShell(
             WritingLesson(
                 initialLessonId = current.lessonId,
                 menu = current.menu,
-                speechState = speechState,
-                demonstrationStrokeIndex = demonstrationStrokeIndex,
-                speak = speak,
-                stopSpeech = stopSpeech,
                 onHome = {
-                    stopSpeech()
                     destination = LearningDestination.Home
                 },
             )
@@ -386,15 +361,10 @@ private fun LessonSelection(
 private fun WritingLesson(
     initialLessonId: LessonId,
     menu: LearningMenu,
-    speechState: SpeechPlaybackState,
-    demonstrationStrokeIndex: Int?,
-    speak: (SpokenCue) -> Boolean,
-    stopSpeech: () -> Unit,
     onHome: () -> Unit,
 ) {
     var clearRequest by rememberSaveable { mutableIntStateOf(0) }
     var traceResult by rememberSaveable { mutableStateOf<GieokTraceResult?>(null) }
-    var traceStrokeIndex by rememberSaveable { mutableIntStateOf(0) }
     var lessonIndex by rememberSaveable {
         mutableIntStateOf(KoreanCurriculum.lessons.indexOfFirst { it.id == initialLessonId })
     }
@@ -410,17 +380,7 @@ private fun WritingLesson(
     val celebrationProgress = remember { Animatable(0f) }
     val retryProgress = remember { Animatable(1f) }
     var retryEvent by rememberSaveable { mutableIntStateOf(0) }
-    var initialSpeechRequested by rememberSaveable { mutableStateOf(false) }
-    var initialSpeechPending by rememberSaveable { mutableStateOf(false) }
-    var successSpeechPending by rememberSaveable { mutableStateOf(false) }
-    var restoredInitialSpeechHandled by remember {
-        mutableStateOf(!initialSpeechPending)
-    }
-    var restoredSuccessSpeechHandled by remember {
-        mutableStateOf(traceResult != GieokTraceResult.SUCCESS)
-    }
     val currentLesson = KoreanCurriculum.lessons[lessonIndex]
-    val currentCue = SpokenCueModel.forResult(traceResult, traceStrokeIndex, currentLesson)
     val currentVehicle = VehicleCarousel.vehicles[vehicleIndex]
     val retryVisuals = retryAnimationVisuals(retryProgress.value)
 
@@ -463,44 +423,6 @@ private fun WritingLesson(
         }
     }
 
-    LaunchedEffect(speechState, initialSpeechRequested) {
-        if (speechState == SpeechPlaybackState.Ready && !initialSpeechRequested) {
-            initialSpeechRequested = true
-            speak(currentLesson.initialCue)
-        }
-    }
-
-    LaunchedEffect(speechState, initialSpeechPending, restoredInitialSpeechHandled) {
-        if (speechState == SpeechPlaybackState.Completed(currentLesson.initialCue) ||
-            speechState == SpeechPlaybackState.Error(currentLesson.initialCue)
-        ) {
-            initialSpeechPending = false
-        } else if (shouldResumeInitialCue(
-                speechState = speechState,
-                initialSpeechPending = initialSpeechPending,
-                alreadyHandled = restoredInitialSpeechHandled,
-            )
-        ) {
-            restoredInitialSpeechHandled = true
-            if (!speak(currentLesson.initialCue)) initialSpeechPending = false
-        }
-    }
-
-    LaunchedEffect(speechState, traceResult, successSpeechPending, restoredSuccessSpeechHandled) {
-        if (speechState == SpeechPlaybackState.Completed(currentLesson.successCue)) {
-            successSpeechPending = false
-        } else if (shouldResumeSuccessCue(
-                speechState = speechState,
-                traceResult = traceResult,
-                successSpeechPending = successSpeechPending,
-                alreadyHandled = restoredSuccessSpeechHandled,
-            )
-        ) {
-            restoredSuccessSpeechHandled = true
-            if (!speak(currentLesson.successCue)) successSpeechPending = false
-        }
-    }
-
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -531,11 +453,9 @@ private fun WritingLesson(
             lesson = currentLesson,
             clearRequest = clearRequest,
             inputEnabled = !rewardState.inputLocked,
-            demonstrationStrokeIndex = demonstrationStrokeIndex,
+            demonstrationStrokeIndex = null,
             retryStartMarkerScale = retryVisuals.startMarkerScale,
-            onTraceResult = { result, strokeIndex ->
-                restoredSuccessSpeechHandled = true
-                successSpeechPending = result == GieokTraceResult.SUCCESS
+            onTraceResult = { result, _ ->
                 val vehicleState = VehicleCarouselState(
                     index = vehicleIndex,
                     successArmed = vehicleSuccessArmed,
@@ -545,12 +465,8 @@ private fun WritingLesson(
                 vehicleSuccessArmed = vehicleState.successArmed
                 nextVehiclePending = vehicleState.nextVehiclePending
                 traceResult = result
-                traceStrokeIndex = strokeIndex
                 if (result.isRetryResult()) retryEvent += 1
                 rewardState = rewardState.onTraceResult(result, currentLesson)
-                if (result != null) {
-                    speak(SpokenCueModel.forResult(result, strokeIndex, currentLesson))
-                }
             },
             modifier = Modifier
                 .fillMaxSize()
@@ -611,19 +527,9 @@ private fun WritingLesson(
         }
 
         EdgeActionColumns(
-            replayVisualState = speechState.replayVisualState,
             nextAvailable = rewardState.phase == RewardMovePhase.COMPLETE,
             onHome = onHome,
-            onReplay = {
-                restoredInitialSpeechHandled = true
-                initialSpeechPending = currentCue == currentLesson.initialCue
-                if (!speak(currentCue)) initialSpeechPending = false
-            },
             onClear = {
-                initialSpeechPending = false
-                restoredSuccessSpeechHandled = true
-                successSpeechPending = false
-                stopSpeech()
                 clearRequest += 1
                 val vehicleState = VehicleCarouselState(
                     index = vehicleIndex,
@@ -635,7 +541,6 @@ private fun WritingLesson(
                 nextVehiclePending = vehicleState.nextVehiclePending
                 rewardState = LessonRewardState()
                 traceResult = null
-                traceStrokeIndex = 0
             },
             onNext = next@{
                 if (!shouldStartNextInitialCue(
@@ -644,11 +549,6 @@ private fun WritingLesson(
                     )
                 ) return@next
 
-                initialSpeechPending = true
-                restoredInitialSpeechHandled = true
-                restoredSuccessSpeechHandled = true
-                successSpeechPending = false
-                stopSpeech()
                 clearRequest += 1
                 val vehicleState = VehicleCarouselState(
                     index = vehicleIndex,
@@ -660,10 +560,8 @@ private fun WritingLesson(
                 nextVehiclePending = vehicleState.nextVehiclePending
                 rewardState = LessonRewardState()
                 traceResult = null
-                traceStrokeIndex = 0
                 val nextLesson = LearningNavigation.nextLesson(menu, currentLesson)
                 lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == nextLesson.id }
-                if (!speak(nextLesson.initialCue)) initialSpeechPending = false
             },
             modifier = Modifier
                 .fillMaxSize(),
@@ -888,10 +786,8 @@ private data class ChildFeedback(
 
 @Composable
 private fun EdgeActionColumns(
-    replayVisualState: ReplayVisualState,
     nextAvailable: Boolean,
     onHome: () -> Unit,
-    onReplay: () -> Unit,
     onClear: () -> Unit,
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
@@ -905,13 +801,6 @@ private fun EdgeActionColumns(
         ) {
             HomeAction(
                 onClick = onHome,
-                modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
-            )
-            ReplayAction(
-                label = stringResource(R.string.action_replay),
-                contentDescription = stringResource(R.string.action_replay_description),
-                visualState = replayVisualState,
-                onClick = onReplay,
                 modifier = Modifier.width(LearningShellSpec.ACTION_COLUMN_WIDTH_DP.dp),
             )
             ClearAction(
@@ -951,67 +840,6 @@ private fun HomeAction(
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text("⌂", color = Color(0xFF7A4A22), fontSize = 30.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Composable
-private fun ReplayAction(
-    label: String,
-    contentDescription: String,
-    visualState: ReplayVisualState,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val available = visualState == ReplayVisualState.AVAILABLE
-    val playing = visualState == ReplayVisualState.PLAYING
-    Surface(
-        onClick = onClick,
-        enabled = available,
-        modifier = modifier
-            .heightIn(min = 64.dp)
-            .semantics(mergeDescendants = true) {
-                this.contentDescription = when (visualState) {
-                    ReplayVisualState.PLAYING -> "$contentDescription, 안내 재생 중, 사용 불가"
-                    ReplayVisualState.AVAILABLE -> "$contentDescription, 음성 안내 사용 가능"
-                    ReplayVisualState.UNAVAILABLE -> "$contentDescription, 음성 안내 사용 불가"
-                }
-                stateDescription = when (visualState) {
-                    ReplayVisualState.PLAYING -> "안내 재생 중, 사용 불가"
-                    ReplayVisualState.AVAILABLE -> "음성 안내 사용 가능"
-                    ReplayVisualState.UNAVAILABLE -> "음성 안내 사용 불가"
-                }
-            },
-        color = when (visualState) {
-            ReplayVisualState.PLAYING -> Color(0xFFDDEEFF)
-            ReplayVisualState.AVAILABLE -> Color(0xFFDCEDE5)
-            ReplayVisualState.UNAVAILABLE -> Color(0xFFD8D4CC)
-        },
-        shape = RoundedCornerShape(20.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = when (visualState) {
-                    ReplayVisualState.PLAYING -> "🔊 )))"
-                    ReplayVisualState.AVAILABLE -> "🔊"
-                    ReplayVisualState.UNAVAILABLE -> "🔇"
-                },
-                fontSize = 24.sp,
-            )
-            Text(
-                text = label,
-                color = when {
-                    playing -> Color(0xFF24577A)
-                    available -> Color(0xFF285A46)
-                    else -> Color(0xFF68645E)
-                },
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-            )
         }
     }
 }

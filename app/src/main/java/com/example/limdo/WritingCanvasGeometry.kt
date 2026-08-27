@@ -195,17 +195,19 @@ internal object WritingCanvasGeometry {
         apexY: Float,
         bottom: Float,
     ): List<List<CanvasPoint>> {
-        val legs = siotLegs(apexX, apexY, left, right, bottom)
-        val junction = legs[1].first()
+        val junction = CanvasPoint(apexX, apexY + (bottom - apexY) * 0.42f)
+        val rightBottom = CanvasPoint(
+            x = junction.x + (right - junction.x) * 0.88f,
+            y = bottom,
+        )
         return listOf(
             listOf(
                 CanvasPoint(left, barY),
                 CanvasPoint(right, barY),
-                CanvasPoint(right - (right - apexX) * 0.18f, barY + (junction.y - barY) * 0.34f),
-                CanvasPoint(apexX + (right - apexX) * 0.18f, barY + (junction.y - barY) * 0.72f),
                 junction,
-            ) + legs[0].drop(3),
-            legs[1],
+                CanvasPoint(left, bottom),
+            ),
+            listOf(junction, rightBottom),
         )
     }
 

@@ -562,11 +562,12 @@ class KoreanCurriculumTest {
             val lesson = lessonById.getValue(id)
             val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
             assertEquals(2, lesson.strokeCount - if (id == LessonId.JA) 2 else 0)
+            assertEquals(4, strokes[0].size)
+            assertEquals(2, strokes[1].size)
             assertTrue(strokes[0][1].x > strokes[0][0].x)
-            assertEquals(strokes[0][4], strokes[1].first())
+            assertEquals(strokes[0][2], strokes[1].first())
             assertTrue(strokes[0][2].x < strokes[0][1].x)
             assertTrue(strokes[0][3].x < strokes[0][2].x)
-            assertTrue(strokes[0].last().x < strokes[0][4].x)
             assertTrue(strokes[1].last().x > strokes[1].first().x)
         }
 
@@ -575,8 +576,10 @@ class KoreanCurriculumTest {
             val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
             assertEquals(3, lesson.strokeCount - if (id == LessonId.CHA) 2 else 0)
             assertTrue(strokes[0].last().x > strokes[0].first().x)
+            assertEquals(4, strokes[1].size)
+            assertEquals(2, strokes[2].size)
             assertTrue(strokes[1][1].x > strokes[1][0].x)
-            assertEquals(strokes[1][4], strokes[2].first())
+            assertEquals(strokes[1][2], strokes[2].first())
         }
 
         listOf(LessonId.SIOT, LessonId.SA, LessonId.JIEUT, LessonId.JA, LessonId.CHIEUT, LessonId.CHA)
