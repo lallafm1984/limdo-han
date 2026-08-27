@@ -9,6 +9,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -46,9 +47,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -56,8 +59,11 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -417,7 +423,7 @@ private fun WritingLesson(
                 )
             }
             Text(
-                text = if (traceResult == GieokTraceResult.SUCCESS) "★  ✓" else "↻",
+                text = if (traceResult == GieokTraceResult.SUCCESS) "✓" else "↻",
                 modifier = if (traceResult == GieokTraceResult.SUCCESS) {
                     Modifier
                         .align(Alignment.Center)
@@ -470,41 +476,52 @@ private fun SuccessCelebration(
     modifier: Modifier = Modifier,
 ) {
     val visuals = successCelebrationVisuals(progress)
+    val atlas = ImageBitmap.imageResource(R.drawable.limdo_success_feedback_atlas)
     Box(
         modifier = modifier
-            .size(width = 156.dp, height = 112.dp)
+            .size(
+                width = SuccessFeedbackAtlasSpec.CONTAINER_WIDTH_DP.dp,
+                height = SuccessFeedbackAtlasSpec.CONTAINER_HEIGHT_DP.dp,
+            )
             .semantics { contentDescription = "성공 별빛과 종이조각" },
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = "✦",
-            color = Color(0xFFFFD23F),
-            fontSize = 88.sp,
-            modifier = Modifier.graphicsLayer {
-                alpha = visuals.glowAlpha
-                scaleX = 1.25f
-                scaleY = 1.25f
-            },
-        )
-        Text(
-            text = "◆  ●  ◆\n  ●  ◆",
-            color = Color(0xFFE86A5A),
-            fontSize = 19.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.graphicsLayer {
-                alpha = visuals.confettiAlpha
-                translationY = -22.dp.toPx() * progress
-            },
-        )
-        Text(
-            text = "★",
-            color = Color(0xFF276B50),
-            fontSize = 50.sp,
-            modifier = Modifier.graphicsLayer {
-                scaleX = visuals.starScale
-                scaleY = visuals.starScale
-            },
-        )
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val cellSize = SuccessFeedbackAtlasSpec.CELL_SIZE_PX
+            val confettiSize = SuccessFeedbackAtlasSpec.CONFETTI_SIZE_DP.dp.toPx()
+            val confettiTravel = SuccessFeedbackAtlasSpec.CONFETTI_TRAVEL_DP.dp.toPx()
+            drawImage(
+                image = atlas,
+                srcOffset = IntOffset(
+                    x = SuccessFeedbackAtlasSpec.CONFETTI_CELL * cellSize,
+                    y = 0,
+                ),
+                srcSize = IntSize(cellSize, cellSize),
+                dstOffset = IntOffset(
+                    x = ((size.width - confettiSize) / 2f).roundToInt(),
+                    y = ((size.height - confettiSize) / 2f - confettiTravel * progress)
+                        .roundToInt(),
+                ),
+                dstSize = IntSize(confettiSize.roundToInt(), confettiSize.roundToInt()),
+                alpha = visuals.confettiAlpha,
+            )
+
+            val starSize = SuccessFeedbackAtlasSpec.STAR_SIZE_DP.dp.toPx() * visuals.starScale
+            drawImage(
+                image = atlas,
+                srcOffset = IntOffset(
+                    x = SuccessFeedbackAtlasSpec.STAR_CELL * cellSize,
+                    y = 0,
+                ),
+                srcSize = IntSize(cellSize, cellSize),
+                dstOffset = IntOffset(
+                    x = ((size.width - starSize) / 2f).roundToInt(),
+                    y = ((size.height - starSize) / 2f).roundToInt(),
+                ),
+                dstSize = IntSize(starSize.roundToInt(), starSize.roundToInt()),
+                alpha = visuals.glowAlpha.coerceAtLeast(visuals.starScale.coerceAtMost(1f)),
+            )
+        }
     }
 }
 

@@ -4,6 +4,22 @@ internal object SuccessCelebrationSpec {
     const val DURATION_MS = 1_200
 }
 
+internal object SuccessFeedbackAtlasSpec {
+    const val COLUMNS = 2
+    const val ROWS = 1
+    const val SOURCE_WIDTH_PX = 1_774
+    const val SOURCE_HEIGHT_PX = 887
+    const val CELL_SIZE_PX = 887
+    const val STAR_CELL = 0
+    const val CONFETTI_CELL = 1
+
+    const val CONTAINER_WIDTH_DP = 140f
+    const val CONTAINER_HEIGHT_DP = 104f
+    const val STAR_SIZE_DP = 74f
+    const val CONFETTI_SIZE_DP = 96f
+    const val CONFETTI_TRAVEL_DP = 10f
+}
+
 internal data class SuccessCelebrationVisuals(
     val starScale: Float,
     val glowAlpha: Float,

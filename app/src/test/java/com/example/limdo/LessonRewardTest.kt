@@ -71,6 +71,27 @@ class LessonRewardTest {
     }
 
     @Test
+    fun successFeedbackAtlasKeepsTwoSquareCellsAndBoundedPresentation() {
+        assertEquals(2, SuccessFeedbackAtlasSpec.COLUMNS)
+        assertEquals(1, SuccessFeedbackAtlasSpec.ROWS)
+        assertEquals(
+            SuccessFeedbackAtlasSpec.CELL_SIZE_PX * SuccessFeedbackAtlasSpec.COLUMNS,
+            SuccessFeedbackAtlasSpec.SOURCE_WIDTH_PX,
+        )
+        assertEquals(
+            SuccessFeedbackAtlasSpec.CELL_SIZE_PX * SuccessFeedbackAtlasSpec.ROWS,
+            SuccessFeedbackAtlasSpec.SOURCE_HEIGHT_PX,
+        )
+        assertEquals(0, SuccessFeedbackAtlasSpec.STAR_CELL)
+        assertEquals(1, SuccessFeedbackAtlasSpec.CONFETTI_CELL)
+        assertTrue(
+            SuccessFeedbackAtlasSpec.CONTAINER_WIDTH_DP <= SuccessMarkerGeometry.WIDTH,
+        )
+        assertTrue(SuccessFeedbackAtlasSpec.STAR_SIZE_DP <= SuccessFeedbackAtlasSpec.CONTAINER_HEIGHT_DP)
+        assertTrue(SuccessFeedbackAtlasSpec.CONFETTI_SIZE_DP <= SuccessFeedbackAtlasSpec.CONTAINER_HEIGHT_DP)
+    }
+
+    @Test
     fun lessonsKeepTheirEducationalStrokeCounts() {
         assertEquals(1, GieokLesson.strokeCount)
         assertEquals(3, GaLesson.strokeCount)
