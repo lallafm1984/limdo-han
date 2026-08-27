@@ -34,7 +34,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,7 +53,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -116,22 +114,14 @@ private fun LimDoApp() {
 private fun LearningShell() {
     var destination by remember { mutableStateOf<LearningDestination>(LearningDestination.Home) }
     var nextWritingSessionId by rememberSaveable { mutableIntStateOf(0) }
-    val applicationContext = LocalContext.current.applicationContext
-    val heroVoice = remember(applicationContext) { LocalHeroVoice(applicationContext) }
-
-    DisposableEffect(heroVoice) {
-        onDispose { heroVoice.release() }
-    }
 
     BackHandler(enabled = destination != LearningDestination.Home) {
-        heroVoice.stop("back")
         destination = LearningNavigation.back(destination)
     }
 
     when (val current = destination) {
         LearningDestination.Home -> LearningMenuHome(
             onSelect = {
-                heroVoice.play(HeroVoiceCue.forMenu(it))
                 destination = LearningDestination.MenuTransition(it)
             },
         )
@@ -155,11 +145,7 @@ private fun LearningShell() {
             WritingLesson(
                 initialLessonId = current.lessonId,
                 menu = current.menu,
-                onHome = {
-                    heroVoice.stop("home")
-                    destination = LearningDestination.Home
-                },
-                heroVoice = heroVoice,
+                onHome = { destination = LearningDestination.Home },
             )
         }
     }
@@ -352,7 +338,6 @@ private fun WritingLesson(
     initialLessonId: LessonId,
     menu: LearningMenu,
     onHome: () -> Unit,
-    heroVoice: LocalHeroVoice,
 ) {
     var clearRequest by rememberSaveable { mutableIntStateOf(0) }
     var traceResult by rememberSaveable { mutableStateOf<GieokTraceResult?>(null) }
@@ -364,10 +349,6 @@ private fun WritingLesson(
     var retryEvent by rememberSaveable { mutableIntStateOf(0) }
     val currentLesson = KoreanCurriculum.lessons[lessonIndex]
     val retryVisuals = retryAnimationVisuals(retryProgress.value)
-
-    LaunchedEffect(currentLesson.id) {
-        heroVoice.play(HeroVoiceCue.WRITING_START)
-    }
 
     LaunchedEffect(retryEvent) {
         if (retryEvent > 0) {
@@ -417,7 +398,6 @@ private fun WritingLesson(
             onTraceResult = { result, _ ->
                 traceResult = result
                 if (result.isRetryResult()) retryEvent += 1
-                HeroVoiceCue.forTraceResult(result)?.let(heroVoice::play)
             },
             modifier = Modifier
                 .fillMaxSize()
