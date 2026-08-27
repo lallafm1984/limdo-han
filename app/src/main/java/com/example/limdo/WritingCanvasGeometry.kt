@@ -128,61 +128,53 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.24f, 0.88f), CanvasPoint(0.76f, 0.88f)),
     )
 
-    private val siotTemplate = listOf(
+    private fun siotLegs(
+        apexX: Float,
+        apexY: Float,
+        left: Float,
+        right: Float,
+        bottom: Float,
+    ) = listOf(
         listOf(
-            CanvasPoint(0.50f, 0.12f),
-            CanvasPoint(0.49f, 0.40f),
-            CanvasPoint(0.44f, 0.54f),
-            CanvasPoint(0.34f, 0.65f),
-            CanvasPoint(0.16f, 0.82f),
+            CanvasPoint(apexX, apexY),
+            CanvasPoint(apexX - 0.01f, apexY + (bottom - apexY) * 0.40f),
+            CanvasPoint(apexX - 0.06f, apexY + (bottom - apexY) * 0.60f),
+            CanvasPoint(apexX - 0.16f, apexY + (bottom - apexY) * 0.76f),
+            CanvasPoint(left, bottom),
         ),
         listOf(
-            CanvasPoint(0.50f, 0.12f),
-            CanvasPoint(0.51f, 0.40f),
-            CanvasPoint(0.56f, 0.54f),
-            CanvasPoint(0.66f, 0.65f),
-            CanvasPoint(0.84f, 0.82f),
+            CanvasPoint(apexX, apexY),
+            CanvasPoint(apexX + 0.01f, apexY + (bottom - apexY) * 0.40f),
+            CanvasPoint(apexX + 0.06f, apexY + (bottom - apexY) * 0.60f),
+            CanvasPoint(apexX + 0.16f, apexY + (bottom - apexY) * 0.76f),
+            CanvasPoint(right, bottom),
         ),
     )
+
+    private fun jieutBody(
+        left: Float,
+        right: Float,
+        apexX: Float,
+        barY: Float,
+        apexY: Float,
+        bottom: Float,
+    ): List<List<CanvasPoint>> {
+        val legs = siotLegs(apexX, apexY, left, right, bottom)
+        return listOf(
+            listOf(CanvasPoint(left, barY), CanvasPoint(right, barY), legs[0].first()) + legs[0].drop(1),
+            legs[1],
+        )
+    }
+
+    private val siotTemplate = siotLegs(0.50f, 0.12f, 0.16f, 0.84f, 0.82f)
 
     private val ieungTemplate = listOf(circleTemplate(0.50f, 0.50f, 0.42f))
 
-    private val jieutTemplate = listOf(
-        listOf(CanvasPoint(0.16f, 0.18f), CanvasPoint(0.84f, 0.18f)),
-        listOf(
-            CanvasPoint(0.50f, 0.22f),
-            CanvasPoint(0.49f, 0.48f),
-            CanvasPoint(0.43f, 0.58f),
-            CanvasPoint(0.32f, 0.68f),
-            CanvasPoint(0.14f, 0.84f),
-        ),
-        listOf(
-            CanvasPoint(0.50f, 0.22f),
-            CanvasPoint(0.51f, 0.48f),
-            CanvasPoint(0.57f, 0.58f),
-            CanvasPoint(0.68f, 0.68f),
-            CanvasPoint(0.86f, 0.84f),
-        ),
-    )
+    private val jieutTemplate = jieutBody(0.14f, 0.86f, 0.50f, 0.18f, 0.22f, 0.84f)
 
     private val chieutTemplate = listOf(
         listOf(CanvasPoint(0.34f, 0.07f), CanvasPoint(0.66f, 0.07f)),
-        listOf(CanvasPoint(0.16f, 0.28f), CanvasPoint(0.84f, 0.28f)),
-        listOf(
-            CanvasPoint(0.50f, 0.32f),
-            CanvasPoint(0.49f, 0.56f),
-            CanvasPoint(0.43f, 0.64f),
-            CanvasPoint(0.32f, 0.74f),
-            CanvasPoint(0.14f, 0.88f),
-        ),
-        listOf(
-            CanvasPoint(0.50f, 0.32f),
-            CanvasPoint(0.51f, 0.56f),
-            CanvasPoint(0.57f, 0.64f),
-            CanvasPoint(0.68f, 0.74f),
-            CanvasPoint(0.86f, 0.88f),
-        ),
-    )
+    ) + jieutBody(0.14f, 0.86f, 0.50f, 0.28f, 0.32f, 0.88f)
 
     private val kieukTemplate = listOf(
         listOf(
@@ -370,21 +362,7 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
-    private val saTemplate = listOf(
-        listOf(
-            CanvasPoint(0.27f, 0.12f),
-            CanvasPoint(0.27f, 0.40f),
-            CanvasPoint(0.24f, 0.54f),
-            CanvasPoint(0.16f, 0.67f),
-            CanvasPoint(0.05f, 0.84f),
-        ),
-        listOf(
-            CanvasPoint(0.27f, 0.12f),
-            CanvasPoint(0.27f, 0.40f),
-            CanvasPoint(0.30f, 0.54f),
-            CanvasPoint(0.38f, 0.67f),
-            CanvasPoint(0.49f, 0.84f),
-        ),
+    private val saTemplate = siotLegs(0.27f, 0.12f, 0.05f, 0.49f, 0.84f) + listOf(
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
@@ -395,43 +373,14 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
-    private val jaTemplate = listOf(
-        listOf(CanvasPoint(0.05f, 0.18f), CanvasPoint(0.49f, 0.18f)),
-        listOf(
-            CanvasPoint(0.27f, 0.22f),
-            CanvasPoint(0.27f, 0.48f),
-            CanvasPoint(0.23f, 0.60f),
-            CanvasPoint(0.16f, 0.70f),
-            CanvasPoint(0.05f, 0.84f),
-        ),
-        listOf(
-            CanvasPoint(0.27f, 0.22f),
-            CanvasPoint(0.27f, 0.48f),
-            CanvasPoint(0.31f, 0.60f),
-            CanvasPoint(0.38f, 0.70f),
-            CanvasPoint(0.49f, 0.84f),
-        ),
+    private val jaTemplate = jieutBody(0.05f, 0.49f, 0.27f, 0.18f, 0.22f, 0.84f) + listOf(
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
     private val chaTemplate = listOf(
         listOf(CanvasPoint(0.11f, 0.07f), CanvasPoint(0.43f, 0.07f)),
-        listOf(CanvasPoint(0.05f, 0.28f), CanvasPoint(0.49f, 0.28f)),
-        listOf(
-            CanvasPoint(0.27f, 0.32f),
-            CanvasPoint(0.27f, 0.56f),
-            CanvasPoint(0.23f, 0.66f),
-            CanvasPoint(0.16f, 0.74f),
-            CanvasPoint(0.05f, 0.88f),
-        ),
-        listOf(
-            CanvasPoint(0.27f, 0.32f),
-            CanvasPoint(0.27f, 0.56f),
-            CanvasPoint(0.31f, 0.66f),
-            CanvasPoint(0.38f, 0.74f),
-            CanvasPoint(0.49f, 0.88f),
-        ),
+    ) + jieutBody(0.05f, 0.49f, 0.27f, 0.28f, 0.32f, 0.88f) + listOf(
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )

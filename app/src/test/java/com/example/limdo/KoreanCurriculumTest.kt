@@ -233,13 +233,13 @@ class KoreanCurriculumTest {
             LessonId.BIEUP to 4,
             LessonId.SIOT to 2,
             LessonId.AE to 3,
-            LessonId.JIEUT to 3,
-            LessonId.CHIEUT to 4,
+            LessonId.JIEUT to 2,
+            LessonId.CHIEUT to 3,
             LessonId.TIEUT to 3,
             LessonId.PIEUP to 4,
             LessonId.HIEUH to 3,
-            LessonId.JA to 5,
-            LessonId.CHA to 6,
+            LessonId.JA to 4,
+            LessonId.CHA to 5,
             LessonId.TA to 5,
             LessonId.PA to 6,
             LessonId.HA to 5,
@@ -266,19 +266,18 @@ class KoreanCurriculumTest {
         assertTrue(ae[2].last().y > ae[2].first().y)
 
         val jieut = lessons.getValue(LessonId.JIEUT).strokes
-        assertTrue(jieut[0].last().x > jieut[0].first().x)
-        jieut.drop(1).forEach { leg ->
-            assertTrue(leg.size >= 5)
-            assertTrue(leg.last().y > leg.first().y)
-        }
+        assertTrue(jieut[0][1].x > jieut[0][0].x)
+        assertTrue(jieut[0].last().x < jieut[0][1].x)
+        assertTrue(jieut[0].last().y > jieut[0][1].y)
+        assertTrue(jieut[1].last().y > jieut[1].first().y)
 
         listOf(LessonId.CHIEUT, LessonId.CHA).forEach { id ->
             val chieut = lessons.getValue(id).strokes
             val shortTop = chieut[0]
             val longBar = chieut[1]
-            assertTrue(shortTop.last().x - shortTop.first().x < longBar.last().x - longBar.first().x)
+            assertTrue(shortTop.last().x - shortTop.first().x < longBar[1].x - longBar[0].x)
+            assertTrue(longBar.last().y > longBar.first().y)
             assertTrue(chieut[2].last().y > chieut[2].first().y)
-            assertTrue(chieut[3].last().y > chieut[3].first().y)
         }
 
         listOf(LessonId.TIEUT, LessonId.TA).forEach { id ->
@@ -449,6 +448,82 @@ class KoreanCurriculumTest {
             val radii = circle.dropLast(1).map { hypot(it.x - centerX, it.y - centerY) }
             assertTrue(radii.max() - radii.min() < 0.01f)
         }
+    }
+
+    @Test
+    fun siotJieutChieutFamiliesShareConnectedStrokeDirectionAndJudgmentContract() {
+        val lessonById = KoreanCurriculum.lessons.associateBy { it.id }
+
+        listOf(LessonId.SIOT, LessonId.SA).forEach { id ->
+            val lesson = lessonById.getValue(id)
+            val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
+            assertEquals(strokes[0].first(), strokes[1].first())
+            assertTrue(strokes[0].last().x < strokes[0].first().x)
+            assertTrue(strokes[1].last().x > strokes[1].first().x)
+        }
+
+        listOf(LessonId.JIEUT, LessonId.JA).forEach { id ->
+            val lesson = lessonById.getValue(id)
+            val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
+            assertEquals(2, lesson.strokeCount - if (id == LessonId.JA) 2 else 0)
+            assertTrue(strokes[0][1].x > strokes[0][0].x)
+            assertEquals(strokes[0][2], strokes[1].first())
+            assertTrue(strokes[0].last().x < strokes[0][2].x)
+            assertTrue(strokes[1].last().x > strokes[1].first().x)
+        }
+
+        listOf(LessonId.CHIEUT, LessonId.CHA).forEach { id ->
+            val lesson = lessonById.getValue(id)
+            val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
+            assertEquals(3, lesson.strokeCount - if (id == LessonId.CHA) 2 else 0)
+            assertTrue(strokes[0].last().x > strokes[0].first().x)
+            assertTrue(strokes[1][1].x > strokes[1][0].x)
+            assertEquals(strokes[1][2], strokes[2].first())
+        }
+
+        listOf(LessonId.SIOT, LessonId.SA, LessonId.JIEUT, LessonId.JA, LessonId.CHIEUT, LessonId.CHA)
+            .forEach { id ->
+                val lesson = lessonById.getValue(id)
+                val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
+                val rightLegIndex = when (id) {
+                    LessonId.SIOT, LessonId.SA -> 1
+                    LessonId.JIEUT, LessonId.JA -> 1
+                    else -> 2
+                }
+                assertEquals(
+                    "${lesson.glyph} 오른쪽 사선 정방향",
+                    GieokTraceResult.SUCCESS,
+                    LessonTraceEvaluator.evaluateStroke(
+                        lesson,
+                        width,
+                        height,
+                        rightLegIndex,
+                        StrokePath(strokes[rightLegIndex]),
+                    ),
+                )
+                assertEquals(
+                    "${lesson.glyph} 오른쪽 사선 역방향",
+                    GieokTraceResult.WRONG_START,
+                    LessonTraceEvaluator.evaluateStroke(
+                        lesson,
+                        width,
+                        height,
+                        rightLegIndex,
+                        StrokePath(strokes[rightLegIndex].reversed()),
+                    ),
+                )
+                assertNotEquals(
+                    "${lesson.glyph} 잘못된 첫 획 순서",
+                    GieokTraceResult.SUCCESS,
+                    LessonTraceEvaluator.evaluateStroke(
+                        lesson,
+                        width,
+                        height,
+                        0,
+                        StrokePath(strokes[rightLegIndex]),
+                    ),
+                )
+            }
     }
 
     @Test
