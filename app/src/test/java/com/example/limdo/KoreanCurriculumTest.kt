@@ -13,6 +13,89 @@ class KoreanCurriculumTest {
     private val safeInset = 24f
 
     @Test
+    fun basicJamoMatchTheTwentyFourEntryReferenceStrokeMatrix() {
+        val reference = linkedMapOf(
+            "ㄱ" to listOf(StrokeDirection.RIGHT),
+            "ㄴ" to listOf(StrokeDirection.DOWN),
+            "ㄷ" to listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN),
+            "ㄹ" to listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN),
+            "ㅁ" to listOf(StrokeDirection.DOWN, StrokeDirection.RIGHT, StrokeDirection.RIGHT),
+            "ㅂ" to listOf(StrokeDirection.DOWN, StrokeDirection.DOWN, StrokeDirection.RIGHT, StrokeDirection.RIGHT),
+            "ㅅ" to listOf(StrokeDirection.DOWN, StrokeDirection.DOWN),
+            "ㅇ" to listOf(StrokeDirection.LEFT),
+            "ㅈ" to listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN),
+            "ㅊ" to listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN),
+            "ㅋ" to listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT),
+            "ㅌ" to listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN),
+            "ㅍ" to listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.DOWN, StrokeDirection.RIGHT),
+            "ㅎ" to listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.LEFT),
+            "ㅏ" to listOf(StrokeDirection.DOWN, StrokeDirection.RIGHT),
+            "ㅑ" to listOf(StrokeDirection.DOWN, StrokeDirection.RIGHT, StrokeDirection.RIGHT),
+            "ㅓ" to listOf(StrokeDirection.DOWN, StrokeDirection.LEFT),
+            "ㅕ" to listOf(StrokeDirection.DOWN, StrokeDirection.LEFT, StrokeDirection.LEFT),
+            "ㅗ" to listOf(StrokeDirection.RIGHT, StrokeDirection.UP),
+            "ㅛ" to listOf(StrokeDirection.RIGHT, StrokeDirection.UP, StrokeDirection.UP),
+            "ㅜ" to listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN),
+            "ㅠ" to listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.DOWN),
+            "ㅡ" to listOf(StrokeDirection.RIGHT),
+            "ㅣ" to listOf(StrokeDirection.DOWN),
+        )
+        val lessons = KoreanCurriculum.lessons.filter {
+            it.stage == CurriculumStage.CONSONANTS ||
+                (it.stage == CurriculumStage.VOWELS && it.id != LessonId.AE)
+        }
+
+        assertEquals(reference.keys.toList(), lessons.map { it.glyph })
+        lessons.forEach { lesson ->
+            val expectedDirections = requireNotNull(reference[lesson.glyph])
+            val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
+            assertEquals("${lesson.glyph} 획수", expectedDirections.size, lesson.strokeCount)
+            assertEquals("${lesson.glyph} geometry 획수", expectedDirections.size, strokes.size)
+            assertEquals("${lesson.glyph} 참고 방향", expectedDirections, lesson.strokeDirections)
+            assertEquals("${lesson.glyph} 초기 음성", lesson.initialCue, SpokenCueModel.forResult(null, lesson = lesson))
+
+            strokes.forEachIndexed { strokeIndex, stroke ->
+                assertEquals(
+                    "${lesson.glyph} ${strokeIndex + 1}획 정방향",
+                    GieokTraceResult.SUCCESS,
+                    LessonTraceEvaluator.evaluateStroke(
+                        lesson,
+                        width,
+                        height,
+                        strokeIndex,
+                        StrokePath(stroke),
+                    ),
+                )
+                assertNotEquals(
+                    "${lesson.glyph} ${strokeIndex + 1}획 역방향",
+                    GieokTraceResult.SUCCESS,
+                    LessonTraceEvaluator.evaluateStroke(
+                        lesson,
+                        width,
+                        height,
+                        strokeIndex,
+                        StrokePath(stroke.reversed()),
+                    ),
+                )
+            }
+
+            if (strokes.size > 1) {
+                assertNotEquals(
+                    "${lesson.glyph} 잘못된 첫 획 순서",
+                    GieokTraceResult.SUCCESS,
+                    LessonTraceEvaluator.evaluateStroke(
+                        lesson,
+                        width,
+                        height,
+                        0,
+                        StrokePath(strokes[1]),
+                    ),
+                )
+            }
+        }
+    }
+
+    @Test
     fun educationFlowKeepsTheMinistrySequenceForFutureExpansion() {
         assertEquals(
             listOf(
