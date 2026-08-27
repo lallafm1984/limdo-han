@@ -661,9 +661,8 @@ private fun WritingLesson(
                 rewardState = LessonRewardState()
                 traceResult = null
                 traceStrokeIndex = 0
-                val nextLessonIndex = KoreanCurriculum.nextIndex(lessonIndex)
-                val nextLesson = KoreanCurriculum.lessons[nextLessonIndex]
-                lessonIndex = nextLessonIndex
+                val nextLesson = LearningNavigation.nextLesson(menu, currentLesson)
+                lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == nextLesson.id }
                 if (!speak(nextLesson.initialCue)) initialSpeechPending = false
             },
             modifier = Modifier

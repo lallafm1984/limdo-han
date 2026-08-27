@@ -41,6 +41,13 @@ internal object LearningNavigation {
         }
     }
 
+    fun nextLesson(menu: LearningMenu, currentLesson: LessonSpec): LessonSpec {
+        val menuLessons = lessons(menu)
+        val currentIndex = menuLessons.indexOfFirst { it.id == currentLesson.id }
+        require(currentIndex >= 0) { "${currentLesson.id} is not in ${menu.name}" }
+        return menuLessons[(currentIndex + 1) % menuLessons.size]
+    }
+
     fun back(destination: LearningDestination): LearningDestination = when (destination) {
         LearningDestination.Home -> LearningDestination.Home
         is LearningDestination.MenuTransition -> LearningDestination.Home

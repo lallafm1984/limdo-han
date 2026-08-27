@@ -134,6 +134,29 @@ class LearningNavigationTest {
     }
 
     @Test
+    fun nextLessonStaysInsideEachMenuAndGanadaMatchesTheFourteenLessonOracle() {
+        val expectedGanadaCycle = listOf(
+            LessonId.GA, LessonId.NA, LessonId.DA, LessonId.RA, LessonId.MA, LessonId.BA,
+            LessonId.SA, LessonId.AH, LessonId.JA, LessonId.CHA, LessonId.KA, LessonId.TA,
+            LessonId.PA, LessonId.HA, LessonId.GA,
+        )
+        val actualGanadaCycle = LearningNavigation.lessons(LearningMenu.GANADA)
+            .map { lesson -> LearningNavigation.nextLesson(LearningMenu.GANADA, lesson).id }
+
+        assertEquals(expectedGanadaCycle.drop(1), actualGanadaCycle)
+
+        listOf(LearningMenu.CONSONANTS, LearningMenu.VOWELS).forEach { menu ->
+            val lessons = LearningNavigation.lessons(menu)
+            val lessonIds = lessons.map(LessonSpec::id).toSet()
+
+            lessons.forEach { lesson ->
+                assertTrue(LearningNavigation.nextLesson(menu, lesson).id in lessonIds)
+            }
+            assertEquals(lessons.first(), LearningNavigation.nextLesson(menu, lessons.last()))
+        }
+    }
+
+    @Test
     fun fourteenGanadaSelectionsKeepWritingSpeechGeometryRewardAndHomeReturnIntegrated() {
         val lessons = LearningNavigation.lessons(LearningMenu.GANADA)
 
