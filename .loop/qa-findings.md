@@ -2309,6 +2309,19 @@
 - 판정: 루프 155 범위의 최종 아이 대리 점검 통과. 새 P0·P1 불편은 발견하지 못했다. 1차 목표의 다음 미충족 제품 작업인 통일 디자인 토큰·자동차 시각 체계를 루프 156으로 연결한다.
 - 실제 아이 관찰: 실행 안 함.
 
+### QA-145 — 루프 187 보호자 녹음 미리 듣기 lifecycle 아이 대리 QA
+
+- 상태: 통과. 새 P0·P1·진행 방해 P2 0건.
+- 근거: `captures/loop187/iteration4/device/`의 START·SUCCESS PLAYING·READY·EMPTY PNG·hierarchy, `SM_S931N`, 2340 × 1080, LimDo focus, APK SHA-256 `69332dddc8634bb7903cb766aabe77a2e4074b409e8172d454d3e3cd208eae8f`.
+- 자동 그래픽·QA: 파형·재생 삼각형·원형·붉은 원형이 색 외 형태로 구분되고 잘림·겹침·비가림·callback 회귀가 없다. START HOME·SUCCESS 목록 이탈에서 player 해제·READY·EMPTY·SHA 보존이 통과했다.
+- 아이 대리 판정: 보호자용 화면에서만 재생이 멈추고, 무음·손상은 오류지 못한 아이 학습을 계속할 수 있음이 증명됐다.
+- 실제 아이 관찰: 실행 안 함.
+- 다음 제품 작업: M1의 사용되지 않는 합성 음성 문구·재생 상태 model 정리.
+
+- 반복 2 해결 근거: `captures/loop187/iteration2/device/start-denied-final.png`·XML과 `success-denied-final.png`·XML, 실제 `SM_S931N`, 2340 × 1080, LimDo focus, APK SHA-256 `98c3b9def344bdbb9d9e1bc2bebb182256d541ad813523bf9104a70941c82975`에서 세 행 전체가 카드 안에 보이고 버튼과 겹치지 않았다.
+- 상태 갱신: 해결. 새 P0·P1·진행 방해 P2 0건. START·SUCCESS 녹음·재생 background 행렬은 QA-144와 다른 미검증 lifecycle 조건으로 루프 187에 남긴다.
+- 실제 아이 관찰: 실행 안 함.
+
 ## QA-130 — 루프 173 내부 생성 실패·다시 시도 아틀라스 아이 대리 QA
 
 - 상태: 통과, 루프 173 범위의 새 P0·P1 미해결 불편 없음.
@@ -2618,3 +2631,28 @@
 - 아이 대리: 통과 — 보호자 전용 화면에서만 녹음하며 SUCCESS가 없거나 삭제돼도 아이의 무음 쓰기 흐름은 유지된다.
 - 실제 아이 관찰: 실행 안 함.
 - 다음 제품 작업: M1의 권한 거부·취소·background lifecycle을 두 event에 공통으로 고정하는 루프 187을 준비한다.
+
+### QA-144 — 권한 거부 대안 문구 하단 잘림
+
+- 상태: 미해결, 진행 방해 P2.
+- 근거: `captures/loop187/iteration1/device/start-denied.png`·`start-denied.xml`, 실제 `SM_S931N`, 2340 × 1080, `com.limdo.hangul/.MainActivity` focus.
+- 현상: START 기존 녹음을 보존한 채 마이크 권한 요청을 Android 뒤로 취소하면 권한 대안 문구가 상태 영역 하단 밖으로 밀려 위쪽 픽셀만 보인다.
+- 영향: 보호자가 녹음 파일이 보존됐고 아이 학습은 무음으로 계속된다는 대안을 완전히 읽을 수 없다. 주요 callback은 사용 가능하지만 보호자 상태 판단을 방해한다.
+- 제안 수정: 왼쪽 상태 영역의 가로 크기나 권한 문구 줄바꿈·배치 중 하나만 최소 조정해 카드 안에 완전히 보이게 한다.
+- 연결 루프: 187 반복 2 후보.
+- 실제 아이 관찰: 실행 안 함.
+
+### QA-144 반복 2 해결 갱신
+
+- 기록 위치 정정: 위 반복 2 해결 근거가 이전 절의 동일 문장 뒤에 먼저 삽입됐다. 덧붙이기 전용 계약에 따라 기존 기록은 수정·삭제하지 않고 이 절을 QA-144의 최신 상태로 사용한다.
+- 상태: 해결. 새 P0·P1·진행 방해 P2 0건.
+- 근거: `captures/loop187/iteration2/device/start-denied-final.png`·XML과 `success-denied-final.png`·XML, 실제 `SM_S931N`, 2340 × 1080, LimDo focus, APK SHA-256 `98c3b9def344bdbb9d9e1bc2bebb182256d541ad813523bf9104a70941c82975`.
+- 판정: START·SUCCESS 모두 권한 대안 세 행이 카드 안에 완전히 보이고 상태 실루엣·64 dp 이상 동작과 겹치지 않는다. event 전환 때 이전 거부 상태가 누출되지 않고 각 event의 실제 취소 뒤에만 대안이 나타난다.
+- 남은 범위: START·SUCCESS 녹음·재생 background 행렬은 QA-144와 다른 미검증 lifecycle 조건으로 루프 187에 남긴다.
+- 실제 아이 관찰: 실행 안 함.
+
+### QA-145 기록 위치 정정·최종 판정
+
+- 위 QA-145가 동일 문장 anchor 선택으로 문서 중간에 덞붙여졌다. 덞붙이기 전용 계약에 따라 기존 기록은 수정·삭제하지 않고 이 절을 QA-145의 최신 위치·판정으로 사용한다.
+- 상태: 통과. `captures/loop187/iteration4/device/`, `SM_S931N`, 2340 × 1080, APK SHA-256 `69332dddc8634bb7903cb766aabe77a2e4074b409e8172d454d3e3cd208eae8f`, 새 P0·P1·진행 방해 P2 0건.
+- 실제 아이 관찰: 실행 안 함.

@@ -506,6 +506,9 @@ private fun GuardianStartRecordingScreen(
     val context = LocalContext.current
     var voiceState by remember { mutableStateOf(controller.currentState()) }
     var permissionDenied by remember { mutableStateOf(false) }
+    LaunchedEffect(controller) {
+        permissionDenied = false
+    }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
@@ -559,18 +562,25 @@ private fun GuardianStartRecordingScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column(
+                Row(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                    horizontalArrangement = Arrangement.spacedBy(18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     RecordingStateSymbol(voiceState, Modifier.size(80.dp))
-                    Text(stateLabel, fontSize = 27.sp, fontWeight = FontWeight.Bold)
-                    if (permissionDenied) {
-                        Text(
-                            "마이크 권한이 없어 녹음하지 않았습니다. 목록과 아이 학습은 그대로 사용할 수 있습니다.",
-                            fontSize = 18.sp,
-                        )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(stateLabel, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+                        if (permissionDenied) {
+                            Text(
+                                "권한이 없어\n녹음하지 않았어요.\n학습은 그대로예요.",
+                                fontSize = 16.sp,
+                                lineHeight = 21.sp,
+                                maxLines = 3,
+                            )
+                        }
                     }
                 }
                 Row(

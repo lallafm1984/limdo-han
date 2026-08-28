@@ -111,3 +111,15 @@ production 소비 검사: 통과
 - 새 P1: 0건
 - 진행 방해 P2: 1건(버튼·라벨 잘림 지속)
 - 실제 아이 관찰: 실행 안 함
+
+### 루프 187 반복 4 — 보호자 녹음 미리 듣기 lifecycle
+
+- 상태·기준 화면: 완료, 2340 × 1080, `SM_S931N`, `com.limdo.hangul/.MainActivity` focus.
+- 변경 전: `captures/loop186/iteration1/device/` START·SUCCESS READY·PLAYING.
+- 변경 후: `captures/loop187/iteration4/device/` START·SUCCESS PLAYING·READY·EMPTY PNG·hierarchy.
+- APK SHA-256: `69332dddc8634bb7903cb766aabe77a2e4074b409e8172d454d3e3cd208eae8f`.
+- production 자산: 새 bitmap 없음. 기존 Canvas 파형·재생 삼각형·원형·붉은 원형·카드·색 token 재사용, 자산 검사 불필요.
+- 자동 그래픽 디자인 역할: 통과 — 상태 형태·기존 카드·색·모서리·그림자 일관, 잘림·겹침·비가림 없음.
+- 자동 QA 역할: 통과 — 전체 검증·focus·PLAYING→READY·손상→EMPTY·SHA 보존 통과.
+- 아이 대리 QA: 통과 — 화면 이탈 후 재생이 멈추고 무음·손상 대안이 아이 학습을 멈추지 않음.
+- 새 P0: 0, 새 P1: 0, 진행 방해 P2: 0. 실제 아이 관찰: 실행 안 함.

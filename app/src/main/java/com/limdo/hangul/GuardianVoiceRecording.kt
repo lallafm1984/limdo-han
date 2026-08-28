@@ -29,6 +29,10 @@ internal object GuardianVoiceStorage {
 
     fun tempFile(finalFile: File): File = File(finalFile.parentFile, ".${finalFile.name}.recording")
 
+    fun discardTemporaryFile(finalFile: File) {
+        tempFile(finalFile).delete()
+    }
+
     fun isSupportedM4a(file: File): Boolean {
         if (!file.isFile || file.length() < 12L) return false
         return runCatching {
@@ -79,7 +83,7 @@ internal class GuardianVoiceController(
         stopPlayback()
         stopRecording(save = false)
         finalFile.parentFile?.mkdirs()
-        tempFile.delete()
+        GuardianVoiceStorage.discardTemporaryFile(finalFile)
         val nextRecorder = if (Build.VERSION.SDK_INT >= 31) MediaRecorder(context) else MediaRecorder()
         return runCatching {
             nextRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -164,6 +168,7 @@ internal class GuardianVoiceController(
     fun release() {
         stopRecording(save = false)
         stopPlayback()
+        GuardianVoiceStorage.discardTemporaryFile(finalFile)
     }
 
     private fun notifyState() = onStateChanged?.invoke(currentState())

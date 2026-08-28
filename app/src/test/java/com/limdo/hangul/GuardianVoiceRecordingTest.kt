@@ -77,9 +77,49 @@ class GuardianVoiceRecordingTest {
     }
 
     @Test
+    fun backgroundReleaseAlwaysDiscardsEachEventTemporaryFileWithoutChangingCompletedBytes() {
+        val root = Files.createTempDirectory("limdo-guardian-background").toFile()
+        GuardianVoiceEvent.entries.forEach { event ->
+            val completed = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK, event)
+            completed.parentFile!!.mkdirs()
+            val originalBytes = "completed-${event.fileSuffix}".encodeToByteArray()
+            completed.writeBytes(originalBytes)
+            val temporary = GuardianVoiceStorage.tempFile(completed)
+            temporary.writeText("unfinished")
+
+            GuardianVoiceStorage.discardTemporaryFile(completed)
+
+            assertFalse(temporary.exists())
+            assertTrue(originalBytes.contentEquals(completed.readBytes()))
+        }
+        val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/GuardianVoiceRecording.kt").readText()
+        assertTrue(source.contains("fun release()"))
+        assertTrue(source.contains("stopRecording(save = false)\n        stopPlayback()\n        GuardianVoiceStorage.discardTemporaryFile(finalFile)"))
+    }
+
+    @Test
+    fun playbackLifecycleUsesTheSameReleasePathForBackgroundAndScreenExit() {
+        val project = rootProject()
+        val controllerSource = File(
+            project,
+            "app/src/main/java/com/limdo/hangul/GuardianVoiceRecording.kt",
+        ).readText()
+        val activitySource = File(
+            project,
+            "app/src/main/java/com/limdo/hangul/MainActivity.kt",
+        ).readText()
+
+        assertTrue(controllerSource.contains("fun release()"))
+        assertTrue(controllerSource.contains("stopRecording(save = false)\n        stopPlayback()"))
+        assertTrue(activitySource.contains("override fun onStop()"))
+        assertTrue(activitySource.contains("guardianStartVoiceController.release()"))
+        assertTrue(activitySource.contains("guardianSuccessVoiceController.release()"))
+        assertTrue(activitySource.contains("onDispose { controller.release() }"))
+    }
+
+    @Test
     fun recordingPermissionIsTheOnlyRuntimePermissionAndIsRequestedFromRecordingAction() {
-        val workingDirectory = File(requireNotNull(System.getProperty("user.dir")))
-        val project = if (File(workingDirectory, "app").isDirectory) workingDirectory else workingDirectory.parentFile
+        val project = rootProject()
         val manifest = File(project, "app/src/main/AndroidManifest.xml").readText()
         val source = File(project, "app/src/main/java/com/limdo/hangul/MainActivity.kt").readText()
 
@@ -88,6 +128,11 @@ class GuardianVoiceRecordingTest {
         assertFalse(manifest.contains("INTERNET"))
         assertFalse(manifest.contains("WRITE_EXTERNAL_STORAGE"))
         assertTrue(source.contains("permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)"))
+        assertTrue(source.contains("LaunchedEffect(controller)"))
+        assertTrue(source.contains("permissionDenied = false"))
+        assertTrue(source.contains("권한이 없어\\n녹음하지 않았어요.\\n학습은 그대로예요."))
+        assertTrue(source.contains("lineHeight = 21.sp"))
+        assertTrue(source.contains("maxLines = 3"))
         assertTrue(source.contains("GuardianVoiceState.EMPTY -> GuardianTextAction(\"녹음\""))
     }
 
@@ -97,5 +142,10 @@ class GuardianVoiceRecordingTest {
             LearningDestination.GuardianLessons,
             LearningNavigation.back(LearningDestination.GuardianStartRecording(LessonId.GIEOK)),
         )
+    }
+
+    private fun rootProject(): File {
+        val workingDirectory = File(requireNotNull(System.getProperty("user.dir")))
+        return if (File(workingDirectory, "app").isDirectory) workingDirectory else workingDirectory.parentFile
     }
 }

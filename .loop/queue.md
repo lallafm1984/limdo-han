@@ -2,7 +2,7 @@
 
 실행 단계: CLI
 
-활성 루프: 187
+활성 루프: 188
 
 검토 관문: AUTO_CHILD_PROXY_QA
 
@@ -197,7 +197,8 @@
 | 184 | 완료 | `docs/2차-목표-제품-기획서.md` M1, 루프 183 아이 대리 QA | 보호자 전용 2초 길게 누르기 진입·38개 lesson 목록 후 쓰기 전 녹음 루프 준비 |
 | 185 | 완료 | `docs/2차-목표-제품-기획서.md` M1, 루프 184 아이 대리 QA | 대표 lesson의 쓰기 전 녹음 lifecycle·no-backup 저장과 `QA-142` 통과 후 186 준비 |
 | 186 | 완료 | `docs/2차-목표-제품-기획서.md` M1, 루프 185 아이 대리 QA | 정답 후 녹음 lifecycle·START 비회귀 후 187 준비 |
-| 187 | 활성 | `docs/2차-목표-제품-기획서.md` M1, `QA-143` | START·SUCCESS 권한 거부·취소·background lifecycle 통과 후 다음 M1 준비 |
+| 187 | 완료 | `docs/2차-목표-제품-기획서.md` M1, `QA-143` | START·SUCCESS 권한·background lifecycle·`QA-145` 통과 후 188 준비 |
+| 188 | 활성 | `docs/2차-목표-제품-기획서.md` M1, `QA-145` | 사용되지 않는 합성 음성 문구·재생 상태 model을 보호자 녹음 event model로 정리 |
 
 큐 규칙:
 

@@ -6642,3 +6642,101 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 합리적인 최소 변경: 대표 `ㄱ` 상세의 event 식별·전환과 SUCCESS 고유 저장 경로만 추가한다. 다른 lesson 확장, 아이 화면 재생, 자동 다음은 변경하지 않는다.
 - 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 카드·상태 실루엣·색 token과 텍스트 선택 조작으로 보호자가 START·SUCCESS를 명확히 구분할 수 있어 새 bitmap이 과제를 더 명확하게 하지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동 그래픽 디자인·자동 QA·아이 대리 QA와 구분한다.
+
+### 2026-08-28 루프 187 반복 1 가설 — event 전환 뒤 권한 거부 상태 격리
+
+- 가장 중요한 미충족 조건: `permissionDenied`가 보호자 상세 Composable의 event·controller 전환과 독립적으로 `remember`되어, START에서 권한을 거부한 뒤 SUCCESS로 전환해도 SUCCESS가 거부된 것처럼 무음 대안 문구가 남을 수 있다.
+- 반증 가능한 가설: event/controller가 바뀐 때 현재 화면의 `permissionDenied`를 초기화하면 START 거부 결과가 SUCCESS 상태로 누출되지 않고, 기존 완료 파일·controller 자원·아이 무음 흐름은 변경되지 않을 것이다.
+- 반증 기준: START 거부 뒤 SUCCESS 전환 화면에 권한 거부 문구가 남거나, 같은 event에서도 거부 직후 문구가 사라지거나, event 전환이 완료 파일 byte·임시 파일·recorder·player 상태를 변경하면 가설을 기각한다.
+- 합리적인 최소 변경: `GuardianStartRecordingScreen`의 event/controller 전환 시 권한 거부 UI flag만 초기화하고, 권한 요청·8초 상한·저장·재생·삭제·Activity `onStop` 해제는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 잘못 유지된 상태 문구의 수명 범위 결함으로, 새 bitmap은 event 격리를 해결하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·실제 기기·아이 대리 QA와 구분한다.
+
+### 루프 187 반복 3 결과 기록 위치 정정
+
+- 반복 3 결과가 덧붙이기 문맥 선택 오류로 가설보다 앞선 위치에 기록됐다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 이 절을 최신 결과 인계로 사용한다.
+- 최신 판정: 가설 `채택`. START·SUCCESS 녹음 중 background에서 임시 파일 0건·기존 완료 SHA 보존·`녹음 완료` 복귀가 자동·`SM_S931N`·2340 × 1080 근거로 통과했다. 새 P0·P1·진행 방해 P2는 0건이다.
+- 남은 조건: START·SUCCESS 미리 듣기 중 background·화면 이탈의 player 해제·READY/EMPTY callback 일치. 루프 187은 `진행 중`이며 완료 커밋·push는 실행하지 않았다.
+- 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-28 루프 187 반복 3 결과
+
+- 최소 제품 변경: `GuardianVoiceStorage.discardTemporaryFile()`로 event별 임시 파일 정리를 명시하고 `GuardianVoiceController.release()`가 recorder·player 해제 뒤 해당 정리를 항상 수행하게 했다. 완료 파일·권한·재생·UI는 바꾸지 않았다.
+- 중간 실패·교정: 첫 전용 단위 검사는 공통 정리 함수가 `release()`에 연결되지 않은 상태를 즉시 반증했다. 같은 결함 범위에서 `release()` 연결을 바로잡은 뒤 새 전체 검증으로 다시 판정했다.
+- 자동 검증: `./scripts/verify.sh`의 작업 가치·자동화 계약, 전체 단위 테스트, Android lint, debug build가 통과했다. `git diff --check`와 `scripts/check-visual-loop.sh`도 통과했다. APK SHA-256은 `69332dddc8634bb7903cb766aabe77a2e4074b409e8172d454d3e3cd208eae8f`다.
+- START 실제 기기 행렬: 무선 ADB `SM_S931N`, 물리 1080 × 2340, LimDo 2340 × 1080, `com.limdo.hangul/.MainActivity` focus에서 기존 `gieok_start.m4a` 32,879 bytes·SHA-256 `40d3519f905dc375e93528fe65d2d2e6669160fe69b222bd1c864370f70609ae`를 보존한 채 다시 녹음했다. 녹음 중 `.gieok_start.m4a.recording` 43,860 bytes가 생겼고 HOME background 직후 사라졌으며, 완료 파일 SHA는 변하지 않았다. 재진입 hierarchy는 `녹음 완료`로 복귀했다.
+- SUCCESS 실제 기기 행렬: 먼저 정상 녹음으로 `gieok_success.m4a` 25,770 bytes·SHA-256 `7d53c2054484d3e7ed1ee2964321295de48336648b49ecaa35ab9f16c2492b0c`를 만든 뒤 다시 녹음했다. `.gieok_success.m4a.recording` 44,127 bytes가 background 직후 사라졌고 START·SUCCESS 두 완료 파일 SHA가 모두 유지됐으며, 재진입 hierarchy는 `정답 후 보호자 녹음`·`녹음 완료`로 복귀했다.
+- 새 화면 근거: `captures/loop187/iteration3/device/` PS의 START·SUCCESS `recording`/`reentry` PNG·XML은 모두 2340 × 1080이다. 원본 이미지에서 녹음 중은 빨간 정지 사각형·`녹음 중`으로, 재진입은 재생 삼각형·`녹음 완료`로 색 외 모양까지 구분됐고 문구·상태·조작의 잘림·겹침이 없었다.
+- 이전 반복 비교·가설 판정: 반복 2는 권한 취소 UI와 event 격리만 통과했지만, 이번에는 두 event의 실제 녹음 중 임시 파일 생성→background 삭제→완료 파일 보존→안정 상태 복귀를 새로 고정했다. 반증 조건이 없어 반복 3 가설을 `채택`한다.
+- 역할 판정: 시각 변경은 없으며 기존 카드·색·상태 도형이 그대로다. 자동 QA는 두 event의 자원·임시 파일·완료 byte·focus·복귀 상태를 통과했고, 아이 대리 QA는 보호자 화면이 아이 흐름과 분리되며 background에서 완료 녹음이 손실되지 않아 무음 학습 대안도 유지됨을 통과했다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·인계: 성공 조건 4의 START·SUCCESS 미리 듣기 중 background·화면 이탈 자원 해제와 READY·EMPTY callback 일치가 미완료다. 다음 반복은 이 한 조건만 검증·교정한다. 루프 전체가 미완료이므로 완료 커밋·push는 실행하지 않았다.
+
+### 2026-08-28 루프 187 반복 1 결과
+
+- 최소 제품 변경: `GuardianStartRecordingScreen`에서 controller가 START↔SUCCESS로 바뀐 때 `permissionDenied`만 `false`로 초기화했다. 권한 launcher·controller·저장·재생·Activity `onStop`은 바꾸지 않았다.
+- 자동 검증: 소스 계약에 event/controller 전환 초기화를 고정했고 `./scripts/verify.sh`의 전체 단위 테스트·Android lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`가 통과했다. APK SHA-256은 `97f3c4b70fd47712265a86b97f7b6e4ce16852a2798341c9e2772b66c2a85335`다.
+- 실제 기기·권한 취소: 무선 ADB `SM_S931N`, 물리 1080 × 2340, LimDo 2340 × 1080, `com.limdo.hangul/.MainActivity` focus에서 권한을 revoke한 뒤 START `다시 녹음`으로 요청하고 Android 뒤로 취소했다. START는 `녹음 완료`와 권한 대안을 표시했고 기존 `gieok_start.m4a` 32,879 bytes·SHA-256 `40d3519f905dc375e93528fe65d2d2e6669160fe69b222bd1c864370f70609ae`를 보존했으며 `.recording` 임시 파일은 0건이었다.
+- event 격리 결과: 그 상태에서 SUCCESS로 전환한 `captures/loop187/iteration1/device/success-clean.png`·XML에는 `정답 후`, `녹음 없음`, 녹음 원과 녹음 callback만 보였고 START 권한 거부 문구가 남지 않았다. event 전환이 거부 UI를 격리한다는 반복 1 가설은 `채택`한다.
+- 새 정확한 실패: `captures/loop187/iteration1/device/start-denied.png`·XML을 원본 크기로 읽은 결과, START 권한 대안 문구가 카드 하단에서 한 줄의 위쪽만 보이고 잘렸다. 이는 성공 조건 5의 잘림 0건을 위반하는 진행 방해 P2 1건이다.
+- 이전 비교·전체 판정: 루프 186에서 미검증이던 event 권한 거부 UI 누출은 해소됐지만, 새 실화면 P2 때문에 루프 187은 `진행 중`이다. 녹음·재생 background의 START·SUCCESS 전체 행렬도 남아 있다.
+- 다음 작업: 새 세션은 권한 대안 문구의 가로 영역·줄바꿈·배치 하나만 조정해 START·SUCCESS 거부 화면의 잘림을 없앴야 한다. 이번 반복에서 두 제품 변경을 묶지 않기 위해 배치는 고치지 않았다.
+- 완료·커밋·push: 성공 조건 3~6과 최종 아이 대리 QA가 미통과이므로 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-28 루프 187 반복 2 가설 — 권한 대안 문구 잘림 제거
+
+- 가장 중요한 미충족 조건: 정확한 2340 × 1080 START 권한 취소 후 무음 대안 문구가 녹음 카드 하단에서 위쪽만 노출되어 잘린다.
+- 반증 가능한 가설: 권한 대안 문구를 카드 전체 너비 나머지 영역에 독립하고 상태 도형과 동일한 가로 영역·줄바꿈을 적용하면, 문구가 카드·버튼 범위 안에 완전히 보이고 64 dp 조작·callback·START/SUCCESS 상태 격리는 유지될 것이다.
+- 반증 기준: START·SUCCESS 거부 상태에서 문구 픽셀이 잘리거나 카드·버튼과 겹치고, 주요 동작과 64 dp 조작·event 전환·완료 파일 보존 중 하나라도 변하면 가설을 기각한다.
+- 합리적인 최소 변경: 권한 대안 문구 배치만 조정하고 권한·8초·저장·재생·삭제·Activity `onStop`·아이 학습 흐름은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 결함은 정적 문구 배치의 제약 문제이며 새 bitmap은 잘림 원인을 해결하지 않는다.
+
+### 2026-08-28 루프 187 반복 2 결과
+
+- 최소 제품 변경: 권한 대안 문구를 상태 심볼 아래에 쌓던 배치를 심볼 오른쪽의 독립 Column으로 옮기고 `권한이 없어`·`녹음하지 않았어요.`·`학습은 그대로예요.` 세 행으로 고정했다. 권한 launcher·controller·저장·재생·삭제·Activity `onStop`은 바꾸지 않았다.
+- 중간 반증과 최소 재조정: 최초 두 줄 배치는 하단 잘림을 없앴지만 마지막 학습 대안을 생략해 그대로 통과시키지 않았다. 같은 결함 범위에서 세 개의 짧은 행으로 조정한 뒤 새 APK와 화면을 다시 수집했다.
+- 자동 검증: 문구·줄 수 계약을 단위 검사에 고정했다. 최종 `./scripts/verify.sh`의 전체 단위 테스트·Android lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`가 통과했다.
+- 실제 기기·APK: debug APK는 26,075,025 bytes, SHA-256 `98c3b9def344bdbb9d9e1bc2bebb182256d541ad813523bf9104a70941c82975`이며 무선 ADB `SM_S931N`에 `adb install -r`로 설치했다. 물리 화면 1080 × 2340, PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp`은 `com.limdo.hangul/.MainActivity`였다.
+- 새 화면 근거: `captures/loop187/iteration2/device/start-denied-final.png`·XML과 `success-denied-final.png`·XML을 원본 크기로 직접 읽었다. START 완료·SUCCESS 없음 양쪽에서 권한 대안 세 행이 카드 안에 완전히 보였고 상태 실루엣·버튼과 잘림·겹침이 없다. START 동작은 444 × 216 px 또는 324 × 216 px, SUCCESS 녹음은 444 × 216 px로 64 dp 관문을 유지했다.
+- 상태·파일 비회귀: START 권한 취소 뒤 기존 완료 파일이 남고 임시 파일은 없었다. event 전환 뒤 권한 대안은 초기화되며 SUCCESS에서 별도로 요청을 취소했을 때만 같은 대안이 나타났다. 아이 쓰기 화면이나 새 bitmap은 변경하지 않았다.
+- 이전 비교·가설 판정: 반복 1의 카드 하단 픽셀 잘림과 최초 두 줄 조정의 의미 생략이 최종 세 행 배치에서 모두 사라져 반복 2 가설을 `채택`한다. `QA-144`는 해결됐다.
+- 역할 판정: 자동 그래픽 디자인 역할은 기존 카드·색·실루엣 일관성과 비가림을 통과, 자동 QA 역할은 자동 검사·focus·크기·callback 보존을 통과했다. 이번 반복의 권한 대안에 대한 아이 대리 QA는 통과했으나 루프 187 전체 최종 아이 대리 QA는 background 행렬이 남아 미완료다. 실제 아이 관찰: 실행 안 함.
+- 완료·커밋·push: 성공 조건 3·4의 START·SUCCESS 녹음·미리 듣기 background 전체 행렬과 성공 조건 6의 최종 종합 근거가 남아 루프는 `진행 중`이다. 완료 커밋·push는 실행하지 않았다.
+- 다음 작업: 새 세션은 START·SUCCESS 녹음 중 background에서 임시 파일 0건·기존 완료 파일 보존·안정 상태 복귀를 한 lifecycle 처리와 행렬로 검증한다. 미리 듣기 background는 그 결과 뒤 남은 별도 조건으로 유지한다.
+
+### 2026-08-28 루프 187 반복 3 가설 — 녹음 중 background 임시 파일 정리
+
+- 가장 중요한 미충족 조건: `MainActivity.onStop()`은 START·SUCCESS controller의 `release()`를 호출하지만, `release()`의 임시 파일 삭제는 recorder가 살아 있을 때의 `stopRecording(save = false)` 경로에 의존한다.
+- 반증 가능한 가설: background 정리의 마지막에 event별 `.recording` 임시 파일을 무조건 삭제하면, START·SUCCESS 기존 완료 파일 byte를 바꾸지 않고 임시 파일 0건·READY 또는 EMPTY 안정 상태로 복귀할 것이다.
+- 반증 기준: START·SUCCESS 중 하나라도 background 뒤 임시 파일이 남거나, 기존 완료 파일 SHA-256가 바뀌거나 사라지거나, 재진입 상태가 `RECORDING`으로 남으면 가설을 기각한다.
+- 합리적인 최소 변경: `release()`에 event별 임시 파일 정리를 명시하고 저장·권한·재생·UI는 바꾸지 않는다. 미리 듣기 background는 다음 반복의 별도 미충족 조건으로 유지한다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오. 자산 필요 판정: 불필요 — lifecycle 자원·파일 정리로 화면과 bitmap을 바꾸지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·실제 기기·아이 대리 QA와 구분한다.
+
+### 루프 187 반복 3 최신 결과 인계
+
+- 기록 위치: 반복 3 결과가 덧붙이기 문맥 선택 오류로 가설보다 앞에 기록됐다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 이 절을 최신 인계로 사용한다.
+- 최신 판정: 가설 `채택`. START·SUCCESS 녹음 중 background에서 임시 파일 0건·기존 완료 SHA 보존·`녹음 완료` 복귀가 자동·`SM_S931N`·2340 × 1080 근거로 통과했다. 새 P0·P1·진행 방해 P2는 0건이다.
+- 남은 조건: START·SUCCESS 미리 듣기 중 background·화면 이탈의 player 해제·READY/EMPTY callback 일치. 루프 187은 `진행 중`이며 완료 커밋·push는 실행하지 않았다.
+- 실제 아이 관찰: 실행 안 함.
+### 2026-08-28 루프 187 반복 4 가설 — 머리 듣기 background·화면 이탈 후 재생 해제
+
+- 가장 중요한 미충족 조건: 반복 3에서 START·SUCCESS 녹움 중 background운 통과했지만, 미리 듣기 중 HOME background·보호자 목록 이탈 후 player 해제와 재진입 READY·EMPTY callback 근거가 없다.
+- 반증 가넝한 가설: START·SUCCESS의 정상 M4A와 손상·없음 상태를 고정하고 미리 듣기 중 HOME background 또는 보호자 목록을 실제 입력으로 일으키면, player가 죽시 해제되고 완료 파일은 보존되며 재진입 후 완료는 READY, 손상 파일은 EMPTY로 보이고 다른 event·lesson byte는 변경 없이 보존될 것이다.
+- 반증 기준: background·화면 이탈 후에도 `PLAYING`이 남거나 오디오가 계속되거나, 완료 파일이 사가지거나, START·SUCCESS·다른 lesson byte 중 하나라도 바뀌면 가설을 기각한다. 정상·손상 파일 두 경로와 focus·2340 × 1080 근거 중 하나가 없어도 기각한다.
+- 합리적인 최소 변경: 이미 구현된 공통 `release()`·`onStop`·`onDispose`라는 하나의 lifecycle을 실제 기기 입력으로 검증하고, 결파가 있으면 재생 자원 해제·상태 callback 계약만 최소로 교정한다. UI·권한·저장 경로·자산·다른 lesson은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오. 자산 피요 판정: 불피요 — 재생 lifecycle은 bitmap이 아니라 controller 자원·callback 문제다.
+- 실제 아이 관찰: 수집 안 함. 자동·에뮬레이터·아이 대리 QA와 군분한다.
+
+### 2026-08-28 루프 187 반복 4 결과
+
+- 최소 변경: `release()`의 recorder·player 순서 해제와 `onStop()` START·SUCCESS, 화면 `onDispose` 공통 경로라는 전용 검사로 고정했다.
+- 자동 검증: 전용 검사 7건, `./scripts/verify.sh` unit·lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh` 통과.
+- 실제 기기: `SM_S931N`, 물리 1080 × 2340, PNG 2340 × 1080, focus `com.limdo.hangul/.MainActivity`, APK SHA-256 `69332dddc8634bb7903cb766aabe77a2e4074b409e8172d454d3e3cd208eae8f`.
+- START HOME background에서 PLAYING 파형·정지가 재진입 후 READY 재생 삼각형으로 보뀐다. 근거는 `start-playing-home.*`, `start-reentry-home.*`.
+- SUCCESS 목록 이탈에서 PLAYING→READY로 보뀐다. 근거는 `success-playing-exit-final.*`, `list-after-success-exit.*`, `success-reentry-exit-final.*`.
+- 3 bytes 손상 SUCCESS 파일은 재진입하면 EMPTY·녹움 원형으로 정리됬다. 백업 재건·전·후 START·SUCCESS SHA-256는 일치했고, 특별·백업 파일은 0건이다. 근거는 `success-corrupt-empty.*`다.
+- 화면 판정: PLAYING·READY·EMPTY가 파형·삼각형·원형으로 구분되고 잘림·겹침·비가림이 없다. 주요 동작은 444 × 216 px 또는 324 × 216 px로 64 dp 이상이다.
+- 가설 판정: 반복 3의 미완료 재생 이탈 조건이 player 해제·READY/EMPTY callback·byte 보존으로 통과해 `채택`.
+- 완료·전환: 루프 187 성공 조건 1~6, 자동 그래픽 디자인·자동 QA·아이 대리 QA, 새 P0·P1·진행 P2 0건을 통과해 완료한다.
+- 다음 루프: M1의 사용되지 않는 합성 문구·재생 상태 model 정리라로 루프 188을 준비한다. 이 자업은 다음 새션에 늠긴다.
+- 실제 아이 관찰: 실행 안 함.
