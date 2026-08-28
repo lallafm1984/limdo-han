@@ -105,7 +105,9 @@ internal fun WritingCanvas(
     clearRequest: Int,
     inputEnabled: Boolean,
     demonstrationStrokeIndex: Int?,
+    demonstrationDurationMs: Int,
     retryStartMarkerScale: Float,
+    guideDotScale: Float,
     onTraceResult: (GieokTraceResult?, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -124,11 +126,11 @@ internal fun WritingCanvas(
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
                 animation = keyframes {
-                    durationMillis = 3_000
+                    durationMillis = demonstrationDurationMs
                     0f at 0
-                    0.5f at 1_100
-                    1f at 2_200
-                    1f at 2_600
+                    0.5f at (demonstrationDurationMs * 11 / 30)
+                    1f at (demonstrationDurationMs * 22 / 30)
+                    1f at (demonstrationDurationMs * 26 / 30)
                 },
                 repeatMode = RepeatMode.Restart,
             ),
@@ -251,7 +253,7 @@ internal fun WritingCanvas(
             )
         }
         glyph.strokes.getOrNull(attempt.completedStrokes.size)?.let { currentStroke ->
-            val dotRadius = pathStroke * 0.04f
+            val dotRadius = pathStroke * 0.04f * guideDotScale
             WritingCanvasGeometry.evenlySpacedGuideDots(
                 stroke = currentStroke,
                 targetSpacing = pathStroke * 0.20f,

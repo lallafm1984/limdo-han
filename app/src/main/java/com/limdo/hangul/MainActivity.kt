@@ -1145,15 +1145,18 @@ private fun WritingLesson(
     var guardianIndex by rememberSaveable { mutableIntStateOf(guardianLearningCurrentIndex) }
     var guardianListComplete by rememberSaveable { mutableStateOf(false) }
     var receivedHelp by rememberSaveable { mutableStateOf(false) }
+    var retryCount by remember { mutableIntStateOf(0) }
     val currentLesson = KoreanCurriculum.lessons[lessonIndex]
     val currentVoiceController = requireNotNull(
         guardianVoiceControllers[GuardianVoiceKey(currentLesson.id)],
     )
     val retryVisuals = retryAnimationVisuals(retryProgress.value)
+    val assistanceLevel = RetryAssistanceSpec.level(retryCount)
 
     LaunchedEffect(currentLesson.id, guardianIndex) {
         guardianLessonProgressStorage.markPracticed(currentLesson.id)
         receivedHelp = false
+        retryCount = 0
         currentVoiceController.play()
     }
 
@@ -1181,6 +1184,7 @@ private fun WritingLesson(
     LaunchedEffect(traceResult) {
         celebrationProgress.snapTo(0f)
         if (traceResult == GieokTraceResult.SUCCESS) {
+            retryCount = 0
             val successfulLessonId = currentLesson.id
             guardianLessonProgressStorage.markCompleted(
                 successfulLessonId,
@@ -1264,11 +1268,15 @@ private fun WritingLesson(
                 clearRequest = clearRequest,
                 inputEnabled = traceResult == null || traceResult == GieokTraceResult.EMPTY,
                 demonstrationStrokeIndex = null,
-                retryStartMarkerScale = retryVisuals.startMarkerScale,
+                demonstrationDurationMs = RetryAssistanceSpec.demonstrationDurationMs(assistanceLevel),
+                retryStartMarkerScale = retryVisuals.startMarkerScale *
+                    RetryAssistanceSpec.startMarkerScale(assistanceLevel),
+                guideDotScale = RetryAssistanceSpec.guideDotScale(assistanceLevel),
                 onTraceResult = { result, _ ->
                     traceResult = result
                     if (result.isRetryResult()) {
                         receivedHelp = true
+                        retryCount = (retryCount + 1).coerceAtMost(RetryAssistanceSpec.MAX_LEVEL)
                         retryLessonIndex = lessonIndex
                         retryEvent += 1
                     }
@@ -1291,12 +1299,14 @@ private fun WritingLesson(
                     retryLessonIndex = -1
                     clearRequest += 1
                     traceResult = null
+                    retryCount = 0
                 },
                 onPrevious = {
                     currentVoiceController.stopPlayback()
                     retryLessonIndex = -1
                     clearRequest += 1
                     traceResult = null
+                    retryCount = 0
                     val previousLesson = if (followsGuardianList) {
                         guardianIndex = (guardianIndex - 1).coerceAtLeast(0)
                         onGuardianLearningCurrentIndexChange(guardianIndex)
@@ -1309,6 +1319,7 @@ private fun WritingLesson(
                     retryLessonIndex = -1
                     clearRequest += 1
                     traceResult = null
+                    retryCount = 0
                     val nextLesson = if (followsGuardianList) {
                         guardianIndex = (guardianIndex + 1).coerceAtMost(guardianLearningList.lastIndex)
                         onGuardianLearningCurrentIndexChange(guardianIndex)
@@ -1438,7 +1449,9 @@ private fun WritingBoardPreview(
     clearRequest: Int,
     inputEnabled: Boolean,
     demonstrationStrokeIndex: Int?,
+    demonstrationDurationMs: Int,
     retryStartMarkerScale: Float,
+    guideDotScale: Float,
     onTraceResult: (GieokTraceResult?, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -1452,7 +1465,9 @@ private fun WritingBoardPreview(
             clearRequest = clearRequest,
             inputEnabled = inputEnabled,
             demonstrationStrokeIndex = demonstrationStrokeIndex,
+            demonstrationDurationMs = demonstrationDurationMs,
             retryStartMarkerScale = retryStartMarkerScale,
+            guideDotScale = guideDotScale,
             onTraceResult = onTraceResult,
             modifier = Modifier.fillMaxSize(),
         )

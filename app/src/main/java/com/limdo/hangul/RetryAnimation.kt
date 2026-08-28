@@ -10,6 +10,30 @@ internal object RetryAnimationSpec {
     const val MAX_FLASH_ALPHA = 0.16f
 }
 
+internal object RetryAssistanceSpec {
+    const val MAX_LEVEL = 2
+
+    fun level(retryCount: Int): Int = retryCount.coerceIn(0, MAX_LEVEL)
+
+    fun demonstrationDurationMs(level: Int): Int = when (level.coerceIn(0, MAX_LEVEL)) {
+        0 -> 3_000
+        1 -> 3_600
+        else -> 4_200
+    }
+
+    fun startMarkerScale(level: Int): Float = when (level.coerceIn(0, MAX_LEVEL)) {
+        0 -> 1f
+        1 -> 1.15f
+        else -> 1.3f
+    }
+
+    fun guideDotScale(level: Int): Float = when (level.coerceIn(0, MAX_LEVEL)) {
+        0 -> 1f
+        1 -> 1.2f
+        else -> 1.4f
+    }
+}
+
 internal data class RetryAnimationVisuals(
     val offsetDp: Float,
     val startMarkerScale: Float,
