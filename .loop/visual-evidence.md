@@ -1,19 +1,19 @@
 # 현재 시각 루프 증거
 
-루프: 215
-상태: 완료 — 반복 1 `너` 조립·쓰기·성공·`다` 다음·홈 통과
+루프: 216
+상태: 완료 — 반복 2 `녀` 선택·조립·쓰기·성공·`다` 다음·홈 통과
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop214/iteration1/after/assembly-selection.png
-변경 전 hierarchy: captures/loop214/iteration1/after/assembly-selection.xml
-변경 후 PNG: captures/loop215/iteration1/after/target-selection.png
-변경 후 hierarchy: captures/loop215/iteration1/after/target-selection.xml
-성공 PNG: captures/loop215/iteration1/after/neo-success-samepoint.png
-성공 hierarchy: captures/loop215/iteration1/after/neo-success-samepoint.txt
+변경 전 PNG: captures/loop215/iteration1/after/target-selection.png
+변경 전 hierarchy: captures/loop215/iteration1/after/target-selection.xml
+변경 후 PNG: captures/loop216/iteration2/after/target-selection.png
+변경 후 hierarchy: captures/loop216/iteration2/after/target-selection-hierarchy.txt
+성공 PNG: captures/loop216/iteration2/after/nyeo-success.png
+성공 hierarchy: captures/loop216/iteration2/after/nyeo-success-hierarchy.txt
 package: com.limdo.hangul
-focus: 통과 — `captures/loop215/iteration1/after/neo-success-samepoint-focus.txt`의 `mCurrentFocus`·`mFocusedApp`이 LimDo
-APK SHA-256: 4b6bc8ff3a83d6078a1931dc0f843d5b82680b09fd1bb26f0373ac0ef0b366c6
+focus: 통과
+APK SHA-256: ace011229f13bee11a461d8aa41d643025c0075edbf17199c0ec121eedd72b66
 Git commit: 현재 HEAD 기준 미커밋 작업 트리
-자산 필요 판정: 불필요 — production `NEO` geometry와 기존 조립 token·성공·조작 atlas 재사용
+자산 필요 판정: 불필요 — production `NYEO` geometry와 기존 조립 token·성공·조작 atlas 재사용
 자산 자동 검사: 불필요 — 새 raster 0건
 자동 그래픽 디자인 역할: 통과
 자동 QA 역할: 통과
@@ -84,4 +84,15 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 자동 그래픽 디자인 역할: 통과 — 완성 `기`가 가장 크고, 체크·도마뱀·별·색종이는 글자 뒤에서 결과를 강조하며 글자·네 조작 가림·잘림·왜곡·halo·검은 배경은 0건이다.
 - 자동 QA 역할: 통과 — `verify.sh`·diff·시각 계약·`GiAssemblyFlowTest` 1/1, 2획 성공·`RA` 다음·홈, WritingCanvas 1962 × 954 px와 네 168 × 168 px 조작을 통과했다.
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 왼쪽 `ㄱ`·오른쪽 단일 세로획, 완성 글자, 큰 체크와 기쁜 캐릭터, 네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+
+## 루프 216 반복 2 최종 근거
+
+- 변경 전: `captures/loop215/iteration1/after/target-selection.png`와 hierarchy. 변경 후: `captures/loop216/iteration2/after/target-selection.png`·`nyeo-start.png`·`nyeo-wrong-order.png`·`nyeo-complete.png`·`nyeo-writing.png`·`nyeo-success.png`와 각 Compose hierarchy·focus.
+- 환경: cold boot uptime `9.40`→`70.75`초, 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, 모든 focus LimDo. APK SHA-256 `ace011229f13bee11a461d8aa41d643025c0075edbf17199c0ec121eedd72b66`.
+- 실측: 선택 카드 12개 각 252 × 252 px, 조립 조각 341 × 368 px, 두 칸 284 × 284 px, WritingCanvas 1962 × 954 px, 네 조작 각 168 × 168 px.
+- 자산 필요 판정: 불필요 — production `NYEO` geometry·기존 token·atlas 재사용, 새 raster 0건.
+- 자동 그래픽 디자인 역할: 통과 — `녀`의 왼쪽 `ㄴ`·오른쪽 `ㅕ` 두 짧은 획이 전 상태에서 일치하며 잘림·왜곡·가림은 0건이다.
+- 자동 QA 역할: 통과 — `verify.sh`·diff·`NyeoAssemblyFlowTest` 1/1, 오순서 거부·정방향 4획·성공·`다` 다음·홈 통과.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 `너`의 획 하나와 `녀`의 두 획, 조각·빈칸·재안내·완성·쓰기·성공·네 그림 조작을 순서대로 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
