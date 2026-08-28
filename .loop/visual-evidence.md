@@ -1,19 +1,19 @@
 # 현재 시각 루프 증거
 
-루프: 196
+루프: 197
 상태: 완료
 
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop194/iteration5/emulator/g-success.png
-변경 전 hierarchy: captures/loop194/iteration5/emulator/g-success.xml
-변경 후 PNG: captures/loop196/iteration4/emulator/attempt.png
-변경 후 hierarchy: captures/loop196/iteration4/emulator/attempt.xml
+변경 전 PNG: captures/loop197/iteration1/before/success.png
+변경 전 hierarchy: captures/loop197/iteration1/before/success.xml
+변경 후 PNG: captures/loop197/iteration1/after/success-final.png
+변경 후 hierarchy: captures/loop197/iteration1/after/success-final.xml
 package: com.limdo.hangul
 focus: 통과
-APK SHA-256: 1e1d4040b6bf381e5d48712e7a47fdd30e16f5853efe2957cd2418f6828cd71d
-production 자산 경로: 새 bitmap 없음 — 기존 성공 overlay·녹음 player·navigation 재사용
-production 소비 검사: 통과
-자산 자동 검사: 불필요
+APK SHA-256: d8df9df1c65c90d80e60a5b4b3060b46b67c27c17420c4f7933609a7c5b67040
+production 자산 경로: app/src/main/res/drawable-nodpi/limdo_success_fullscreen_feedback.png
+production 소비 검사: 통과 — `SuccessFeedbackOverlay`의 `painterResource`와 APK `res/drawable-nodpi-v4` 자산 SHA-256 일치
+자산 자동 검사: 통과 — 1024 × 1024 RGBA, alpha bbox `[32,43]-[968,991]`, 네 모서리 alpha 0, 중앙 사분면 완전 투명 83.75%, 960 × 960 균일 축소
 자동 그래픽 디자인 역할: 통과
 자동 QA 역할: 통과
 아이 대리 QA: 통과
@@ -22,6 +22,11 @@ production 소비 검사: 통과
 진행 방해 P2: 0
 
 ## 판정 근거
+
+- 변경 전 동일 `ㄴ` 성공은 별·리본 원형뿐이었고, 변경 후는 큰 초록 체크 정확히 하나와 웃는 도마뱀의 엄지 모양이 정답 의미를 직접 전달한다. 글자·문구·숫자·X·물음표·왕관·트로피·버튼 혼동 요소는 0건이다.
+- 첫 합성 후보에서 캐릭터가 완성 `ㄴ`의 오른쪽 아래 일부를 덮어 기각했다. 최종 후보는 성공 자산을 쓰기판 뒤 레이어로 옮겨 완성 글자의 흰 외곽과 파란 중심선이 캐릭터 위에 전부 보이며, 체크·캐릭터·파티클과 네 조작의 잘림·흐림·halo·검은 배경·색 번짐·pointer 소비는 각각 0건이다.
+- 변경 후 hierarchy는 성공 자산 `[0,0][2340,1080]`, WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 네 조작 각각 168 × 168 px와 짧은 접근성 설명 `정답이에요, 큰 초록 체크와 기쁜 도마뱀`을 기록한다. 자동 다음은 `ㄴ`→`ㄷ`, 성공 중 다시쓰기는 2초 뒤에도 `ㄴ`에 머물러 수동 취소가 보존됐다.
+- 자동 그래픽 디자인·자동 QA·아이 대리 QA는 새 P0·P1·진행 방해 P2 0건으로 통과했다. 실제 아이 관찰: 실행 안 함.
 
 - 변경 전은 정답 후 성공 overlay에 머물렀고, 변경 후는 `alarmquest-qa` 물리 1080 × 2340·`user_rotation=1`·LimDo focus에서 1,200 ms 실제 노출과 녹음 재생 완료 뒤 `ㄱ`→`ㄴ`으로 정확히 한 번 이동했다.
 - `attempt.png`의 성공 원형은 완성 `ㄱ`의 중앙을 열어 자형을 읽을 수 있고, 네 조작 168 × 168 px은 overlay 위에서도 보이고 누를 수 있다. `after-playback.png`의 `ㄴ`는 1962 × 954 px WritingCanvas 안에 잘림·겹침 없이 초기 안내로 복귀했다.

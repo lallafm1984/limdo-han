@@ -18,6 +18,6 @@
     <string name="action_previous_description">이전 글자로 이동</string>
     <string name="action_next">다음</string>
     <string name="action_next_description">다음 글자로 이동</string>
-    <string name="success_feedback_description">아주 잘했어요, 큰 축하 동그라미</string>
+    <string name="success_feedback_description">정답이에요, 큰 초록 체크와 기쁜 도마뱀</string>
     <string name="not_available_yet">준비 중</string>
 </resources>

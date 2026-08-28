@@ -2,7 +2,7 @@
 
 실행 단계: CLI
 
-활성 루프: 197
+활성 루프: 198
 
 검토 관문: AUTO_CHILD_PROXY_QA
 
@@ -207,7 +207,8 @@
 | 194 | 완료 | 최신 `.loop/user-directives.md` | 보호자 목록 전량 그리드·lesson당 단일 녹음 통합 후 195 준비 |
 | 195 | 완료 | 최신 `.loop/user-directives.md`, `QA-151` | 홈 보호자 접근 아이콘 왼쪽 상단 재배치 후 196 준비 |
 | 196 | 완료 | 최신 `.loop/user-directives.md`, `QA-152` | 녹음·무녹음·실패 자동 다음·네 수동 취소 통과 후 197 준비 |
-| 197 | 활성 | 최신 `.loop/user-directives.md`, `QA-153` | 생성된 직관적 정답 이펙트 production 규격화·적용·실화면 검증 |
+| 197 | 완료 | 최신 `.loop/user-directives.md`, `QA-153` | 생성된 직관적 정답 이펙트 production 규격화·적용·실화면 검증 후 198 준비 |
+| 198 | 활성 | `docs/2차-목표-제품-기획서.md` M3, `QA-154` | 보호자 자유 학습 목록 중복 추가·로컬 보존 기반 검증 |
 
 큐 규칙:
 
