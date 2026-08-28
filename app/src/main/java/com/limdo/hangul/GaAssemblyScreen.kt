@@ -107,7 +107,7 @@ private fun AssemblyPiece(target: GaAssemblyTarget, piece: GaAssemblyPiece, plac
         shape = RoundedCornerShape(32.dp),
         color = if (retry) Color(0xFFFFE0B2) else if (placed) Color(0xFFE2DDD4) else Color.White,
         modifier = Modifier.fillMaxWidth().height(140.dp).semantics {
-            contentDescription = if (piece == GaAssemblyPiece.GIEOK) "기역 조각" else "${if (target == GaAssemblyTarget.GA) "아" else "어"} 모음 조각"
+            contentDescription = if (piece == GaAssemblyPiece.GIEOK) "기역 조각" else "${target.vowelName()} 모음 조각"
             stateDescription = if (placed) "놓음" else if (retry) "기역을 먼저 놓아요" else "선택 가능"
         },
     ) { GaGeometry(target, piece, active = !placed, modifier = Modifier.padding(16.dp)) }
@@ -122,11 +122,17 @@ private fun AssemblySlot(target: GaAssemblyTarget, piece: GaAssemblyPiece, fille
             RoundedCornerShape(28.dp),
         ).background(if (filled) Color(0xFFE4F4DE) else Color(0xFFF7F2E8), RoundedCornerShape(28.dp))
             .padding(16.dp).semantics {
-                contentDescription = if (piece == GaAssemblyPiece.GIEOK) "왼쪽 기역 칸" else "오른쪽 ${if (target == GaAssemblyTarget.GA) "아" else "어"} 모음 칸"
+                contentDescription = if (piece == GaAssemblyPiece.GIEOK) "왼쪽 기역 칸" else "오른쪽 ${target.vowelName()} 모음 칸"
                 stateDescription = if (filled) "채움" else "비어 있음"
             },
         contentAlignment = Alignment.Center,
     ) { if (filled) GaGeometry(target, piece, active = true, modifier = Modifier.fillMaxSize()) else Spacer(Modifier.fillMaxSize()) }
+}
+
+private fun GaAssemblyTarget.vowelName(): String = when (this) {
+    GaAssemblyTarget.GA -> "아"
+    GaAssemblyTarget.GEO -> "어"
+    GaAssemblyTarget.GYEO -> "여"
 }
 
 @Composable

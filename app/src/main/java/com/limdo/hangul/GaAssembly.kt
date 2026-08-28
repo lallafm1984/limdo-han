@@ -3,6 +3,7 @@ package com.limdo.hangul
 internal enum class GaAssemblyTarget(val lessonId: LessonId, val glyph: String) {
     GA(LessonId.GA, "가"),
     GEO(LessonId.GEO, "거"),
+    GYEO(LessonId.GYEO, "겨"),
 }
 
 internal enum class GaAssemblyPiece { GIEOK, VOWEL }

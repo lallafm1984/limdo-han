@@ -17,10 +17,11 @@ class GaAssemblyTest {
         assertTrue(afterGieok.place(GaAssemblyPiece.VOWEL).complete)
     }
 
-    @Test fun targetsKeepGaAndGeoAsDistinctProductionLessons() {
+    @Test fun targetsKeepGaGeoAndGyeoAsDistinctProductionLessons() {
         assertTrue(GaAssemblyTarget.GA.lessonId == LessonId.GA)
         assertTrue(GaAssemblyTarget.GEO.lessonId == LessonId.GEO)
-        assertTrue(GaAssemblyTarget.GA.glyph != GaAssemblyTarget.GEO.glyph)
+        assertTrue(GaAssemblyTarget.GYEO.lessonId == LessonId.GYEO)
+        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨"))
     }
 
     @Test fun geoWritingKeepsStageNavigationWithoutExpandingGanadaSelection() {
@@ -29,5 +30,16 @@ class GaAssemblyTest {
         assertTrue(LearningNavigation.lessons(LearningMenu.GANADA).none { it.id == LessonId.GEO })
         assertTrue(LearningNavigation.nextLesson(LearningMenu.GANADA, geo).id == LessonId.GYEO)
         assertTrue(LearningNavigation.previousLesson(LearningMenu.GANADA, geo).id == LessonId.GYA)
+    }
+
+    @Test fun gyeoUsesTwoLeftwardVowelStrokesFromProductionGeometry() {
+        val gyeo = KoreanCurriculum.lessons.single { it.id == LessonId.GYEO }
+
+        assertTrue(gyeo.strokeCount == 4)
+        assertTrue(gyeo.strokeDirections.drop(1) == listOf(
+            StrokeDirection.DOWN,
+            StrokeDirection.LEFT,
+            StrokeDirection.LEFT,
+        ))
     }
 }
