@@ -1,19 +1,17 @@
 # 현재 시각 루프 증거
 
-루프: 184
+루프: 189
 상태: 완료
 
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop184/iteration1/before/home.png
-변경 전 hierarchy: captures/loop184/iteration1/before/home.xml
-변경 후 PNG: captures/loop184/iteration1/after/home.png
-변경 후 hierarchy: captures/loop184/iteration1/after/home.xml
-보호자 PNG: captures/loop184/iteration1/after/guardian.png
-보호자 hierarchy: captures/loop184/iteration1/after/guardian.xml
+변경 전 PNG: captures/loop189/iteration1/before/ha-initial.png
+변경 전 hierarchy: captures/loop189/iteration1/before/ha-initial.xml
+변경 후 PNG: captures/loop189/iteration2/after/ha-initial.png
+변경 후 hierarchy: captures/loop189/iteration2/after/ha-initial.xml
 package: com.limdo.hangul
 focus: 통과
-APK SHA-256: 14806b06755642b47c576a6c43aaa30de70618a1c42e30c6ff52340a73eb111a
-production 자산 경로: 새 bitmap 없음 — MainActivity.kt Canvas 잠금 geometry와 기존 token 사용
+APK SHA-256: b5d34fbcbabcba4f46fa8ed3ee0c71972666fcee086ba6adcd9f9d72fff42e8c
+production 자산 경로: 새 bitmap 없음 — WritingCanvasGeometry.kt production Canvas geometry 사용
 production 소비 검사: 통과
 자산 자동 검사: 불필요
 자동 그래픽 디자인 역할: 통과
@@ -25,12 +23,12 @@ production 소비 검사: 통과
 
 ## 판정 근거
 
-- 보호자 영역은 `[1081,869][1260,1048]` = 179 × 179 px, `long-clickable=true`다. 일반 탭·1.5초 hold는 홈에 남고 2.2초 hold는 보호자 화면을 한 번 열었다.
-- 세 아이 카드 bounds는 변경 전후 각각 `[84,84][772,996]`, `[825,84][1514,996]`, `[1567,84][2256,996]`로 동일하다.
-- 보호자 화면은 자음 14개·모음 10개·글자 14개를 세 production 색 묶음으로 표시한다. hierarchy의 lesson 38개는 모두 고유하다.
-- 닫기와 Android 뒤로 가기는 각각 한 번에 홈으로 돌아갔고 일반 자음 카드 탭은 기존 선택 화면을 열었다. 전 과정 focus는 `com.limdo.hangul/.MainActivity`였다.
-- PNG를 직접 읽어 작은 muted 잠금은 세 학습 카드보다 훨씬 작고 보호자 목록은 잘림·겹침 없이 기존 색·모서리 언어를 유지함을 확인했다.
-- manifest 권한 선언은 0건이다. 자동 역할 판정은 실제 사람 팀의 승인이 아니며 실제 아이 관찰: 실행 안 함.
+- 실제 `SM_S931N`은 물리 1080 × 2340, `user_rotation=1`이며 모든 PNG는 앱 영역 2340 × 1080, 전면 focus는 `com.limdo.hangul/.MainActivity`였다.
+- `카`는 변경 전 수직 하강에서 변경 후 아래로 갈수록 왼쪽으로 완만하게 휘는 초성으로 바뀌었고, production 정방향 4획이 순서대로 수락되어 `captures/loop189/iteration2/after/ka-after-stroke1.png`부터 `ka-success.png`까지 이어졌다.
+- `하`는 초성 오른쪽 외곽과 중성 세로 외곽 사이에 배경 간격이 보이며, production 정방향 5획이 순서대로 수락되어 `ha-after-stroke1.png`부터 `ha-success.png`까지 이어졌다.
+- 두 초기·획별·성공 화면을 원본 크기로 직접 읽어 점선·동적 표식·시작·끝·아이 획이 같은 자형 위에 있고, 흐림·잘림·조작 가림·새 P0·P1·진행 방해 P2가 없음을 확인했다.
+- 네 조작은 각각 192 × 192 px hierarchy bounds로 유지됐다. WritingCanvas 배치 계약과 다른 글자 geometry는 전체 자동 검사로 회귀가 없었다.
+- 자동 역할 판정은 실제 사람 팀의 승인이 아니며 실제 아이 관찰: 실행 안 함.
 ### 루프 185 반복 1 — 대표 `ㄱ` 쓰기 전 보호자 녹음 (미완료 근거)
 
 - package: `com.limdo.hangul`

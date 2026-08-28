@@ -444,8 +444,20 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
+    private val kaCurveCorner = CanvasPoint(0.49f, 0.12f)
+    private val kaCurvedKieuk = listOf(
+        CanvasPoint(0.05f, 0.12f),
+        kaCurveCorner,
+    ) + cubicCurve(
+        start = kaCurveCorner,
+        control1 = CanvasPoint(0.49f, 0.46f),
+        control2 = CanvasPoint(0.28f, 0.75f),
+        end = CanvasPoint(0.11f, 0.88f),
+        segmentCount = 12,
+    ).drop(1)
+
     private val kaTemplate = listOf(
-        listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.49f, 0.12f), CanvasPoint(0.49f, 0.88f)),
+        kaCurvedKieuk,
         listOf(CanvasPoint(0.05f, 0.50f), CanvasPoint(0.49f, 0.50f)),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
@@ -468,8 +480,8 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.13f, 0.06f), CanvasPoint(0.41f, 0.06f)),
         listOf(CanvasPoint(-0.03f, 0.30f), CanvasPoint(0.57f, 0.30f)),
         circleTemplate(0.27f, 0.71f, 0.19f),
-        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
-        listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
+        listOf(CanvasPoint(0.78f, 0.08f), CanvasPoint(0.78f, 0.92f)),
+        listOf(CanvasPoint(0.78f, 0.50f), CanvasPoint(0.98f, 0.50f)),
     )
 
     private val gakTemplate = finalConsonantTemplate(

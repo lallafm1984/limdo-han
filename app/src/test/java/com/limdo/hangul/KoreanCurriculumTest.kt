@@ -894,9 +894,10 @@ class KoreanCurriculumTest {
             val haWidth = ha[strokeIndex].last().x - ha[strokeIndex].first().x
             assertEquals(hieuhWidth / hieuhCircleWidth, haWidth / haCircleWidth, 0.001f)
         }
-        assertTrue(ha.take(3).flatten().maxOf { it.x } < ha.drop(3).flatten().minOf { it.x })
-
         val guideStroke = geometry(LessonId.HA).strokeWidth
+        val initialRight = ha.take(3).flatten().maxOf { it.x }
+        val medialLeft = ha.drop(3).flatten().minOf { it.x }
+        assertTrue(medialLeft - initialRight > guideStroke)
         assertTrue(WritingCanvasGeometry.startMarkerRadius(guideStroke) * 2f <= guideStroke * 0.40f)
         assertTrue(WritingCanvasGeometry.finishMarkerOuterRadius(guideStroke) * 2f <= guideStroke * 0.40f)
         assertTrue(
@@ -909,6 +910,29 @@ class KoreanCurriculumTest {
         assertTrue(
             WritingCanvasGeometry.finishMarkerCenterRadius(guideStroke) <
                 WritingCanvasGeometry.finishMarkerColorRadius(guideStroke),
+        )
+    }
+
+    @Test
+    fun kaCurvesDownLeftWhileKeepingProductionDirectionAndJudgment() {
+        val lesson = KoreanCurriculum.lessons.single { it.id == LessonId.KA }
+        val geometry = WritingCanvasGeometry.glyph(lesson, width, height)
+        val firstStroke = geometry.strokes.first()
+        val corner = firstStroke[1]
+        val descent = firstStroke.drop(1)
+
+        assertEquals(14, firstStroke.size)
+        assertEquals(firstStroke.first().y, corner.y, 0.001f)
+        assertTrue(firstStroke.last().x < corner.x)
+        assertTrue(firstStroke.last().y > corner.y)
+        assertTrue(descent.zipWithNext().all { (start, end) -> end.x <= start.x && end.y > start.y })
+        assertEquals(
+            GieokTraceResult.SUCCESS,
+            LessonTraceEvaluator.evaluateStroke(lesson, width, height, 0, StrokePath(firstStroke)),
+        )
+        assertNotEquals(
+            GieokTraceResult.SUCCESS,
+            LessonTraceEvaluator.evaluateStroke(lesson, width, height, 0, StrokePath(firstStroke.reversed())),
         )
     }
 

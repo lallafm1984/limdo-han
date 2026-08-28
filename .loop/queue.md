@@ -2,7 +2,7 @@
 
 실행 단계: CLI
 
-활성 루프: 189
+활성 루프: 190
 
 검토 관문: AUTO_CHILD_PROXY_QA
 
@@ -199,7 +199,8 @@
 | 186 | 완료 | `docs/2차-목표-제품-기획서.md` M1, 루프 185 아이 대리 QA | 정답 후 녹음 lifecycle·START 비회귀 후 187 준비 |
 | 187 | 완료 | `docs/2차-목표-제품-기획서.md` M1, `QA-143` | START·SUCCESS 권한·background lifecycle·`QA-145` 통과 후 188 준비 |
 | 188 | 완료 | `docs/2차-목표-제품-기획서.md` M1, `QA-145` | 합성 재생 상태 model 제거 후 189 준비 |
-| 189 | 활성 | 최신 `.loop/user-directives.md`, `QA-146` | `카` 하단 기울기와 `하` 자모 분리 geometry 교정 |
+| 189 | 완료 | 최신 `.loop/user-directives.md`, `QA-146` | `카`·`하` geometry와 실제 기기 획별·성공 검증 후 190 준비 |
+| 190 | 활성 | `docs/2차-목표-제품-기획서.md` M1, 루프 189 아이 대리 QA | 현재 노출 38개 lesson의 두 녹음 칸 로컬 연결 |
 
 큐 규칙:
 
