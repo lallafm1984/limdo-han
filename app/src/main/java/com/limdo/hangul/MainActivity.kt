@@ -246,7 +246,12 @@ private fun LearningMenuHome(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(LimDoPlaygroundTokens.SCREEN_PADDING_DP.dp),
+                .padding(
+                    start = LimDoPlaygroundTokens.SCREEN_PADDING_DP.dp,
+                    top = 112.dp,
+                    end = LimDoPlaygroundTokens.SCREEN_PADDING_DP.dp,
+                    bottom = LimDoPlaygroundTokens.SCREEN_PADDING_DP.dp,
+                ),
             horizontalArrangement = Arrangement.spacedBy(LimDoPlaygroundTokens.CARD_GAP_DP.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -306,8 +311,8 @@ private fun LearningMenuHome(
         GuardianEntry(
             onOpen = onOpenGuardian,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 12.dp),
+                .align(Alignment.TopStart)
+                .padding(start = 28.dp, top = 28.dp),
         )
     }
 }
@@ -319,9 +324,9 @@ private fun GuardianEntry(
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    Box(
         modifier = modifier
-            .size(68.dp)
+            .size(74.dp)
             .pointerInput(onOpen) {
                 awaitEachGesture {
                     awaitFirstDown(requireUnconsumed = false)
@@ -341,33 +346,38 @@ private fun GuardianEntry(
                     true
                 }
             },
-        color = Color(0xFFF7E7B6),
-        shape = RoundedCornerShape(22.dp),
-        shadowElevation = 3.dp,
-        border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF806D42)),
+        contentAlignment = Alignment.Center,
     ) {
-        Canvas(Modifier.padding(16.dp).fillMaxSize()) {
-            val strokeWidth = size.minDimension * 0.12f
-            drawArc(
-                color = Color(0xFF665638),
-                startAngle = 190f,
-                sweepAngle = 160f,
-                useCenter = false,
-                topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.23f, 0f),
-                size = androidx.compose.ui.geometry.Size(size.width * 0.54f, size.height * 0.58f),
-                style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-            )
-            drawRoundRect(
-                color = Color(0xFF665638),
-                topLeft = androidx.compose.ui.geometry.Offset(0f, size.height * 0.42f),
-                size = androidx.compose.ui.geometry.Size(size.width, size.height * 0.58f),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.width * 0.16f),
-            )
-            drawCircle(
-                color = Color(0xFFF7E7B6),
-                radius = size.minDimension * 0.09f,
-                center = center.copy(y = size.height * 0.68f),
-            )
+        Surface(
+            modifier = Modifier.size(48.dp),
+            color = Color(0xFFF7E7B6),
+            shape = RoundedCornerShape(16.dp),
+            shadowElevation = 3.dp,
+            border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF806D42)),
+        ) {
+            Canvas(Modifier.padding(11.dp).fillMaxSize()) {
+                val strokeWidth = size.minDimension * 0.12f
+                drawArc(
+                    color = Color(0xFF665638),
+                    startAngle = 190f,
+                    sweepAngle = 160f,
+                    useCenter = false,
+                    topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.23f, 0f),
+                    size = androidx.compose.ui.geometry.Size(size.width * 0.54f, size.height * 0.58f),
+                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                )
+                drawRoundRect(
+                    color = Color(0xFF665638),
+                    topLeft = androidx.compose.ui.geometry.Offset(0f, size.height * 0.42f),
+                    size = androidx.compose.ui.geometry.Size(size.width, size.height * 0.58f),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.width * 0.16f),
+                )
+                drawCircle(
+                    color = Color(0xFFF7E7B6),
+                    radius = size.minDimension * 0.09f,
+                    center = center.copy(y = size.height * 0.68f),
+                )
+            }
         }
     }
 }

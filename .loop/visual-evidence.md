@@ -1,17 +1,17 @@
 # 현재 시각 루프 증거
 
-루프: 194
+루프: 195
 상태: 완료
 
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop190/iteration5/emulator/g-start.png
-변경 전 hierarchy: captures/loop190/iteration5/emulator/g-start.xml
-변경 후 PNG: captures/loop194/iteration7/emulator/nieun-deleted.png
-변경 후 hierarchy: captures/loop194/iteration7/emulator/nieun-deleted.xml
+변경 전 PNG: captures/loop195/iteration1/before/home.png
+변경 전 hierarchy: captures/loop195/iteration1/before/home.xml
+변경 후 PNG: captures/loop195/iteration1/after/home-v2.png
+변경 후 hierarchy: captures/loop195/iteration1/after/home-v2.xml
 package: com.limdo.hangul
 focus: 통과
-APK SHA-256: 9239dd3e8bb42b2ad9e2d51c002cc354821f9479eb2d125a62090dd13f75cbd3
-production 자산 경로: 새 bitmap 없음 — 기존 보호자 상태 실루엣·카드·색 token 재사용
+APK SHA-256: abd827aba1632ad4632d09556eff876e404373179ffa7479b2b530972b8ceda9
+production 자산 경로: 새 bitmap 없음 — 기존 보호자 자물쇠 실루엣·홈 카드·색 token 재사용
 production 소비 검사: 통과
 자산 자동 검사: 불필요
 자동 그래픽 디자인 역할: 통과
@@ -22,6 +22,11 @@ production 소비 검사: 통과
 진행 방해 P2: 0
 
 ## 판정 근거
+
+- 변경 전 보호자 접근은 `[1081,869][1260,1048]`=179 × 179 px로 모음 카드 위에 겹쳤다. 변경 후 터치 영역은 `[74,74][268,268]`=194 × 194 px이고 내부 시각 Surface는 48 dp로 분리됐다.
+- 변경 후 첫 카드는 y=294부터 시작해 보호자 터치 영역과 26 px 떨어지고, 세 카드 폭은 688~689 px다. 원본 PNG에서 대표 글자·라벨·테두리·그림자·화면 외곽의 잘림·겹침·왜곡은 0건이다.
+- `short-hold-v2.xml`은 0.5초 접촉 뒤 홈을 유지하고 `long-hold-v2.xml`은 2.3초 접촉 뒤 보호자 화면 진입을 각각 입증한다. 모든 근거는 2340 × 1080·LimDo focus다.
+- 자동 그래픽 디자인·자동 QA·아이 대리 QA는 통과했고 새 P0·P1·진행 방해 P2는 0건이다. 실제 아이 관찰: 실행 안 함.
 
 - `alarmquest-qa` 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, `com.limdo.hangul/.MainActivity` focus에서 변경 전·후 동일한 `사` 초기 화면과 변경 후 초성 1·2획, 중성 세로획, 성공을 실제 pointer 입력으로 방문했다.
 - 변경 전 초성은 왼쪽 다리 6점·오른쪽 다리 4점의 작은 방향 변화가 굵은 guide에서 굴곡으로 보였다. 변경 후는 위 시작점·중앙 접합부·아래 좌우 끝만 남아 세로 시작과 두 사선이 단정하게 이어지고 S자·갈고리·접합 틈·비정상 겹침·잘림이 0건이다.
