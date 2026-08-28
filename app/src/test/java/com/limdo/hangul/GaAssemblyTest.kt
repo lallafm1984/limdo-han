@@ -34,7 +34,8 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.NYO.lessonId == LessonId.NYO)
         assertTrue(GaAssemblyTarget.NU.lessonId == LessonId.NU)
         assertTrue(GaAssemblyTarget.NYU.lessonId == LessonId.NYU)
-        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140", "노", "뇨", "누", "뉴"))
+        assertTrue(GaAssemblyTarget.NEU.lessonId == LessonId.NEU)
+        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140", "노", "뇨", "누", "뉴", "느"))
         assertFalse(GaAssemblyTarget.GA.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GYO.isHorizontalVowel)
@@ -49,6 +50,7 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.NYO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NU.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NYU.isHorizontalVowel)
+        assertTrue(GaAssemblyTarget.NEU.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NA.initialName == "니은")
         assertTrue(GaAssemblyTarget.NA.initialStrokeCount == 1)
         assertTrue(GaAssemblyTarget.NEO.initialName == "니은")
@@ -63,6 +65,20 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.NU.initialStrokeCount == 1)
         assertTrue(GaAssemblyTarget.NYU.initialName == "니은")
         assertTrue(GaAssemblyTarget.NYU.initialStrokeCount == 1)
+        assertTrue(GaAssemblyTarget.NEU.initialName == "니은")
+        assertTrue(GaAssemblyTarget.NEU.initialStrokeCount == 1)
+    }
+
+    @Test fun neuUsesTheProductionNieunAndOneHorizontalEuStrokeBelowIt() {
+        val neu = KoreanCurriculum.lessons.single { it.id == LessonId.NEU }
+        val geometry = WritingCanvasGeometry.glyph(neu, 1962f, 954f)
+
+        assertTrue(neu.strokeCount == 2)
+        assertTrue(neu.strokeDirections.drop(1) == listOf(StrokeDirection.RIGHT))
+        assertTrue(geometry.strokes.take(GaAssemblyTarget.NEU.initialStrokeCount).size == 1)
+        assertTrue(geometry.strokes.drop(GaAssemblyTarget.NEU.initialStrokeCount).size == 1)
+        assertTrue(geometry.strokes.first().maxOf { it.y } < geometry.strokes.last().minOf { it.y })
+        assertTrue(geometry.strokes.last().first().y == geometry.strokes.last().last().y)
     }
 
     @Test fun nyuUsesTheProductionNieunAndTwoDownwardYuStrokesBelowIt() {
