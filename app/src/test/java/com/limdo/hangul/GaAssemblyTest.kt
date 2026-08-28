@@ -17,18 +17,20 @@ class GaAssemblyTest {
         assertTrue(afterGieok.place(GaAssemblyPiece.VOWEL).complete)
     }
 
-    @Test fun targetsKeepGaThroughGuAsDistinctProductionLessons() {
+    @Test fun targetsKeepGaThroughGyuAsDistinctProductionLessons() {
         assertTrue(GaAssemblyTarget.GA.lessonId == LessonId.GA)
         assertTrue(GaAssemblyTarget.GEO.lessonId == LessonId.GEO)
         assertTrue(GaAssemblyTarget.GYEO.lessonId == LessonId.GYEO)
         assertTrue(GaAssemblyTarget.GO.lessonId == LessonId.GO)
         assertTrue(GaAssemblyTarget.GYO.lessonId == LessonId.GYO)
         assertTrue(GaAssemblyTarget.GU.lessonId == LessonId.GU)
-        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구"))
+        assertTrue(GaAssemblyTarget.GYU.lessonId == LessonId.GYU)
+        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규"))
         assertFalse(GaAssemblyTarget.GA.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GYO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GU.isHorizontalVowel)
+        assertTrue(GaAssemblyTarget.GYU.isHorizontalVowel)
     }
 
     @Test fun geoWritingKeepsStageNavigationWithoutExpandingGanadaSelection() {
@@ -81,5 +83,20 @@ class GaAssemblyTest {
         assertTrue(gu.strokeDirections.drop(1) == listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN))
         assertTrue(geometry.strokes.first().maxOf { it.y } < geometry.strokes.drop(1).flatten().maxOf { it.y })
         assertTrue(geometry.strokes.last().first().y < geometry.strokes.last().last().y)
+    }
+
+    @Test fun gyuUsesTwoDownwardVowelStrokesBelowTheProductionInitial() {
+        val gyu = KoreanCurriculum.lessons.single { it.id == LessonId.GYU }
+        val geometry = WritingCanvasGeometry.glyph(gyu, 1962f, 954f)
+
+        assertTrue(gyu.strokeCount == 4)
+        assertTrue(gyu.strokeDirections.drop(1) == listOf(
+            StrokeDirection.RIGHT,
+            StrokeDirection.DOWN,
+            StrokeDirection.DOWN,
+        ))
+        assertTrue(geometry.strokes.first().maxOf { it.y } < geometry.strokes.drop(1).flatten().maxOf { it.y })
+        assertTrue(geometry.strokes.drop(2).map { it.first().x }.distinct().size == 2)
+        assertTrue(geometry.strokes.drop(2).all { it.first().y < it.last().y })
     }
 }

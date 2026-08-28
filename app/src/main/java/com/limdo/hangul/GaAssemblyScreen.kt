@@ -49,7 +49,7 @@ internal fun GaAssemblyScreen(onHome: () -> Unit, onWrite: (LessonId) -> Unit) {
                     onClick = { target = choice; state = GaAssemblyState() },
                     shape = RoundedCornerShape(36.dp),
                     color = Color.White,
-                    modifier = Modifier.size(108.dp).semantics {
+                    modifier = Modifier.size(96.dp).semantics {
                         contentDescription = "${choice.glyph} 조립 선택"
                     },
                 ) { GaGeometry(choice, piece = null, active = true, modifier = Modifier.padding(24.dp)) }
@@ -148,6 +148,7 @@ private fun GaAssemblyTarget.vowelName(): String = when (this) {
     GaAssemblyTarget.GO -> "오"
     GaAssemblyTarget.GYO -> "요"
     GaAssemblyTarget.GU -> "우"
+    GaAssemblyTarget.GYU -> "유"
 }
 
 @Composable
