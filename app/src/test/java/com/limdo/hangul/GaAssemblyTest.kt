@@ -30,7 +30,8 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.NA.lessonId == LessonId.NA)
         assertTrue(GaAssemblyTarget.NEO.lessonId == LessonId.NEO)
         assertTrue(GaAssemblyTarget.NYEO.lessonId == LessonId.NYEO)
-        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140"))
+        assertTrue(GaAssemblyTarget.NO.lessonId == LessonId.NO)
+        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140", "노"))
         assertFalse(GaAssemblyTarget.GA.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GYO.isHorizontalVowel)
@@ -41,12 +42,27 @@ class GaAssemblyTest {
         assertFalse(GaAssemblyTarget.NA.isHorizontalVowel)
         assertFalse(GaAssemblyTarget.NEO.isHorizontalVowel)
         assertFalse(GaAssemblyTarget.NYEO.isHorizontalVowel)
+        assertTrue(GaAssemblyTarget.NO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NA.initialName == "니은")
         assertTrue(GaAssemblyTarget.NA.initialStrokeCount == 1)
         assertTrue(GaAssemblyTarget.NEO.initialName == "니은")
         assertTrue(GaAssemblyTarget.NEO.initialStrokeCount == 1)
         assertTrue(GaAssemblyTarget.NYEO.initialName == "니은")
         assertTrue(GaAssemblyTarget.NYEO.initialStrokeCount == 1)
+        assertTrue(GaAssemblyTarget.NO.initialName == "니은")
+        assertTrue(GaAssemblyTarget.NO.initialStrokeCount == 1)
+    }
+
+    @Test fun noUsesTheProductionNieunAndUpwardOStrokeBelowIt() {
+        val no = KoreanCurriculum.lessons.single { it.id == LessonId.NO }
+        val geometry = WritingCanvasGeometry.glyph(no, 1962f, 954f)
+
+        assertTrue(no.strokeCount == 3)
+        assertTrue(no.strokeDirections.drop(1) == listOf(StrokeDirection.RIGHT, StrokeDirection.UP))
+        assertTrue(geometry.strokes.take(GaAssemblyTarget.NO.initialStrokeCount).size == 1)
+        assertTrue(geometry.strokes.drop(GaAssemblyTarget.NO.initialStrokeCount).size == 2)
+        assertTrue(geometry.strokes.first().maxOf { it.y } < geometry.strokes.drop(1).flatten().maxOf { it.y })
+        assertTrue(geometry.strokes.last().first().y > geometry.strokes.last().last().y)
     }
 
     @Test fun neoUsesTheProductionNieunAndLeftwardEoStrokes() {

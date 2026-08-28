@@ -18,12 +18,13 @@ internal enum class GaAssemblyTarget(
     NA(LessonId.NA, "나", initialName = "니은"),
     NEO(LessonId.NEO, "너", initialName = "니은"),
     NYEO(LessonId.NYEO, "\uB140", initialName = "\uB2C8\uC740"),
+    NO(LessonId.NO, "노", initialName = "니은"),
 }
 
 internal val GaAssemblyTarget.isHorizontalVowel: Boolean
     get() = this == GaAssemblyTarget.GO || this == GaAssemblyTarget.GYO ||
         this == GaAssemblyTarget.GU || this == GaAssemblyTarget.GYU ||
-        this == GaAssemblyTarget.GEU
+        this == GaAssemblyTarget.GEU || this == GaAssemblyTarget.NO
 
 internal enum class GaAssemblyPiece { GIEOK, VOWEL }
 

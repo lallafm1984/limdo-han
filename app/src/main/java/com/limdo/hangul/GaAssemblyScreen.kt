@@ -160,6 +160,7 @@ private fun GaAssemblyTarget.vowelName(): String = when (this) {
     GaAssemblyTarget.NA -> "아"
     GaAssemblyTarget.NEO -> "어"
     GaAssemblyTarget.NYEO -> "\uC5EC"
+    GaAssemblyTarget.NO -> "오"
 }
 
 @Composable

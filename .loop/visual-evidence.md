@@ -86,6 +86,19 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 왼쪽 `ㄱ`·오른쪽 단일 세로획, 완성 글자, 큰 체크와 기쁜 캐릭터, 네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
 
+## 루프 217 반복 2 최종 근거
+
+- 변경 전: `captures/loop216/iteration2/after/target-selection.png`와 hierarchy. 변경 후: `captures/loop217/iteration2/after/` 선택·시작·오순서·완성·쓰기·성공 PNG와 각 hierarchy·focus.
+- 환경: `alarmquest-qa` cold boot uptime `8.83`초에서 시작, 최종 수집 uptime `131.33`초, 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, 모든 focus LimDo.
+- APK SHA-256: `af91161a00307e6bda12fa7eb4ba2b3f9412a30ed0fa6944617facba3c9c0849`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 실측: 조립 조각 341 × 368 px, 위·아래 칸 284 × 284 px, WritingCanvas 1962 × 954 px, 네 조작 각 168 × 168 px.
+- 자산 필요 판정: 불필요 — production `NO` geometry와 기존 정답·조작 atlas 재사용, 새 raster 0건.
+- 자산 자동 검사: 새 자산 대상 없음. 기존 atlas의 APK production 소비를 성공 PNG·semantics로 재확인했다.
+- 자동 그래픽 디자인 역할: 통과 — `녀`의 좌·우와 `노`의 위·아래 구조가 구분되고, 정착 프레임의 큰 체크·도마뱀·완성 `노`·네 조작 잘림·가림·halo·검은 배경 0건.
+- 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`NoAssemblyFlowTest` 1/1, 오순서 거부·정방향 3획·성공·`DA` 다음·홈 통과.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 `ㄴ`·`ㅗ` 조각, 위·아래 빈칸, 오순서 재강조, 완성 카드, 큰 쓰기판, 큰 체크와 기쁜 캐릭터, 네 그림 조작을 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+
 ## 루프 216 반복 2 최종 근거
 
 - 변경 전: `captures/loop215/iteration1/after/target-selection.png`와 hierarchy. 변경 후: `captures/loop216/iteration2/after/target-selection.png`·`nyeo-start.png`·`nyeo-wrong-order.png`·`nyeo-complete.png`·`nyeo-writing.png`·`nyeo-success.png`와 각 Compose hierarchy·focus.
