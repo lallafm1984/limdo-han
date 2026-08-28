@@ -419,6 +419,17 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.50f, 0.72f), CanvasPoint(0.50f, 0.50f)),
     )
 
+    private val nyoTemplate = listOf(
+        listOf(
+            CanvasPoint(0.12f, 0.08f),
+            CanvasPoint(0.12f, 0.43f),
+            CanvasPoint(0.88f, 0.43f),
+        ),
+        listOf(CanvasPoint(0.12f, 0.76f), CanvasPoint(0.88f, 0.76f)),
+        listOf(CanvasPoint(0.38f, 0.76f), CanvasPoint(0.38f, 0.54f)),
+        listOf(CanvasPoint(0.62f, 0.76f), CanvasPoint(0.62f, 0.54f)),
+    )
+
     private val daTemplate = listOf(
         listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.48f, 0.12f)),
         listOf(
@@ -910,6 +921,7 @@ internal object WritingCanvasGeometry {
         LessonId.NEO -> neoTemplate
         LessonId.NYEO -> nyeoTemplate
         LessonId.NO -> noTemplate
+        LessonId.NYO -> nyoTemplate
         LessonId.DA -> daTemplate
         LessonId.GYA -> gyaTemplate
         LessonId.GEO -> geoTemplate

@@ -2933,3 +2933,11 @@
 - 판정: 글을 읽지 않아도 `녀`의 좌·우와 `노`의 위·아래 배치, `ㄴ`·`ㅗ` 조각·빈칸·오순서 재안내·완성·쓰기·성공 체크·네 그림 조작을 구분한다.
 - 자동 QA: unit·lint·debug build·diff·`NoAssemblyFlowTest` 1/1, WritingCanvas 1962 × 954 px, production 정방향 3획·성공·`DA` 다음·홈 통과. 실제 아이 관찰: 실행 안 함.
 - 다음 제품 작업: 새 불편은 없다. 다음 미구현 조립 `ㄴ + ㅛ → 뇨`를 루프 218로 준비한다.
+
+## QA-175 — 루프 218 `ㄴ + ㅛ → 뇨` 조립 아이 대리 QA
+
+- 상태: 통과. 새 P0·P1·진행 방해 P2는 0건이다.
+- 근거: `captures/loop218/iteration1/after/`의 선택·시작·오순서·완성·쓰기·성공 2340 × 1080 PNG·hierarchy·LimDo focus, APK SHA-256 `26d4b731da9a3c1558d070dead6884c7ea71a2b7a2dc419c9e83b88c98f025d5`.
+- 판정: 글을 읽지 않아도 `노`의 위쪽 짧은 획 하나와 `뇨`의 두 획, `ㄴ`·`ㅛ` 조각·위·아래 빈칸·오순서 재안내·완성·쓰기·성공 체크·네 그림 조작을 구분한다.
+- 자동 QA: unit·lint·debug build·diff·`NyoAssemblyFlowTest` 1/1, WritingCanvas 1962 × 954 px, production 정방향 4획·성공·`DA` 다음·홈 통과. 실제 아이 관찰: 실행 안 함.
+- 다음 제품 작업: 새 불편은 없다. 다음 미구현 조립 `ㄴ + ㅜ → 누`를 루프 219로 준비한다.

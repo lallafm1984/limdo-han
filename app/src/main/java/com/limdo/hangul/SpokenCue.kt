@@ -64,6 +64,8 @@ internal enum class SpokenCue(val utterance: String) {
     SUCCESS_NYEO("\uC798\uD588\uC5B4! \uB140\uB97C \uC644\uC131\uD588\uC5B4."),
     INITIAL_NO("니은을 아래 오른쪽. 아래 긴 선은 오른쪽. 마지막은 위쪽."),
     SUCCESS_NO("잘했어! 노를 완성했어."),
+    INITIAL_NYO("니은을 아래 오른쪽. 아래 긴 선은 오른쪽. 왼쪽 선은 위쪽. 오른쪽 선도 위쪽."),
+    SUCCESS_NYO("잘했어! 뇨를 완성했어."),
     INITIAL_DA("오른쪽으로 그려봐. 다음은 아래쪽, 오른쪽. 다음은 아래쪽. 마지막은 오른쪽."),
     SUCCESS_DA("잘했어! 다를 완성했어."),
     INITIAL_GYA("기역 오른쪽 아래. 세로 아래. 위 선 오른쪽. 아래 선 오른쪽."),

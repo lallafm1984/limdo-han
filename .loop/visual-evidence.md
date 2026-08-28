@@ -86,6 +86,18 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 왼쪽 `ㄱ`·오른쪽 단일 세로획, 완성 글자, 큰 체크와 기쁜 캐릭터, 네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
 
+## 루프 218 반복 1 최종 근거
+
+- 변경 전: `captures/loop217/iteration2/after/target-selection.png`와 hierarchy. 변경 후: `captures/loop218/iteration1/after/` 선택·시작·오순서·완성·쓰기·성공 PNG와 각 hierarchy·focus.
+- 환경: `alarmquest-qa` cold boot uptime `9.79`초, 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, 여섯 focus 모두 LimDo.
+- APK SHA-256: `26d4b731da9a3c1558d070dead6884c7ea71a2b7a2dc419c9e83b88c98f025d5`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 실측: WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 네 조작 각 168 × 168 px. 조립 조각·칸은 검증된 341 × 368 px·284 × 284 px 배치를 재사용한다.
+- 자산 필요 판정: 불필요 — production `NYO` geometry와 기존 정답·조작 atlas 재사용, 새 raster 0건. 자산 자동 검사 대상 없음.
+- 자동 그래픽 디자인 역할: 통과 — `노`의 짧은 위쪽 획 하나와 `뇨`의 두 획이 선택·조립·쓰기·성공에서 구분되며 잘림·왜곡·가림·halo·검은 배경은 0건이다.
+- 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`NyoAssemblyFlowTest` 1/1, 오순서 거부·정방향 4획·성공·`DA` 다음·홈을 통과했다.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 `ㄴ`·`ㅛ` 조각, 위·아래 빈칸, 오순서 재강조, 완성 카드, 큰 쓰기판, 큰 체크와 기쁜 캐릭터, 네 그림 조작을 순서대로 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+
 ## 루프 217 반복 2 최종 근거
 
 - 변경 전: `captures/loop216/iteration2/after/target-selection.png`와 hierarchy. 변경 후: `captures/loop217/iteration2/after/` 선택·시작·오순서·완성·쓰기·성공 PNG와 각 hierarchy·focus.
