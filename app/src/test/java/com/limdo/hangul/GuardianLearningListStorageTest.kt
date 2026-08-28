@@ -99,4 +99,19 @@ class GuardianLearningListStorageTest {
         val emptied = storage.removeAt(storage.removeAt(removedCurrent, 1), 0)
         assertEquals(-1, storage.loadCurrentIndex(emptied))
     }
+
+    @Test
+    fun childProgressPersistsDuplicatePositionsAndKeepsTheLastPosition() {
+        val root = Files.createTempDirectory("limdo-list-child-progress").toFile()
+        val storage = GuardianLearningListStorage(root)
+        val lessons = listOf(LessonId.GIEOK, LessonId.GIEOK, LessonId.A)
+
+        assertEquals(1, storage.saveCurrentPosition(lessons, 1))
+        assertEquals(1, GuardianLearningListStorage(root).loadCurrentIndex(lessons))
+        assertEquals(2, storage.saveCurrentPosition(lessons, 2))
+        assertEquals(2, GuardianLearningListStorage(root).loadCurrentIndex(lessons))
+        assertThrows(IllegalArgumentException::class.java) {
+            storage.saveCurrentPosition(lessons, 3)
+        }
+    }
 }

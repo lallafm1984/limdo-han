@@ -49,6 +49,10 @@ internal object LearningNavigation {
         }
     }
 
+    fun menuFor(lessonId: LessonId): LearningMenu = LearningMenu.entries.single { menu ->
+        lessons(menu).any { it.id == lessonId }
+    }
+
     fun nextLesson(menu: LearningMenu, currentLesson: LessonSpec): LessonSpec {
         val menuLessons = lessons(menu)
         val currentIndex = menuLessons.indexOfFirst { it.id == currentLesson.id }

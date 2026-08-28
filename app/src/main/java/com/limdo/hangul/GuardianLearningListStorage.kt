@@ -80,6 +80,13 @@ internal class GuardianLearningListStorage(
         return currentIndex
     }
 
+    fun saveCurrentPosition(lessonIds: List<LessonId>, index: Int): Int {
+        require(lessonIds.isNotEmpty())
+        require(index in lessonIds.indices)
+        saveCurrentIndex(index)
+        return index
+    }
+
     private fun save(lessonIds: List<LessonId>) {
         require(lessonIds.all(supportedIds::contains))
         noBackupRoot.mkdirs()

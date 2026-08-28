@@ -195,9 +195,19 @@ private fun LearningShell(
             },
             onContinueLearning = {
                 guardianLearningCurrentIndex = guardianLearningListStorage.continueFromCurrent(guardianLearningList)
+                val lessonId = guardianLearningList[guardianLearningCurrentIndex]
+                nextWritingSessionId += 1
+                destination = LearningDestination.Writing(
+                    LearningNavigation.menuFor(lessonId), lessonId, nextWritingSessionId,
+                )
             },
             onRestartLearning = {
                 guardianLearningCurrentIndex = guardianLearningListStorage.restartFromBeginning(guardianLearningList)
+                val lessonId = guardianLearningList[guardianLearningCurrentIndex]
+                nextWritingSessionId += 1
+                destination = LearningDestination.Writing(
+                    LearningNavigation.menuFor(lessonId), lessonId, nextWritingSessionId,
+                )
             },
         )
         is LearningDestination.GuardianStartRecording -> GuardianStartRecordingScreen(
@@ -232,6 +242,14 @@ private fun LearningShell(
                 menu = current.menu,
                 guardianVoiceControllers = guardianVoiceControllers,
                 onHome = { destination = LearningDestination.Home },
+                guardianLearningList = guardianLearningList,
+                guardianLearningCurrentIndex = guardianLearningCurrentIndex,
+                onGuardianLearningCurrentIndexChange = { index ->
+                    guardianLearningCurrentIndex = guardianLearningListStorage.saveCurrentPosition(
+                        guardianLearningList,
+                        index,
+                    )
+                },
             )
         }
     }
@@ -990,6 +1008,9 @@ private fun WritingLesson(
     menu: LearningMenu,
     guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
     onHome: () -> Unit,
+    guardianLearningList: List<LessonId>,
+    guardianLearningCurrentIndex: Int,
+    onGuardianLearningCurrentIndexChange: (Int) -> Unit,
 ) {
     var clearRequest by rememberSaveable { mutableIntStateOf(0) }
     var traceResult by rememberSaveable { mutableStateOf<GieokTraceResult?>(null) }
@@ -1000,13 +1021,17 @@ private fun WritingLesson(
     val retryProgress = remember { Animatable(1f) }
     var retryEvent by rememberSaveable { mutableIntStateOf(0) }
     var retryLessonIndex by rememberSaveable { mutableIntStateOf(-1) }
+    val followsGuardianList = guardianLearningList.isNotEmpty() &&
+        initialLessonId == guardianLearningList.getOrNull(guardianLearningCurrentIndex)
+    var guardianIndex by rememberSaveable { mutableIntStateOf(guardianLearningCurrentIndex) }
+    var guardianListComplete by rememberSaveable { mutableStateOf(false) }
     val currentLesson = KoreanCurriculum.lessons[lessonIndex]
     val currentVoiceController = requireNotNull(
         guardianVoiceControllers[GuardianVoiceKey(currentLesson.id)],
     )
     val retryVisuals = retryAnimationVisuals(retryProgress.value)
 
-    LaunchedEffect(currentLesson.id) {
+    LaunchedEffect(currentLesson.id, guardianIndex) {
         currentVoiceController.play()
     }
 
@@ -1049,12 +1074,37 @@ private fun WritingLesson(
             }
             if (playbackStarted) playbackFinished.await()
             if (traceResult == GieokTraceResult.SUCCESS && currentLesson.id == successfulLessonId) {
+                if (followsGuardianList && guardianIndex == guardianLearningList.lastIndex) {
+                    guardianListComplete = true
+                    return@LaunchedEffect
+                }
                 clearRequest += 1
                 traceResult = null
-                val nextLesson = LearningNavigation.nextLesson(menu, currentLesson)
+                val nextLesson = if (followsGuardianList) {
+                    guardianIndex += 1
+                    onGuardianLearningCurrentIndexChange(guardianIndex)
+                    KoreanCurriculum.lessons.single { it.id == guardianLearningList[guardianIndex] }
+                } else LearningNavigation.nextLesson(menu, currentLesson)
                 lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == nextLesson.id }
             }
         }
+    }
+
+    if (guardianListComplete) {
+        GuardianLearningComplete(
+            onHome = onHome,
+            onRestart = {
+                guardianIndex = 0
+                onGuardianLearningCurrentIndexChange(0)
+                lessonIndex = KoreanCurriculum.lessons.indexOfFirst {
+                    it.id == guardianLearningList.first()
+                }
+                clearRequest += 1
+                traceResult = null
+                guardianListComplete = false
+            },
+        )
+        return
     }
 
     Box(
@@ -1119,7 +1169,11 @@ private fun WritingLesson(
                     retryLessonIndex = -1
                     clearRequest += 1
                     traceResult = null
-                    val previousLesson = LearningNavigation.previousLesson(menu, currentLesson)
+                    val previousLesson = if (followsGuardianList) {
+                        guardianIndex = (guardianIndex - 1).coerceAtLeast(0)
+                        onGuardianLearningCurrentIndexChange(guardianIndex)
+                        KoreanCurriculum.lessons.single { it.id == guardianLearningList[guardianIndex] }
+                    } else LearningNavigation.previousLesson(menu, currentLesson)
                     lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == previousLesson.id }
                 },
                 onNext = {
@@ -1127,7 +1181,11 @@ private fun WritingLesson(
                     retryLessonIndex = -1
                     clearRequest += 1
                     traceResult = null
-                    val nextLesson = LearningNavigation.nextLesson(menu, currentLesson)
+                    val nextLesson = if (followsGuardianList) {
+                        guardianIndex = (guardianIndex + 1).coerceAtMost(guardianLearningList.lastIndex)
+                        onGuardianLearningCurrentIndexChange(guardianIndex)
+                        KoreanCurriculum.lessons.single { it.id == guardianLearningList[guardianIndex] }
+                    } else LearningNavigation.nextLesson(menu, currentLesson)
                     lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == nextLesson.id }
                 },
                 modifier = Modifier.fillMaxSize(),
@@ -1139,6 +1197,53 @@ private fun WritingLesson(
                         .fillMaxSize()
                         .background(Color(0xFFFFF4C7).copy(alpha = retryVisuals.flashAlpha)),
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GuardianLearningComplete(
+    onHome: () -> Unit,
+    onRestart: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFFF4D7))
+            .semantics { contentDescription = "학습 목록을 다 했어요" },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = 56.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text("★", fontSize = 96.sp, color = Color(0xFFF0A660))
+            Text("다 했어요!", fontSize = 48.sp, fontWeight = FontWeight.Black)
+        }
+        Row(
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 37.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+        ) {
+                GuardianCompleteAction("홈", ActionButtonAtlasSpec.HOME_COLUMN, Color(0xFF3F725E), onHome)
+                GuardianCompleteAction("처음부터", ActionButtonAtlasSpec.CLEAR_COLUMN, Color(0xFFF0A660), onRestart)
+        }
+    }
+}
+
+@Composable
+private fun GuardianCompleteAction(label: String, atlasColumn: Int, color: Color, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier
+            .size(width = 240.dp, height = 80.dp),
+        color = color,
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ActionAtlasIcon(atlasColumn, false)
+                Text(label, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

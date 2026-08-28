@@ -188,7 +188,7 @@ class GuardianVoiceRecordingTest {
         val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/MainActivity.kt").readText()
 
         assertTrue(source.contains("guardianVoiceControllers[GuardianVoiceKey(currentLesson.id)]"))
-        assertTrue(source.contains("LaunchedEffect(currentLesson.id) {\n        currentVoiceController.play()"))
+        assertTrue(source.contains("LaunchedEffect(currentLesson.id, guardianIndex) {\n        currentVoiceController.play()"))
         assertTrue(source.contains("if (traceResult == GieokTraceResult.SUCCESS)"))
         assertEquals(1, Regex("currentVoiceController\\.play\\(\\)").findAll(source).count())
         assertEquals(1, Regex("currentVoiceController\\.play \\{").findAll(source).count())
