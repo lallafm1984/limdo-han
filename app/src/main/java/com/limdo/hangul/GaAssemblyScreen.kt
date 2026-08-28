@@ -40,7 +40,7 @@ internal fun GaAssemblyScreen(onHome: () -> Unit, onWrite: (LessonId) -> Unit) {
     if (target == null) {
         Row(
             Modifier.fillMaxSize().background(visuals.softSurface).padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             HomeAction(onClick = onHome, modifier = Modifier.size(64.dp))
@@ -49,10 +49,10 @@ internal fun GaAssemblyScreen(onHome: () -> Unit, onWrite: (LessonId) -> Unit) {
                     onClick = { target = choice; state = GaAssemblyState() },
                     shape = RoundedCornerShape(36.dp),
                     color = Color.White,
-                    modifier = Modifier.size(220.dp).semantics {
+                    modifier = Modifier.size(150.dp).semantics {
                         contentDescription = "${choice.glyph} 조립 선택"
                     },
-                ) { GaGeometry(choice, piece = null, active = true, modifier = Modifier.padding(40.dp)) }
+                ) { GaGeometry(choice, piece = null, active = true, modifier = Modifier.padding(24.dp)) }
             }
         }
         return
@@ -81,9 +81,16 @@ internal fun GaAssemblyScreen(onHome: () -> Unit, onWrite: (LessonId) -> Unit) {
                 .background(Color(0xFFFFFEFA), RoundedCornerShape(36.dp)).padding(28.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
-                AssemblySlot(selectedTarget, GaAssemblyPiece.GIEOK, state.gieokPlaced, state.retryPiece == GaAssemblyPiece.VOWEL)
-                AssemblySlot(selectedTarget, GaAssemblyPiece.VOWEL, state.vowelPlaced, state.retryPiece == GaAssemblyPiece.VOWEL)
+            if (selectedTarget.isHorizontalVowel) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    AssemblySlot(selectedTarget, GaAssemblyPiece.GIEOK, state.gieokPlaced, state.retryPiece == GaAssemblyPiece.VOWEL)
+                    AssemblySlot(selectedTarget, GaAssemblyPiece.VOWEL, state.vowelPlaced, state.retryPiece == GaAssemblyPiece.VOWEL)
+                }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                    AssemblySlot(selectedTarget, GaAssemblyPiece.GIEOK, state.gieokPlaced, state.retryPiece == GaAssemblyPiece.VOWEL)
+                    AssemblySlot(selectedTarget, GaAssemblyPiece.VOWEL, state.vowelPlaced, state.retryPiece == GaAssemblyPiece.VOWEL)
+                }
             }
         }
         Surface(
@@ -122,7 +129,12 @@ private fun AssemblySlot(target: GaAssemblyTarget, piece: GaAssemblyPiece, fille
             RoundedCornerShape(28.dp),
         ).background(if (filled) Color(0xFFE4F4DE) else Color(0xFFF7F2E8), RoundedCornerShape(28.dp))
             .padding(16.dp).semantics {
-                contentDescription = if (piece == GaAssemblyPiece.GIEOK) "왼쪽 기역 칸" else "오른쪽 ${target.vowelName()} 모음 칸"
+                contentDescription = when {
+                    target.isHorizontalVowel && piece == GaAssemblyPiece.GIEOK -> "위쪽 기역 칸"
+                    target.isHorizontalVowel -> "아래쪽 ${target.vowelName()} 모음 칸"
+                    piece == GaAssemblyPiece.GIEOK -> "왼쪽 기역 칸"
+                    else -> "오른쪽 ${target.vowelName()} 모음 칸"
+                }
                 stateDescription = if (filled) "채움" else "비어 있음"
             },
         contentAlignment = Alignment.Center,
@@ -133,6 +145,7 @@ private fun GaAssemblyTarget.vowelName(): String = when (this) {
     GaAssemblyTarget.GA -> "아"
     GaAssemblyTarget.GEO -> "어"
     GaAssemblyTarget.GYEO -> "여"
+    GaAssemblyTarget.GO -> "오"
 }
 
 @Composable
