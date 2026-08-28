@@ -421,7 +421,29 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
-    private val saTemplate = siotLegs(0.27f, 0.12f, 0.05f, 0.49f, 0.84f) + listOf(
+    private val saJunction = CanvasPoint(0.26f, 0.36f)
+    private val saTemplate = listOf(
+        cubicCurve(
+            start = CanvasPoint(0.27f, 0.12f),
+            control1 = CanvasPoint(0.268f, 0.20f),
+            control2 = CanvasPoint(0.27f, 0.30f),
+            end = saJunction,
+            segmentCount = 6,
+        ) + cubicCurve(
+            start = saJunction,
+            control1 = CanvasPoint(0.25f, 0.48f),
+            control2 = CanvasPoint(0.12f, 0.65f),
+            end = CanvasPoint(0.05f, 0.84f),
+            segmentCount = 6,
+        ).drop(1),
+        listOf(
+            saJunction,
+            CanvasPoint(0.30f, 0.44f),
+            CanvasPoint(0.35f, 0.53f),
+            CanvasPoint(0.415f, 0.65f),
+            CanvasPoint(0.49f, 0.84f),
+        ),
+    ) + listOf(
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )

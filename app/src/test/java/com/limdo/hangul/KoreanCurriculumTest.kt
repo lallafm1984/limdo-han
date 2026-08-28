@@ -556,7 +556,8 @@ class KoreanCurriculumTest {
         listOf(LessonId.SIOT, LessonId.SA).forEach { id ->
             val lesson = lessonById.getValue(id)
             val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
-            assertEquals(strokes[0][2], strokes[1].first())
+            val junctionIndex = if (id == LessonId.SA) 6 else 2
+            assertEquals(strokes[0][junctionIndex], strokes[1].first())
             assertTrue(strokes[1].first().y > strokes[0].first().y)
             assertTrue(strokes[0].last().x < strokes[0].first().x)
             assertTrue(strokes[1].last().x > strokes[1].first().x)
@@ -640,6 +641,68 @@ class KoreanCurriculumTest {
                     ),
                 )
             }
+    }
+
+    @Test
+    fun saSiotKeepsContinuousEducationalCurvesWithoutDirectionReversal() {
+        val lesson = KoreanCurriculum.lessons.single { it.id == LessonId.SA }
+        val strokes = WritingCanvasGeometry.glyph(lesson, width, height).strokes
+        val leftLeg = strokes[0]
+        val rightLeg = strokes[1]
+
+        assertEquals(13, leftLeg.size)
+        assertEquals(5, rightLeg.size)
+        assertEquals(leftLeg[6], rightLeg.first())
+        assertTrue(leftLeg.zipWithNext().all { (start, end) -> end.y > start.y })
+        assertTrue(leftLeg.zipWithNext().all { (start, end) -> end.x <= start.x })
+        assertTrue(rightLeg.zipWithNext().all { (start, end) -> end.x > start.x })
+        assertTrue(rightLeg.zipWithNext().all { (start, end) -> end.y > start.y })
+        val directionCosines = leftLeg.windowed(3).map { (first, middle, last) ->
+            val incomingX = middle.x - first.x
+            val incomingY = middle.y - first.y
+            val outgoingX = last.x - middle.x
+            val outgoingY = last.y - middle.y
+            val dot = incomingX * outgoingX + incomingY * outgoingY
+            dot / (hypot(incomingX, incomingY) * hypot(outgoingX, outgoingY))
+        }
+        assertTrue(directionCosines.all { cosine -> cosine >= 0.978f })
+
+        listOf(leftLeg, rightLeg).forEachIndexed { index, stroke ->
+            assertEquals(
+                "사 초성 ${index + 1}획 정방향",
+                GieokTraceResult.SUCCESS,
+                LessonTraceEvaluator.evaluateStroke(
+                    lesson,
+                    width,
+                    height,
+                    index,
+                    StrokePath(stroke),
+                ),
+            )
+            assertEquals(
+                "사 초성 ${index + 1}획 역방향",
+                GieokTraceResult.WRONG_START,
+                LessonTraceEvaluator.evaluateStroke(
+                    lesson,
+                    width,
+                    height,
+                    index,
+                    StrokePath(stroke.reversed()),
+                ),
+            )
+            val farAway = stroke.map { point -> CanvasPoint(point.x, point.y + height * 0.30f) }
+            assertNotEquals(
+                "사 초성 ${index + 1}획 큰 이탈",
+                GieokTraceResult.SUCCESS,
+                LessonTraceEvaluator.evaluateStroke(
+                    lesson,
+                    width,
+                    height,
+                    index,
+                    StrokePath(farAway),
+                ),
+            )
+        }
     }
 
     @Test
