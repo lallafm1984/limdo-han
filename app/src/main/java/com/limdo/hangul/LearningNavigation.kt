@@ -18,6 +18,7 @@ internal sealed interface LearningDestination {
     ) : LearningDestination
     data class MenuTransition(val menu: LearningMenu) : LearningDestination
     data class Selection(val menu: LearningMenu) : LearningDestination
+    data object GaAssembly : LearningDestination
     data class Writing(
         val menu: LearningMenu,
         val lessonId: LessonId,
@@ -73,6 +74,7 @@ internal object LearningNavigation {
         is LearningDestination.GuardianStartRecording -> LearningDestination.GuardianLessons
         is LearningDestination.MenuTransition -> LearningDestination.Home
         is LearningDestination.Selection -> LearningDestination.Home
+        LearningDestination.GaAssembly -> LearningDestination.Selection(LearningMenu.GANADA)
         is LearningDestination.Writing -> LearningDestination.Selection(destination.menu)
     }
 }

@@ -243,14 +243,29 @@ private fun LearningShell(
         is LearningDestination.Selection -> LessonSelection(
             menu = current.menu,
             onSelect = { lesson ->
+                if (current.menu == LearningMenu.GANADA && lesson.id == LessonId.GA) {
+                    destination = LearningDestination.GaAssembly
+                } else {
+                    nextWritingSessionId += 1
+                    destination = LearningDestination.Writing(
+                        menu = current.menu,
+                        lessonId = lesson.id,
+                        sessionId = nextWritingSessionId,
+                    )
+                }
+            },
+            onHome = { destination = LearningDestination.Home },
+        )
+        LearningDestination.GaAssembly -> GaAssemblyScreen(
+            onHome = { destination = LearningDestination.Home },
+            onWrite = {
                 nextWritingSessionId += 1
                 destination = LearningDestination.Writing(
-                    menu = current.menu,
-                    lessonId = lesson.id,
+                    menu = LearningMenu.GANADA,
+                    lessonId = LessonId.GA,
                     sessionId = nextWritingSessionId,
                 )
             },
-            onHome = { destination = LearningDestination.Home },
         )
         is LearningDestination.Writing -> key(current.sessionId) {
             WritingLesson(
@@ -1531,7 +1546,7 @@ private fun EdgeActionColumns(
 }
 
 @Composable
-private fun HomeAction(
+internal fun HomeAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
