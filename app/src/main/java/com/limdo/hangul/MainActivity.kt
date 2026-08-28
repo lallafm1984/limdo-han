@@ -83,15 +83,17 @@ import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     private lateinit var guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>
+    private lateinit var guardianLearningListStorage: GuardianLearningListStorage
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         guardianVoiceControllers = GuardianVoiceCatalog.keys.associateWith { key ->
             GuardianVoiceController(applicationContext, key.lessonId)
         }
+        guardianLearningListStorage = GuardianLearningListStorage(noBackupFilesDir)
         hideSystemBars()
         setContent {
-            LimDoApp(guardianVoiceControllers)
+            LimDoApp(guardianVoiceControllers, guardianLearningListStorage)
         }
     }
 
@@ -127,13 +129,14 @@ private val LimDoColorScheme = lightColorScheme(
 @Composable
 private fun LimDoApp(
     guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
+    guardianLearningListStorage: GuardianLearningListStorage,
 ) {
     MaterialTheme(colorScheme = LimDoColorScheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            LearningShell(guardianVoiceControllers)
+            LearningShell(guardianVoiceControllers, guardianLearningListStorage)
         }
     }
 }
@@ -141,9 +144,13 @@ private fun LimDoApp(
 @Composable
 private fun LearningShell(
     guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
+    guardianLearningListStorage: GuardianLearningListStorage,
 ) {
     var destination by remember { mutableStateOf<LearningDestination>(LearningDestination.Home) }
     var nextWritingSessionId by rememberSaveable { mutableIntStateOf(0) }
+    var guardianLearningList by remember {
+        mutableStateOf(guardianLearningListStorage.load())
+    }
 
     BackHandler(enabled = destination != LearningDestination.Home) {
         destination = LearningNavigation.back(destination)
@@ -159,6 +166,13 @@ private fun LearningShell(
         LearningDestination.GuardianLessons -> GuardianLessonScreen(
             onClose = { destination = LearningDestination.Home },
             onOpenStartRecording = { destination = LearningDestination.GuardianStartRecording(it) },
+            learningList = guardianLearningList,
+            onAddLesson = { lessonId ->
+                guardianLearningList = guardianLearningListStorage.append(
+                    guardianLearningList,
+                    lessonId,
+                )
+            },
         )
         is LearningDestination.GuardianStartRecording -> GuardianStartRecordingScreen(
             lesson = GuardianLessonCatalog.lessons.single { it.id == current.lessonId },
@@ -388,8 +402,11 @@ private fun GuardianEntry(
 private fun GuardianLessonScreen(
     onClose: () -> Unit,
     onOpenStartRecording: (LessonId) -> Unit,
+    learningList: List<LessonId>,
+    onAddLesson: (LessonId) -> Unit,
 ) {
     var selectedGroupIndex by remember { mutableStateOf(0) }
+    var addingToLearningList by remember { mutableStateOf(false) }
     val selectedGroup = GuardianLessonCatalog.groups[selectedGroupIndex]
     val selectedVisuals = LearningMenu.entries[selectedGroupIndex].visuals()
     Column(
@@ -419,7 +436,32 @@ private fun GuardianLessonScreen(
             }
             Column {
                 Text("보호자 lesson 목록", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                Text("현재 아이 화면에 보이는 38개 lesson입니다.", fontSize = 18.sp)
+                Text("자유 학습 목록 ${learningList.size}개 · 같은 글자 반복 가능", fontSize = 18.sp)
+            }
+            Spacer(Modifier.weight(1f))
+            listOf(false to "녹음 관리", true to "목록 추가").forEach { (adding, label) ->
+                val selected = addingToLearningList == adding
+                Surface(
+                    onClick = { addingToLearningList = adding },
+                    modifier = Modifier
+                        .size(width = 150.dp, height = 74.dp)
+                        .semantics {
+                            contentDescription = label
+                            stateDescription = if (selected) "선택됨" else "선택 안 됨"
+                        },
+                    color = if (selected) Color(0xFF3F725E) else Color(0xFFE7F2EC),
+                    shape = RoundedCornerShape(22.dp),
+                    border = BorderStroke(3.dp, Color(0xFF3F725E)),
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            label,
+                            color = if (selected) Color.White else Color(0xFF315C4B),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
             }
         }
         Row(
@@ -460,6 +502,9 @@ private fun GuardianLessonScreen(
             surface = selectedVisuals.softSurface,
             modifier = Modifier.fillMaxSize(),
             onOpenStartRecording = onOpenStartRecording,
+            addingToLearningList = addingToLearningList,
+            learningList = learningList,
+            onAddLesson = onAddLesson,
         )
     }
 }
@@ -471,6 +516,9 @@ private fun GuardianLessonGroupCard(
     surface: Color,
     modifier: Modifier = Modifier,
     onOpenStartRecording: (LessonId) -> Unit,
+    addingToLearningList: Boolean,
+    learningList: List<LessonId>,
+    onAddLesson: (LessonId) -> Unit,
 ) {
     Surface(
         modifier = modifier.border(3.dp, accent, RoundedCornerShape(30.dp)),
@@ -490,15 +538,27 @@ private fun GuardianLessonGroupCard(
                 ) {
                     lessonRow.forEach { lesson ->
                         Surface(
-                            onClick = { onOpenStartRecording(lesson.id) },
+                            onClick = {
+                                if (addingToLearningList) onAddLesson(lesson.id)
+                                else onOpenStartRecording(lesson.id)
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .semantics {
-                                    contentDescription = "lesson ${lesson.glyph}, 녹음 열기"
-                                    stateDescription = "사용 가능"
+                                    contentDescription = if (addingToLearningList) {
+                                        "lesson ${lesson.glyph}, 목록에 추가"
+                                    } else {
+                                        "lesson ${lesson.glyph}, 녹음 열기"
+                                    }
+                                    val count = learningList.count { it == lesson.id }
+                                    stateDescription = if (addingToLearningList) {
+                                        "현재 목록에 ${count}개"
+                                    } else "사용 가능"
                                 },
-                            color = Color.White.copy(alpha = 0.96f),
+                            color = if (addingToLearningList && lesson.id in learningList) {
+                                accent.copy(alpha = 0.16f)
+                            } else Color.White.copy(alpha = 0.96f),
                             shape = RoundedCornerShape(18.dp),
                             border = BorderStroke(2.dp, accent.copy(alpha = 0.45f)),
                         ) {
