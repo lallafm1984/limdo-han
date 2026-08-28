@@ -24,7 +24,8 @@ class GaTraceEvaluatorTest {
 
     @Test
     fun reverseDirectionRequestsRetry() {
-        val start = strokes[1].first()
+        val target = strokes[1]
+        val start = target.first()
         assertEquals(
             GieokTraceResult.WRONG_DIRECTION,
             GaTraceEvaluator.evaluateStroke(
@@ -33,7 +34,8 @@ class GaTraceEvaluatorTest {
                 1,
                 StrokePath(
                     listOf(
-                        CanvasPoint(start.x, start.y - 100f),
+                        start,
+                        CanvasPoint(start.x, start.y - 240f),
                         start,
                     ),
                 ),
@@ -70,5 +72,58 @@ class GaTraceEvaluatorTest {
             GieokTraceResult.INCOMPLETE,
             GaTraceEvaluator.evaluateStroke(width, height, 0, StrokePath(listOf(target.first(), target[1]))),
         )
+    }
+
+    @Test
+    fun sharedChildToleranceAcceptsSmallStartCorridorAndFinishErrors() {
+        val glyph = WritingCanvasGeometry.glyph(EuLesson, width, height)
+        val target = glyph.strokes.single()
+        val em = glyph.emSize
+
+        val easedStart = listOf(
+            CanvasPoint(target.first().x, target.first().y + em * 0.20f),
+            target.last(),
+        )
+        assertEquals(
+            GieokTraceResult.SUCCESS,
+            LessonTraceEvaluator.evaluateStroke(EuLesson, width, height, 0, StrokePath(easedStart)),
+        )
+
+        val middle = CanvasPoint(
+            x = (target.first().x + target.last().x) / 2f,
+            y = target.first().y + em * 0.19f,
+        )
+        assertEquals(
+            GieokTraceResult.SUCCESS,
+            LessonTraceEvaluator.evaluateStroke(
+                EuLesson,
+                width,
+                height,
+                0,
+                StrokePath(listOf(target.first(), middle, target.last())),
+            ),
+        )
+
+        val easedFinish = CanvasPoint(target.last().x - em * 0.22f, target.last().y)
+        assertEquals(
+            GieokTraceResult.SUCCESS,
+            LessonTraceEvaluator.evaluateStroke(
+                EuLesson,
+                width,
+                height,
+                0,
+                StrokePath(listOf(target.first(), easedFinish)),
+            ),
+        )
+    }
+
+    @Test
+    fun productionUsesOneBoundedChildToleranceContract() {
+        assertEquals(0.22f, ChildTraceToleranceSpec.START_TOLERANCE_EM)
+        assertEquals(0.20f, ChildTraceToleranceSpec.CORRIDOR_TOLERANCE_EM)
+        assertEquals(0.24f, ChildTraceToleranceSpec.FINISH_TOLERANCE_EM)
+        assertEquals(0.14f, ChildTraceToleranceSpec.DIRECTION_SAMPLE_DISTANCE_EM)
+        assertEquals(-0.25f, ChildTraceToleranceSpec.STRONG_REVERSE_DOT_LIMIT)
+        assertEquals(0.35f, ChildTraceToleranceSpec.MAX_OFF_GUIDE_FRACTION)
     }
 }

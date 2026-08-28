@@ -40,7 +40,7 @@ class LessonRewardTest {
             assertTrue(transition.symbolAlpha in 0f..1f)
             assertTrue(kotlin.math.abs(retry.offsetDp) <= RetryAnimationSpec.MAX_OFFSET_DP)
             assertTrue(retry.startMarkerScale in 1f..RetryAnimationSpec.START_MARKER_MAX_SCALE)
-            assertTrue(retry.feedbackScale in 1f..1.06f)
+            assertTrue(retry.flashAlpha in 0f..RetryAnimationSpec.MAX_FLASH_ALPHA)
             assertTrue(celebration.scale in 0.72f..1.08f)
             assertTrue(celebration.alpha in 0f..1f)
         }
@@ -61,23 +61,21 @@ class LessonRewardTest {
         assertTrue(middle.startMarkerScale > start.startMarkerScale)
         assertEquals(1f, end.startMarkerScale, 0.001f)
         assertEquals(0f, end.offsetDp, 0.001f)
-        assertEquals(1f, end.feedbackScale, 0.001f)
+        assertTrue(middle.flashAlpha > start.flashAlpha)
+        assertEquals(0f, end.flashAlpha, 0.001f)
     }
 
     @Test
-    fun fullScreenFeedbackAssetsStayLargeAndSquare() {
+    fun successFeedbackStaysLargeAndRetryEffectStaysGentle() {
         assertEquals(1_024, FullScreenFeedbackSpec.SOURCE_SIZE_PX)
         assertTrue(
             FullScreenFeedbackSpec.SUCCESS_VISIBLE_FRACTION >=
                 FullScreenFeedbackSpec.MIN_WRITING_BOARD_HEIGHT_FRACTION,
         )
-        assertTrue(
-            FullScreenFeedbackSpec.RETRY_VISIBLE_FRACTION >=
-                FullScreenFeedbackSpec.MIN_WRITING_BOARD_HEIGHT_FRACTION,
-        )
         assertTrue(FullScreenFeedbackSpec.SUCCESS_VISIBLE_FRACTION <= 1f)
-        assertTrue(FullScreenFeedbackSpec.RETRY_VISIBLE_FRACTION <= 1f)
-        assertTrue(RetryAnimationSpec.DURATION_MS <= 1_500)
+        assertTrue(RetryAnimationSpec.DURATION_MS <= 420)
+        assertTrue(RetryAnimationSpec.MAX_OFFSET_DP <= 8f)
+        assertTrue(RetryAnimationSpec.MAX_FLASH_ALPHA <= 0.16f)
     }
 
     @Test

@@ -7,7 +7,6 @@ internal object SuccessCelebrationSpec {
 internal object FullScreenFeedbackSpec {
     const val SOURCE_SIZE_PX = 1_024
     const val SUCCESS_VISIBLE_FRACTION = 0.92f
-    const val RETRY_VISIBLE_FRACTION = 0.82f
     const val MIN_WRITING_BOARD_HEIGHT_FRACTION = 0.8f
 }
 

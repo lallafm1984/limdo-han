@@ -5,6 +5,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.StandardCharsets
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -12,15 +13,12 @@ class FullScreenFeedbackAssetTest {
     private data class PngHeader(val width: Int, val height: Int, val colorType: Int)
 
     @Test
-    fun generatedFeedbackImagesAreSquareRgbaPngFiles() {
+    fun successImageIsSquareRgbaAndRetryImageIsRemoved() {
         val success = feedbackImage("limdo_success_fullscreen_feedback.png")
-        val retry = feedbackImage("limdo_retry_fullscreen_feedback.png")
-
-        listOf(success, retry).forEach { header ->
-            assertEquals(FullScreenFeedbackSpec.SOURCE_SIZE_PX, header.width)
-            assertEquals(FullScreenFeedbackSpec.SOURCE_SIZE_PX, header.height)
-            assertEquals(PNG_TRUECOLOR_WITH_ALPHA, header.colorType)
-        }
+        assertEquals(FullScreenFeedbackSpec.SOURCE_SIZE_PX, success.width)
+        assertEquals(FullScreenFeedbackSpec.SOURCE_SIZE_PX, success.height)
+        assertEquals(PNG_TRUECOLOR_WITH_ALPHA, success.colorType)
+        assertFalse(File("src/main/res/drawable-nodpi/limdo_retry_fullscreen_feedback.png").exists())
     }
 
     private fun feedbackImage(filename: String): PngHeader {

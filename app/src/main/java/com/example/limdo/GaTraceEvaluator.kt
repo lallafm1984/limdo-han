@@ -18,13 +18,16 @@ internal object GaTraceEvaluator {
     )
 }
 
-internal object LessonTraceEvaluator {
-    private const val START_TOLERANCE_EM = 0.18f
-    private const val CORRIDOR_TOLERANCE_EM = 0.16f
-    private const val FINISH_TOLERANCE_EM = 0.20f
-    private const val MEANINGFUL_MOVEMENT_EM = 0.12f
-    private const val MAX_OFF_GUIDE_FRACTION = 0.25f
+internal object ChildTraceToleranceSpec {
+    const val START_TOLERANCE_EM = 0.22f
+    const val CORRIDOR_TOLERANCE_EM = 0.20f
+    const val FINISH_TOLERANCE_EM = 0.24f
+    const val DIRECTION_SAMPLE_DISTANCE_EM = 0.14f
+    const val STRONG_REVERSE_DOT_LIMIT = -0.25f
+    const val MAX_OFF_GUIDE_FRACTION = 0.35f
+}
 
+internal object LessonTraceEvaluator {
     fun evaluateStroke(
         lesson: LessonSpec,
         width: Float,
@@ -40,31 +43,41 @@ internal object LessonTraceEvaluator {
 
         val start = target.first()
         val end = target.last()
-        if (points.first().distanceTo(start) > glyph.emSize * START_TOLERANCE_EM) {
+        if (points.first().distanceTo(start) > glyph.emSize * ChildTraceToleranceSpec.START_TOLERANCE_EM) {
             return GieokTraceResult.WRONG_START
         }
 
         val targetDirection = target.first().directionTo(target[1])
-        val meaningful = points.firstOrNull {
-            it.distanceTo(start) >= glyph.emSize * MEANINGFUL_MOVEMENT_EM
+        val actualStart = points.first()
+        val meaningful = points.drop(1).firstOrNull {
+            it.distanceTo(actualStart) >=
+                glyph.emSize * ChildTraceToleranceSpec.DIRECTION_SAMPLE_DISTANCE_EM
         }
         if (meaningful != null) {
-            val movement = start.directionTo(meaningful)
-            if ((movement.x * targetDirection.x) + (movement.y * targetDirection.y) <= 0f) {
+            val movement = actualStart.directionTo(meaningful)
+            if (
+                (movement.x * targetDirection.x) + (movement.y * targetDirection.y) <=
+                ChildTraceToleranceSpec.STRONG_REVERSE_DOT_LIMIT
+            ) {
                 return GieokTraceResult.WRONG_DIRECTION
             }
         }
 
-        val tolerance = glyph.emSize * CORRIDOR_TOLERANCE_EM
+        val tolerance = glyph.emSize * ChildTraceToleranceSpec.CORRIDOR_TOLERANCE_EM
         val sampled = sample(points, tolerance / 2f)
         val offGuideFraction = sampled.count { point ->
             target.zipWithNext().minOf { (lineStart, lineEnd) ->
                 distanceToSegment(point, lineStart, lineEnd)
             } > tolerance
         }.toFloat() / sampled.size
-        if (offGuideFraction > MAX_OFF_GUIDE_FRACTION) return GieokTraceResult.OFF_GUIDE
+        if (offGuideFraction > ChildTraceToleranceSpec.MAX_OFF_GUIDE_FRACTION) {
+            return GieokTraceResult.OFF_GUIDE
+        }
 
-        return if (points.last().distanceTo(end) <= glyph.emSize * FINISH_TOLERANCE_EM) {
+        return if (
+            points.last().distanceTo(end) <=
+            glyph.emSize * ChildTraceToleranceSpec.FINISH_TOLERANCE_EM
+        ) {
             GieokTraceResult.SUCCESS
         } else {
             GieokTraceResult.INCOMPLETE

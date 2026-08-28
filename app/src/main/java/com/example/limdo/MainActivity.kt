@@ -345,16 +345,24 @@ private fun WritingLesson(
     val celebrationProgress = remember { Animatable(0f) }
     val retryProgress = remember { Animatable(1f) }
     var retryEvent by rememberSaveable { mutableIntStateOf(0) }
+    var retryLessonIndex by rememberSaveable { mutableIntStateOf(-1) }
     val currentLesson = KoreanCurriculum.lessons[lessonIndex]
     val retryVisuals = retryAnimationVisuals(retryProgress.value)
 
-    LaunchedEffect(retryEvent) {
-        if (retryEvent > 0) {
+    LaunchedEffect(retryEvent, currentLesson.id, retryLessonIndex) {
+        if (retryEvent > 0 && retryLessonIndex == lessonIndex) {
             retryProgress.snapTo(0f)
             retryProgress.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(RetryAnimationSpec.DURATION_MS),
             )
+            if (traceResult.isRetryResult()) {
+                clearRequest += 1
+                traceResult = null
+            }
+            retryLessonIndex = -1
+        } else {
+            retryProgress.snapTo(1f)
         }
     }
 
@@ -373,87 +381,80 @@ private fun WritingLesson(
             .fillMaxSize()
             .background(menu.visuals().softSurface),
     ) {
-        Image(
-            painter = painterResource(R.drawable.limdo_sunny_flower_background),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize(),
-            contentScale = ContentScale.Crop,
-            alpha = 0.32f,
-        )
-
-        WritingBoardPreview(
-            lesson = currentLesson,
-            clearRequest = clearRequest,
-            inputEnabled = traceResult != GieokTraceResult.SUCCESS,
-            demonstrationStrokeIndex = null,
-            retryStartMarkerScale = retryVisuals.startMarkerScale,
-            onTraceResult = { result, _ ->
-                traceResult = result
-                if (result.isRetryResult()) retryEvent += 1
-            },
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .graphicsLayer { translationX = retryVisuals.offsetDp.dp.toPx() }
-                .padding(
-                    horizontal = LearningShellSpec.CANVAS_HORIZONTAL_PADDING_DP.dp,
-                    vertical = LearningShellSpec.CANVAS_VERTICAL_PADDING_DP.dp,
-                ),
-        )
+                .graphicsLayer { translationX = retryVisuals.offsetDp.dp.toPx() },
+        ) {
+            Image(
+                painter = painterResource(R.drawable.limdo_sunny_flower_background),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alpha = 0.32f,
+            )
 
-        if (traceResult != null && traceResult != GieokTraceResult.EMPTY) {
+            WritingBoardPreview(
+                lesson = currentLesson,
+                clearRequest = clearRequest,
+                inputEnabled = traceResult == null || traceResult == GieokTraceResult.EMPTY,
+                demonstrationStrokeIndex = null,
+                retryStartMarkerScale = retryVisuals.startMarkerScale,
+                onTraceResult = { result, _ ->
+                    traceResult = result
+                    if (result.isRetryResult()) {
+                        retryLessonIndex = lessonIndex
+                        retryEvent += 1
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        horizontal = LearningShellSpec.CANVAS_HORIZONTAL_PADDING_DP.dp,
+                        vertical = LearningShellSpec.CANVAS_VERTICAL_PADDING_DP.dp,
+                    ),
+            )
+
             if (traceResult == GieokTraceResult.SUCCESS) {
                 SuccessFeedbackOverlay(
                     progress = celebrationProgress.value,
                     modifier = Modifier.fillMaxSize(),
                 )
-            } else {
-                RetryFeedbackOverlay(
-                    visuals = retryVisuals,
-                    modifier = Modifier.fillMaxSize(),
+            }
+
+            EdgeActionColumns(
+                onHome = onHome,
+                onClear = {
+                    retryLessonIndex = -1
+                    clearRequest += 1
+                    traceResult = null
+                },
+                onPrevious = {
+                    retryLessonIndex = -1
+                    clearRequest += 1
+                    traceResult = null
+                    val previousLesson = LearningNavigation.previousLesson(menu, currentLesson)
+                    lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == previousLesson.id }
+                },
+                onNext = {
+                    retryLessonIndex = -1
+                    clearRequest += 1
+                    traceResult = null
+                    val nextLesson = LearningNavigation.nextLesson(menu, currentLesson)
+                    lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == nextLesson.id }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+
+            if (retryVisuals.flashAlpha > 0f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFFFFF4C7).copy(alpha = retryVisuals.flashAlpha)),
                 )
             }
         }
-
-        EdgeActionColumns(
-            onHome = onHome,
-            onClear = {
-                clearRequest += 1
-                traceResult = null
-            },
-            onPrevious = {
-                clearRequest += 1
-                traceResult = null
-                val previousLesson = LearningNavigation.previousLesson(menu, currentLesson)
-                lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == previousLesson.id }
-            },
-            onNext = {
-                clearRequest += 1
-                traceResult = null
-                val nextLesson = LearningNavigation.nextLesson(menu, currentLesson)
-                lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == nextLesson.id }
-            },
-            modifier = Modifier
-                .fillMaxSize(),
-        )
     }
-}
-
-@Composable
-private fun RetryFeedbackOverlay(
-    visuals: RetryAnimationVisuals,
-    modifier: Modifier = Modifier,
-) {
-    Image(
-        painter = painterResource(R.drawable.limdo_retry_fullscreen_feedback),
-        contentDescription = stringResource(R.string.retry_feedback_description),
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = visuals.feedbackScale
-                scaleY = visuals.feedbackScale
-            },
-        contentScale = ContentScale.Fit,
-    )
 }
 
 @Composable

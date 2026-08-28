@@ -19,6 +19,5 @@
     <string name="action_next">다음</string>
     <string name="action_next_description">다음 글자로 이동</string>
     <string name="success_feedback_description">아주 잘했어요, 큰 축하 동그라미</string>
-    <string name="retry_feedback_description">괜찮아요, 웃는 구름 친구와 다시 해보기</string>
     <string name="not_available_yet">준비 중</string>
 </resources>
