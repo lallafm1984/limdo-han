@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.nullplaying.limdo"
+    namespace = "com.limdo.hangul"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.nullplaying.limdo"
+        applicationId = "com.limdo.hangul"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

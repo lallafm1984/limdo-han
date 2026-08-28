@@ -6385,3 +6385,26 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 실제 휴대폰 제한: 최종 시점의 `adb devices -l`에는 `emulator-5554`만 있었고 `adb mdns services`에도 `SM-S931N`이 검색되지 않아 새 package APK를 무선 설치하지 못했다. 과거 개발용 package 설치를 이번 설치로 표현하지 않는다.
 - 이전 비교·가설 판정: 개발용 설치 식별자·OS 백업 허용·고정 일일 학습량·생성 음성 전제에서 정식 식별자·백업 차단·보호자 자유 구성·직접 녹음 계약으로 바뀌었고 자동·APK·에뮬레이터 근거에서 반증이 없어 반복 1 가설을 `채택`한다.
 - 완료 판정: 루프 181 성공 조건과 `QA-138`을 통과했다. 사용자가 요청한 것은 2차 기능의 기획 추가였으므로 실제 기능 구현을 자동 시작하지 않고 활성 큐를 `없음`으로 전환해 `IDLE`로 종료한다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-28 루프 182 반복 1 가설 — 독립 package와 영구 시각·전체 플레이 관문
+
+- 가장 중요한 미충족 조건: `com.nullplaying.limdo`는 다른 프로젝트 이름을 포함하며, 기존 자동화는 imagegen과 2340 × 1080 문구의 존재만 확인해 production 적용·동일 상태 전후 비교·전체 화면 누락을 기계적으로 막지 못한다.
+- 반증 가능한 가설: package를 `com.limdo.hangul`로 교정하고 모든 시각 루프의 자산 필요 판정과 완료 증거, 그래픽·시스템 완료 뒤 최종 전체 플레이 관문을 별도 검사로 고정하면 다른 프로젝트 정체성을 제거하면서 생성만 하고 적용·검토하지 않는 완료와 전 화면 누락을 차단할 수 있다.
+- 반증 기준: source·build·APK에 `nullplaying`이 남거나 새 package가 실행되지 않거나, 시각 변경인데 자산 필요 근거·2340 × 1080 PNG·hierarchy·독립 역할 판정 없이 완료되거나, 최종 전체 플레이 통과 전 큐를 비우고 `IDLE`로 갈 수 있으면 가설을 기각한다.
+- 합리적 최소 변경: package와 루프 계약·검사만 바꾼다. 기준 화면은 새로 수집하지만 픽셀을 바꾸지 않으며, 현재 UI의 시각 결함 수정과 보호자 기능 구현은 다음 단일 루프에 맡긴다.
+- 실제 아이 관찰: 실행 안 함. 자동 그래픽 디자인·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-28 루프 182 반복 1 결과
+
+- package 교정: namespace·applicationId와 main/test Kotlin package를 `com.limdo.hangul`로 통일했다. source·build·APK manifest에서 `nullplaying`은 0건이고 최종 Activity는 `com.limdo.hangul/.MainActivity`다. package가 다시 바뀌어 기존 `com.nullplaying.limdo` 설치·로컬 데이터와는 별도 앱으로 취급되며 자동 삭제·이전하지 않았다.
+- 영구 그래픽 계약: `AGENTS.md`, `CLI_AUTOMATION.md`, `QA_CHECKLIST.md`, CLI 작업자 지시문과 `docs/그래픽-시스템-루프-계약.md`에 모든 루프의 시각 변경·자산 필요 판정, 필요한 자산의 Codex 내장 imagegen 자체 생성·production 적용, 동일 상태 변경 전·후 2340 × 1080 비교, 자동 그래픽 디자인·자동 QA·아이 대리 QA와 실패 시 단일 결함 반복을 고정했다.
+- 최종 전체 플레이 계약: `docs/전체-플레이-QA-행렬.md`에 아이·보호자·수명주기의 모든 고유 화면·중요 상태 inventory와 실제 tap·draw·back·권한·녹음·재생·삭제·navigation 입력, PNG·hierarchy·focus 1:1 수집을 정의했다. 그래픽·시스템 완료 뒤 새 최종 APK로 전량 수집하고 화면 누락 0건·P0/P1 0건·진행 방해 P2 0건 전에는 `IDLE`을 금지한다.
+- 기계 검사: `scripts/check-visual-loop.sh`는 state의 단계·시각 변경·자산 필요 판정과 완료 시각 근거·자산 production 경로를 조건부 검사한다. `scripts/check-full-play-evidence.sh`는 최종 관문 전 큐 비우기를 막고 통과 시 행렬·실제 휴대폰·결함 수·2340 × 1080 PNG·hierarchy를 검사한다. `run-cli-loop.sh`는 state/history뿐 아니라 queue·QA·시각 증거를 진행 fingerprint에 포함하고 작업자 종료 뒤 계약 재검사와 `CLI_LOOP_RESULT` 형식을 확인한다.
+- 자산 필요 판정: 이번 package·계약 변경은 표시 픽셀을 바꾸지 않아 새 자산은 불필요했다. `imagegen` 지침을 적용해 불필요한 장식을 생성하지 않고 production 기준선을 그대로 보존했다.
+- 자동 검증: `AppIdentityAndBackupPolicyTest`의 독립 package 계약, 전체 단위 테스트 108개, Android lint, debug build, shell syntax, 자동화·시각·최종 전체 플레이 계약과 `git diff --check`가 통과했다.
+- APK·에뮬레이터 근거: 최종 debug APK는 25,871,278 bytes, SHA-256 `ede74f5f0051f3a88a40210d39ce2c83b02467b1d5a871242466bd284931c9c2`다. `alarmquest-qa`에 새 package를 설치해 cold launch 2245 ms, 물리 1080 × 2340·`user_rotation=1`, 앱 2340 × 1080, `mCurrentFocus`·`mFocusedApp`·`topResumedActivity` 모두 LimDo와 치명 오류 0건을 확인했다.
+- 비시각 회귀: package 변경 전·후 `01-home.png`와 `02-consonant-menu.png`는 각각 pixel-by-pixel 동일했다. 새 package의 홈·자음 선택·`ㄱ` 초기 쓰기 화면과 hierarchy는 `captures/loop182/iteration1/`에 저장했다.
+- 자동 그래픽 디자인 감사: 홈은 세 큰 카드가 명확하고 쓰기 화면은 production 꽃 배경·HOME/ERASE/PREVIOUS/NEXT atlas가 일관돼 양호했다. 선택 화면만 시스템 문자 `⌂`와 평면 원을 사용해 쓰기 화면의 자체 생성 HOME 셀과 시각 언어가 끊기는 P2 일관성 결함을 발견했다. 기존 HOME 셀의 alpha bbox·투명 여백이 재사용에 충분하므로 새 생성 없이 선택 화면에서 재사용하는 루프 183을 준비한다.
+- 실제 휴대폰 경계: `SM-S931N`은 무선 ADB에 연결됐지만 그래픽·시스템 완료 뒤 최종 전체 플레이에서만 사용하라는 순서에 따라 이번 package APK를 설치·실행·캡처하지 않았다. 에뮬레이터 근거를 실제 휴대폰 검증으로 표현하지 않는다.
+- 이전 비교·가설 판정: 다른 프로젝트 package가 제거됐고 시각·전체 플레이 계약이 단순 문구가 아닌 조건부 스크립트로 강제되며 새 package 화면이 비회귀해 반복 1 가설을 `채택`한다.
+- 완료 판정: 루프 182 성공 조건과 `QA-139`를 통과했다. 최신 사용자 지시가 2차 구현 계속을 승인했으므로 큐를 비우지 않고 가장 높은 새 화면 결함 하나인 루프 183을 준비한다. 실제 아이 관찰: 실행 안 함.

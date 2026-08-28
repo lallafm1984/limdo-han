@@ -1,32 +1,29 @@
-# 루프 목표 181 — 정식 앱 식별자·백업 차단과 보호자 음성 기획 확정
+# 루프 목표 183 — 선택 화면 HOME 아이콘 디자인 통일
 
 ## 작업 가치 관문
 
-분류: 사용자 지시
-사용자 가치: 정식 LimDo 앱이 개발용 package와 OS 백업에 의존하지 않고 설치되며, 다음 구현자가 합성 음성이나 고정 학습량을 다시 도입하지 않은 채 보호자가 구성한 학습 순서와 직접 녹음한 음성을 정확히 구현할 수 있다.
-새로운 근거: 사용자가 package 이름은 프로젝트에 맞게 변경하고 진도 백업은 사용하지 않으며, 기존 음성 안내 기획 대신 보호자가 자음·모음·글자의 시작 전·정답 후 음성을 로컬 녹음하도록 지시했다. 정답 뒤에는 보호자가 정한 다음 쓰기로 자동 진행하고 하루 세 글자 같은 고정 제약을 두지 않는다.
-중복 방지: 이번 루프는 Android 앱 식별자와 백업 차단을 실제 적용하고 2차 기획 계약을 교정한다. 보호자 메뉴·녹음·재생·자동 다음·진도 저장 UI 자체는 다음 제품 루프로 분리해 이번에 임시 구현하지 않는다.
+분류: 결함 수정
+사용자 가치: 아이가 홈·선택·쓰기 화면에서 같은 집 그림을 보고 글을 읽지 않아도 일관되게 홈 복귀 동작을 이해할 수 있다.
+새로운 근거: 루프 182의 새 package 실화면 감사에서 선택 화면만 시스템 문자 `⌂`와 평면 흰 원을 사용하고 쓰기 화면은 자체 생성 production atlas의 입체 HOME 그림을 사용해 같은 행동의 그림체가 끊기는 P2 일관성 결함을 발견했다.
+중복 방지: 선택 화면 HOME 표현 하나만 기존 atlas 셀로 통일한다. 홈 카드·lesson 카드·쓰기 버튼·배경·geometry·판정·navigation과 보호자 기능은 바꾸지 않는다. 기존 HOME 셀이 실제 화면에서 부적합할 때만 재생성을 검토한다.
 
 ## 목표
 
-1. Android namespace, applicationId와 Kotlin package를 `com.nullplaying.limdo`로 일치시킨다.
-2. `android:allowBackup=false`와 Android 11 이하·12 이상의 명시적 제외 규칙으로 cloud backup과 device transfer에 앱 데이터를 포함하지 않는다.
-3. 2차 기획에서 합성·내장 음성 안내와 조건부 음성 생성 계획을 제거한다.
-4. 보호자 전용 메뉴에서 각 lesson별 `쓰기 전`·`정답 후` 두 녹음을 직접 만들고 미리 듣기·다시 녹음·삭제하며 앱 내부에만 저장하는 계약을 추가한다.
-5. 쓰기 화면 진입 때 시작 음성을 한 번 재생하고 정답 뒤 결과 음성을 한 번 재생한 다음, 보호자가 구성한 다음 lesson으로 자동 진행하는 계약을 추가한다.
-6. 하루 세 글자·5분·2·3·5개 선택 같은 고정 학습량을 제거하고, 보호자가 원하는 lesson 수와 순서를 직접 구성하거나 구성 없이 자유 쓰기를 사용할 수 있게 기획한다.
+1. `LessonSelection`의 `Text("⌂")` 시스템 글리프를 제거하고 쓰기 화면과 같은 `limdo_action_button_atlas.png` HOME 기본·눌림 셀을 사용한다.
+2. 선택 화면의 홈 터치 영역과 content description·callback을 유지한다.
+3. 기존 atlas의 alpha·bbox·셀 경계를 검사하고 새 자산이 불필요하다는 판정을 실제 2340 × 1080 화면에서 확인한다.
+4. 같은 선택 화면의 변경 전·후를 비교해 그림체 통일, 크기, 여백, 흐림, 잘림, alpha halo와 카드 시선 경쟁을 판정한다.
 
 ## 성공 조건
 
-1. `./scripts/verify.sh`와 `git diff --check`가 통과한다.
-2. source·test package, Gradle namespace와 applicationId가 모두 `com.nullplaying.limdo`이고 현재 source·build 설정에 `com.example.limdo`가 남지 않는다.
-3. 최종 APK manifest의 package가 `com.nullplaying.limdo`, `android:allowBackup=false`이며 Android 11 이하와 12 이상 백업 규칙이 모든 앱 내부 저장 domain의 cloud backup·device transfer를 제외한다.
-4. 새 package APK를 에뮬레이터에 설치·실행해 LimDo focus와 기존 2340 × 1080 홈 화면을 확인한다. 기존 package 삭제는 이번 범위가 아니다.
-5. `docs/2차-목표-제품-기획서.md`에 보호자 자유 세션 구성, lesson별 두 녹음, 로컬 전용 저장, 권한 거부 시 무음 대안, 시작·정답 각 1회 재생, 결과 재생 뒤 자동 다음, 마지막 lesson 완료가 검증 가능한 계약으로 기록된다.
-6. 계획 문서에 아이에게 고정된 하루 글자 수·시간 제한, 합성·내장 음성 재도입, 원격 음성 저장이 남지 않는다.
-7. 이번 루프에서 `RECORD_AUDIO` 권한이나 실제 녹음 기능을 미리 추가하지 않고 후속 제품 루프의 명시적 범위로 남긴다.
-8. 자동·에뮬레이터·아이 대리 QA와 실제 아이 관찰 여부를 구분한다.
+1. `./scripts/verify.sh`, `git diff --check`, `scripts/check-visual-loop.sh`가 통과한다.
+2. production source에 `Text("⌂")`와 선택 화면용 시스템 HOME 글리프가 0건이다.
+3. 선택 화면과 쓰기 화면 HOME이 같은 atlas HOME column과 기본·눌림 row를 사용한다.
+4. 선택 화면 홈 touch bounds가 최소 216 × 216 px이고 `clickable=true`·`enabled=true`, 한 번 누르면 실제 홈으로 이동한다.
+5. 기존 HOME 셀의 네 모서리 alpha 0, 유효 bbox의 셀 내부 안전 여백과 셀 간 번짐 0건을 자동 검사한다.
+6. 정확한 2340 × 1080 같은 선택 상태의 변경 전·후 PNG·hierarchy를 비교해 왜곡·흐림·잘림·검은 배경·halo 0건이며 선택 카드보다 과도하게 강조되지 않는다.
+7. `.loop/visual-evidence.md`에 focus·package·APK SHA, 자동 그래픽 디자인·자동 QA·아이 대리 QA 통과와 새 P0·P1·진행 방해 P2 0건을 기록한다.
 
 ## 완료 정의
 
-정식 package와 무백업 정책이 source·APK·에뮬레이터에서 확인되고, 보호자 녹음·자유 세션·정답 후 자동 진행 기획이 최신 사용자 지시와 일치하면 루프 181을 완료한다. 실제 녹음 기능은 구현하지 않았다고 명시하고 큐를 `없음`으로 전환한 뒤 체크포인트를 `git push origin HEAD`로 일반 push한다.
+선택 화면 HOME이 새 생성 없이 기존 production HOME atlas로 통일되고 실제 callback·화면·자산 관문을 통과하면 루프 183을 완료한다. 다음에는 2차 M1의 보호자 전용 진입 화면을 단일 제품·디자인 루프로 준비하고 완료 체크포인트를 `git push origin HEAD`로 일반 push한다.

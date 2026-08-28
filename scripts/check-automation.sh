@@ -13,6 +13,8 @@ required_files=(
     "CLI_AUTOMATION.md"
     "QA_CHECKLIST.md"
     "docs/1차-목표-작업-기획서.md"
+    "docs/그래픽-시스템-루프-계약.md"
+    "docs/전체-플레이-QA-행렬.md"
     "docs/루프-엔지니어링-적용.md"
     "docs/회귀-규칙.md"
     ".loop/env.sh"
@@ -24,6 +26,8 @@ required_files=(
     ".loop/user-directives.md"
     ".loop/cli-worker-prompt.md"
     "scripts/check-work-value.sh"
+    "scripts/check-visual-loop.sh"
+    "scripts/check-full-play-evidence.sh"
     "scripts/run-cli-loop.sh"
     "scripts/start-cli-loop.sh"
     "scripts/cli-loop-status.sh"
@@ -72,6 +76,11 @@ grep -q '실제 아이 관찰' QA_CHECKLIST.md || fail "실제 아이 관찰 근
 grep -q 'imagegen.*코덱스 내부 이미지 생성기' .loop/cli-worker-prompt.md || fail "작업자 지시문에 내부 이미지 생성 디자인 계약이 없음"
 grep -q 'imagegen.*코덱스 내부 이미지 생성기' CLI_AUTOMATION.md || fail "감독자 계약에 내부 이미지 생성 디자인 지시가 없음"
 grep -q '교육 과제와 다음 행동을 더 분명하게 하지 않는 장식 이미지는 생성하지 않는다' .loop/cli-worker-prompt.md || fail "불필요한 장식 이미지 방지 계약이 없음"
+grep -q '자산 필요 판정' AGENTS.md || fail "AGENTS.md에 시각 자산 필요 판정 계약이 없음"
+grep -q '변경 전·후' CLI_AUTOMATION.md || fail "CLI 자동화에 동일 상태 전후 비교 계약이 없음"
+grep -q '최종 전체 플레이' .loop/cli-worker-prompt.md || fail "작업자 지시문에 최종 전체 플레이 계약이 없음"
+grep -q '화면 누락 0건' 'docs/그래픽-시스템-루프-계약.md' || fail "그래픽·시스템 계약에 최종 화면 누락 관문이 없음"
+grep -q '실제 사용자 입력' 'docs/전체-플레이-QA-행렬.md' || fail "최종 전체 플레이 행렬에 실제 입력 계약이 없음"
 grep -q '^## 1차 목표 완료 관문$' 'docs/1차-목표-작업-기획서.md' || fail "1차 목표 완료 관문이 없음"
 grep -q '자음·모음·가나다' 'docs/1차-목표-작업-기획서.md' || fail "1차 기본 세 메뉴 계약이 없음"
 grep -q '아이 대리 시뮬레이션: 8/8 통과' .loop/cli-worker-prompt.md || fail "작업자 지시문에 1차 목표 아이 대리 시뮬레이션 관문이 없음"
@@ -86,6 +95,17 @@ grep -q '작업 가치 관문' .loop/cli-worker-prompt.md || fail "작업자 지
 (( $(grep -c './scripts/check-automation.sh' scripts/run-cli-loop.sh) >= 2 )) || fail "감독자에 세션별 자동화 계약 재검사가 없음"
 
 ./scripts/check-work-value.sh LOOP_GOAL.md
+./scripts/check-visual-loop.sh
+./scripts/check-full-play-evidence.sh
+
+grep -q 'namespace = "com.limdo.hangul"' app/build.gradle.kts || fail "LimDo namespace가 독립 package가 아님"
+grep -q 'applicationId = "com.limdo.hangul"' app/build.gradle.kts || fail "LimDo applicationId가 독립 package가 아님"
+if rg -n 'nullplaying' app/build.gradle.kts app/src/main app/src/test >/dev/null; then
+    fail "현재 source·build에 다른 프로젝트 package 이름 nullplaying이 남음"
+fi
+if rg -n '^package ' app/src/main/java app/src/test/java | rg -vq ':package com\.limdo\.hangul$'; then
+    fail "main/test Kotlin package가 com.limdo.hangul로 통일되지 않음"
+fi
 
 goal_loop="$(sed -n 's/^# 루프 목표 \([0-9][0-9][0-9]\).*/\1/p' LOOP_GOAL.md)"
 state_loop="$(sed -n 's/^루프: \([0-9][0-9][0-9]\).*/\1/p' .loop/state.md)"

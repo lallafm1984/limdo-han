@@ -99,7 +99,16 @@ has_work() {
 }
 
 durable_fingerprint() {
-    shasum "$repo_root/.loop/state.md" "$repo_root/.loop/history.md" | shasum | awk '{print $1}'
+    local fingerprint_files=(
+        "$repo_root/.loop/state.md"
+        "$repo_root/.loop/history.md"
+        "$repo_root/.loop/queue.md"
+        "$repo_root/.loop/qa-findings.md"
+    )
+    if [[ -s "$repo_root/.loop/visual-evidence.md" ]]; then
+        fingerprint_files+=("$repo_root/.loop/visual-evidence.md")
+    fi
+    shasum "${fingerprint_files[@]}" | shasum | awk '{print $1}'
 }
 
 acquire_lock || exit 2
@@ -179,6 +188,16 @@ while has_work; do
         2> "$run_dir/stderr.log"
     cli_status=$?
     set -e
+
+    if [[ "$cli_status" -eq 0 ]] && ! ./scripts/check-automation.sh >> "$run_dir/postcheck.log" 2>&1; then
+        echo "CLI 루프 작업자 종료 후 자동화·시각·전체 플레이 계약 재검사 실패" >&2
+        cli_status=3
+    fi
+
+    if [[ "$cli_status" -eq 0 ]] && ! tail -n 1 "$run_dir/final.txt" | grep -Eq '^CLI_LOOP_RESULT status=(CONTINUE|COMPLETE|BLOCKED|IDLE) loop=[0-9]{3} iteration=[0-9]+$'; then
+        echo "CLI 루프 작업자 최종 기계 판독 결과가 없거나 형식이 잘못됨" >&2
+        cli_status=4
+    fi
 
     thread_id="$(sed -n 's/.*"type":"thread.started","thread_id":"\([^"]*\)".*/\1/p' "$run_dir/events.jsonl" | head -n 1)"
     after_fingerprint="$(durable_fingerprint)"
