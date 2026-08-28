@@ -2941,3 +2941,19 @@
 - 판정: 글을 읽지 않아도 `노`의 위쪽 짧은 획 하나와 `뇨`의 두 획, `ㄴ`·`ㅛ` 조각·위·아래 빈칸·오순서 재안내·완성·쓰기·성공 체크·네 그림 조작을 구분한다.
 - 자동 QA: unit·lint·debug build·diff·`NyoAssemblyFlowTest` 1/1, WritingCanvas 1962 × 954 px, production 정방향 4획·성공·`DA` 다음·홈 통과. 실제 아이 관찰: 실행 안 함.
 - 다음 제품 작업: 새 불편은 없다. 다음 미구현 조립 `ㄴ + ㅜ → 누`를 루프 219로 준비한다.
+
+## QA-176 — 루프 219 `ㄴ + ㅜ → 누` 성공 조작 시각 가림
+
+- 상태: 해결. 루프 219 반복 2에서 성공 overlay를 쓰기판 내부로 한정했다.
+- 근거: APK SHA-256 `cdff6780bb64da547271103e52eb72706a5e925a5e50cecfe139d0fe289b80de`, `captures/loop219/iteration1/after/nu-success.png`과 동일 APK 재수집 `nu-success-retry.png`, 각 동시점 hierarchy·LimDo focus.
+- 판정: 완성 `누`·큰 체크·도마뱀은 보이지만 성공 atlas가 좌·우 홈·다시쓰기·이전·다음 그림을 모두 가렸다. hierarchy에 callback은 있어도 글을 읽지 못하는 아이는 성공 중 다음 행동을 볼 수 없다.
+- 제안 수정: 성공 overlay와 네 조작의 실제 표시 z-order·애니메이션 타이밍 중 재현된 한 원인만 교정하고 새 성공 PNG에서 네 그림 조작과 완성 `누`가 함께 보이게 한다.
+- 자동 QA: `NuAssemblyFlowTest` 1/1의 조립·정방향 3획·`DA`·홈은 통과했지만 자동 그래픽 디자인·아이 대리 QA는 실패다. 실제 아이 관찰: 실행 안 함.
+
+## QA-177 — 루프 219 `ㄴ + ㅜ → 누` 최종 아이 대리 QA
+
+- 상태: 통과. 새 P0·P1·진행 방해 P2는 0건이다.
+- 근거: `captures/loop219/iteration2/after/`의 선택·시작·오순서·완성·쓰기·성공 2340 × 1080 PNG·hierarchy·LimDo focus, APK SHA-256 `5ebbd4bc44cfcf73a8d41b37247a67ddb2303be366f493c408a7fa68ed520562`.
+- 판정: 글을 읽지 않아도 `노·뇨`의 위쪽 짧은 획과 `누`의 아래쪽 짧은 획, `ㄴ·ㅜ` 조각·위·아래 빈칸·오순서 재강조·완성·쓰기·성공 체크·네 그림 조작을 구분한다. 성공 atlas는 쓰기판 내부에 머물러 네 조작과 겹치지 않는다.
+- 자동 QA: `verify.sh`·diff·`NuAssemblyFlowTest` 1/1, WritingCanvas 1962 × 954 px, production 정방향 3획·성공·`DA` 다음·홈 통과. 실제 아이 관찰: 실행 안 함.
+- 다음 제품 작업: 새 불편은 없다. 2차 교육과정 3단계의 다음 미구현 조립 `ㄴ + ㅠ → 뉴`를 루프 220으로 준비한다.

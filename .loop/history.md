@@ -584,6 +584,19 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예(반복 1 변경의 최종 경계 판정이며 이번 반복의 신규 시각 변경은 없음). 자산 필요 판정: 불필요 — 기존 production 점선·시작점·동적 시범 geometry 상태 경계 검증이며 bitmap은 lifecycle 정확성을 높이지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
 
+### 2026-08-29 루프 219 반복 2 가설 — 성공 overlay를 쓰기판 내부로 한정
+
+- 가장 중요한 미충족 조건: 반복 1의 누 성공 PNG에서 성공 atlas가 좌·우 네 그림 조작의 시각 영역을 침범하는 진행 방해 P2 1건이다.
+- 반증 가능한 가설: SuccessFeedbackOverlay의 표시 범위를 전체 화면에서 쓰기판 내부로 한정하면, 완성 누·큰 체크·도마뱀·네 그림 조작이 2340 × 1080 화면에 함께 보일 것이다.
+- 반증 기준: 새 성공 화면에서 overlay가 좌·우 168 × 168 px 조작 bounds와 겹치거나 자형·잘림·왜곡·다음 전환 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: 성공 overlay의 좌우 표시 여백만 조정하며 기존 카드·성공·조작 atlas와 callback을 재사용한다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 production atlas의 배치 교정으로 해결하며 새 bitmap은 필요하지 않다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 219 반복 1 결과 최신 위치 정정
+
+- 반복 1 결과 전체가 동일한 과거 문장 anchor 뒤에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 219 반복 1 결과 — 누 조립·쓰기 연결 통과, 성공 조작 시각 가림으로 미판정` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+
 ### 2026-08-29 루프 218 반복 1 결과 — `뇨` 조립·쓰기·성공 통과·루프 완료
 
 - 최소 제품 변경: `LessonId.NYO`와 production `뇨` 4획 lesson·음성 cue·정사각형 em template을 추가했다. 조립 목표에 `NYO`만 더하고 기존 위·아래 칸·상태 전이·쓰기 callback·atlas를 재사용했다. 새 bitmap은 0건이다.
@@ -8441,3 +8454,33 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 합리적인 최소 변경: `뇨` production lesson·조립 목표·가로 모음 판정·접근성 이름·단위 검사만 확장하고 기존 상태 전이·layout·쓰기 callback·자산을 재사용한다. `ㄴ`의 다른 모음과 `ㄷ`는 늘리지 않는다.
 - 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — production `NYO` geometry와 기존 조립 카드·성공·조작 atlas가 `ㅛ`의 두 짧은 획과 초성 아래 배치를 직접 보여 주며 새 bitmap은 교육 geometry를 더 정확하게 하지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 219 반복 1 결과 — `누` 조립·쓰기 연결 통과, 성공 조작 시각 가림으로 미판정
+
+- 최소 제품 변경: `LessonId.NU`와 production `누` 3획 lesson·정사각형 em template을 추가하고, `GaAssemblyTarget.NU`·가로 모음 판정·`"우"` semantics를 연결했다. 기존 상태 전이·위·아래 layout·쓰기 callback·atlas를 재사용했고 새 bitmap은 0건이다.
+- 자동 검증: 첫 `./scripts/verify.sh`는 교육 단계 oracle에 새 `SYLLABLE_STRUCTURE` 항목이 누락돼 152개 중 1개 실패했다. 제품 순서에 맞게 oracle을 보정한 최종 `./scripts/verify.sh`는 152개 단위 테스트·Android lint·debug build를 모두 통과했고 `git diff --check`도 통과했다. APK SHA-256은 `cdff6780bb64da547271103e52eb72706a5e925a5e50cecfe139d0fe289b80de`이다.
+- 에뮬레이터 관문: serial이 없어 `alarmquest-qa`를 snapshot 없이 cold boot했다. 부팅 후 uptime `9.76`초, 수집 종료 `34.02`초, 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, 모든 근거의 `mCurrentFocus`·`mFocusedApp` `com.limdo.hangul/.MainActivity`를 확인했다.
+- on-device 검증: `NuAssemblyFlowTest` 1/1을 두 번 실행해 홈→가나다→`누` 선택, 모음 먼저 입력 거부, `ㄴ`→`ㅜ` 완성, production 3획 성공, `다` 다음, 홈 복귀를 통과했다. 선택 카드는 각 252 × 252 px, 두 조각은 각 341 × 368 px, 위·아래 칸은 각 284 × 284 px, WritingCanvas는 1962 × 954 px, 네 조작 semantics bounds는 각 168 × 168 px이다.
+- 실화면 직접 판정: `target-selection`·`nu-start`·`nu-wrong-order`·`nu-complete`·`nu-writing` 2340 × 1080 PNG에서 `노·뇨`의 위쪽 짧은 획과 `누`의 아래쪽 짧은 획, `ㄴ` 위칸·`ㅜ` 아래칸, 오순서 재강조, 완성·쓰기 geometry가 일치했고 잘림·겹침·왜곡은 0건이다.
+- 정확한 실패: `nu-success.png`와 동일 APK 재수집 `nu-success-retry.png`에서 완성 `누`·큰 체크·도마뱀은 보이지만 성공 atlas가 좌·우 네 그림 조작을 모두 시각적으로 가렸다. 동시점 hierarchy에는 네 callback과 168 × 168 px bounds가 있어 기능은 존재하지만, 글을 읽지 못하는 아이가 성공 중 다음 행동을 볼 수 없으므로 진행 방해 P2다.
+- 이전 비교·가설 판정: 루프 218의 `뇨` 위쪽 두 획과 달리 `누` 아래쪽 획 조립·판정·쓰기 callback 가설은 채택했지만, 성공 화면의 네 조작 항상 표시 조건이 실패해 루프 전체는 `미판정`이다. 자동 그래픽 디자인·자동 QA·아이 대리 QA는 실패, 새 P0·P1 0건·진행 방해 P2 1건이다. 실제 아이 관찰: 실행 안 함.
+- 종료: 정확히 한 번의 반복을 마쳤다. 루프 219는 `진행 중`이며 완료 커밋·push·다음 루프 전환을 실행하지 않았다. 다음 새 세션은 제품 범위를 늘리지 말고 성공 overlay와 네 조작의 실제 z-order·표시 타이밍 중 한 원인만 교정한 뒤 새 APK·PNG·hierarchy·focus로 다시 판정한다.
+
+### 2026-08-29 루프 219 반복 1 가설 — production `누` geometry 기반 아래쪽 짧은 획 조립
+
+- 가장 중요한 미충족 조건: 현재 `ㄴ` 조립 진입은 `나·너·녀·노·뇨`까지만 제공해, `ㅗ·ㅛ`의 위쪽 짧은 획과 다른 `ㅜ`의 아래쪽 짧은 획을 조립하고 production `누` 쓰기로 연결할 수 없다.
+- 반증 가능한 가설: `LessonId.NU`와 production `누` 3획 lesson을 추가하고 기존 `구`의 `ㅜ` geometry와 `노·뇨`의 `ㄴ` 위쪽·모음 아래쪽 조립 칸을 공유하면, 기존 목표를 보존하면서 `ㄴ + ㅜ → 누`의 아래쪽 짧은 획과 1962 × 954 px 쓰기 연결이 성립할 것이다.
+- 반증 기준: `누` 선택이 누락·중복되거나, `ㅜ`의 짧은 세로획이 위로 향하고, 대상 칸이 위·아래 구조가 아니거나, 모음 먼저·빈 칸이 완성되고, 완성 callback이 `LessonId.NU`가 아니거나, 기존 `가~기·나·너·녀·노·뇨`·navigation·geometry 검사 중 하나라도 회귀하면 가설을 기각한다.
+- 합리적인 최소 변경: `누` production lesson·조립 목표·가로 모음 판정·접근성 이름·단위 검사만 확장하고 기존 상태 전이·layout·쓰기 callback·자산을 재사용한다. `ㄴ`의 다른 모음과 `ㄷ`는 늘리지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — production `NU` geometry와 기존 조립 카드·성공·조작 atlas가 `ㅜ`의 아래쪽 짧은 획과 초성 아래 배치를 직접 보여 주며 새 bitmap은 교육 geometry를 더 정확하게 하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 219 반복 2 결과와 완료 — 성공 overlay와 네 조작 분리
+
+- 최소 제품 변경: `SuccessFeedbackOverlay`의 표시 범위를 전체 화면에서 기존 WritingCanvas 좌우 경계인 63 dp 안쪽으로 제한했다. 성공·조작 atlas, `누` geometry, callback과 자동 다음 동작은 재사용했다.
+- 자동 검증: `./scripts/verify.sh`의 152개 단위 테스트·Android lint·debug build, `git diff --check`, `NuAssemblyFlowTest` 1/1이 통과했다. APK SHA-256은 `5ebbd4bc44cfcf73a8d41b37247a67ddb2303be366f493c408a7fa68ed520562`다.
+- 에뮬레이터 관문: serial이 없어 `alarmquest-qa`를 snapshot 없이 cold boot했다. uptime `9.74`초에서 시작해 최종 수집 `35.90`초, 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, 여섯 상태의 `mCurrentFocus`·`mFocusedApp` LimDo를 확인했다.
+- 실화면 직접 판정: 변경 전 `captures/loop219/iteration1/after/nu-success-retry.png`와 변경 후 `captures/loop219/iteration2/after/nu-success.png`를 비교했다. 변경 후 overlay bounds는 `[189,0][2151,1080]`, 네 조작 bounds는 좌 `[11,356][179,524]`·`[11,556][179,724]`, 우 `[2161,356][2329,524]`·`[2161,556][2329,724]`로 분리됐다. 완성 `누`·큰 체크·도마뱀·네 조작의 잘림·겹침·가림·왜곡은 0건이다.
+- 기능 회귀: 선택·오순서 거부·완성·WritingCanvas 1962 × 954 px·production 정방향 3획·성공·`DA` 다음·홈이 통과했다.
+- 이전 비교·가설 판정: 반복 1의 전체 화면 atlas 침범과 달리 쓰기판 내부로 한정한 새 화면은 네 그림 조작의 독립된 시각 영역을 보존하므로 가설을 `채택`한다. 자동 그래픽 디자인·자동 QA·에뮬레이터·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2는 0건이다. 실제 아이 관찰: 실행 안 함.
+- 완료·전환: 루프 219를 완료하고 `QA-177`에 새 불편이 없어 2차 교육과정 3단계의 다음 미구현 조립 `ㄴ + ㅠ → 뉴`를 루프 220으로 준비했다. 이 작업자는 루프 220을 구현하지 않는다.

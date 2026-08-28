@@ -121,3 +121,16 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 자동 QA 역할: 통과 — `verify.sh`·diff·`NyeoAssemblyFlowTest` 1/1, 오순서 거부·정방향 4획·성공·`다` 다음·홈 통과.
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 `너`의 획 하나와 `녀`의 두 획, 조각·빈칸·재안내·완성·쓰기·성공·네 그림 조작을 순서대로 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+
+## 루프 219 반복 2 최종 근거
+
+- 변경 전: `captures/loop219/iteration1/after/nu-success-retry.png`와 hierarchy. 변경 후: `captures/loop219/iteration2/after/` 선택·시작·오순서·완성·쓰기·성공 PNG와 각 hierarchy·focus.
+- 환경: `alarmquest-qa` cold boot uptime `9.74`초에서 시작, 최종 수집 `35.90`초, 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, 모든 focus LimDo.
+- APK SHA-256: `5ebbd4bc44cfcf73a8d41b37247a67ddb2303be366f493c408a7fa68ed520562`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 실측: 조립 조각 341 × 368 px, 위·아래 칸 284 × 284 px, WritingCanvas 1962 × 954 px, 네 조작 각 168 × 168 px. 성공 overlay bounds `[189,0][2151,1080]`.
+- 자산 필요 판정: 불필요 — production `NU` geometry와 기존 정답·조작 atlas 재사용, 새 raster 0건.
+- 자산 자동 검사: 새 자산 대상 없음. 기존 atlas의 APK production 소비를 성공 PNG·semantics로 재확인했다.
+- 자동 그래픽 디자인 역할: 통과 — 변경 전 전체 화면 atlas의 시각 침범을 제거했고, 변경 후 완성 `누`·큰 체크·도마뱀·네 그림 조작의 가림·잘림·왜곡·halo·검은 배경은 0건이다.
+- 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`NuAssemblyFlowTest` 1/1, 오순서 거부·정방향 3획·성공·`DA` 다음·홈 통과.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 `ㄴ·ㅜ` 조각, 위·아래 빈칸, 재안내, 완성 카드, 큰 쓰기판, 성공 체크와 네 그림 조작을 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.

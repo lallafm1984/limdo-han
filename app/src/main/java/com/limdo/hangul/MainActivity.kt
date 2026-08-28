@@ -1304,7 +1304,9 @@ private fun WritingLesson(
             if (traceResult == GieokTraceResult.SUCCESS) {
                 SuccessFeedbackOverlay(
                     progress = celebrationProgress.value,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = LearningShellSpec.CANVAS_HORIZONTAL_PADDING_DP.dp),
                 )
             }
 
