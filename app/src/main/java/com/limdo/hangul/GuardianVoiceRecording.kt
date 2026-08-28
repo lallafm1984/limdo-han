@@ -22,6 +22,12 @@ internal object GuardianVoiceCatalog {
     val keys: List<GuardianVoiceKey> = GuardianLessonCatalog.lessons.map { GuardianVoiceKey(it.id) }
 }
 
+internal object WritingVoiceCatalog {
+    val keys: List<GuardianVoiceKey> = KoreanCurriculum.lessons
+        .map { GuardianVoiceKey(it.id) }
+        .distinct()
+}
+
 internal object GuardianVoiceStorage {
     const val DIRECTORY = "guardian_voice"
     const val MAX_DURATION_MILLIS = 8_000

@@ -23,6 +23,8 @@ internal class GuardianLessonProgressStorage(
     private val supportedIds = GuardianLessonCatalog.lessons.mapTo(mutableSetOf(), LessonSpec::id)
     private val progressFile = File(noBackupRoot, FILE_NAME)
 
+    fun tracks(lessonId: LessonId): Boolean = lessonId in supportedIds
+
     fun load(): Map<LessonId, GuardianLessonProgress> {
         if (!progressFile.isFile) return emptyMap()
         return runCatching {

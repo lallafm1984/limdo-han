@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        guardianVoiceControllers = GuardianVoiceCatalog.keys.associateWith { key ->
+        guardianVoiceControllers = WritingVoiceCatalog.keys.associateWith { key ->
             GuardianVoiceController(applicationContext, key.lessonId)
         }
         guardianLearningListStorage = GuardianLearningListStorage(noBackupFilesDir)
@@ -258,11 +258,11 @@ private fun LearningShell(
         )
         LearningDestination.GaAssembly -> GaAssemblyScreen(
             onHome = { destination = LearningDestination.Home },
-            onWrite = {
+            onWrite = { lessonId ->
                 nextWritingSessionId += 1
                 destination = LearningDestination.Writing(
                     menu = LearningMenu.GANADA,
-                    lessonId = LessonId.GA,
+                    lessonId = lessonId,
                     sessionId = nextWritingSessionId,
                 )
             },
@@ -1169,7 +1169,9 @@ private fun WritingLesson(
     val assistanceLevel = RetryAssistanceSpec.level(retryCount)
 
     LaunchedEffect(currentLesson.id, guardianIndex) {
-        guardianLessonProgressStorage.markPracticed(currentLesson.id)
+        if (guardianLessonProgressStorage.tracks(currentLesson.id)) {
+            guardianLessonProgressStorage.markPracticed(currentLesson.id)
+        }
         receivedHelp = false
         retryCount = 0
         currentVoiceController.play()
@@ -1201,11 +1203,13 @@ private fun WritingLesson(
         if (traceResult == GieokTraceResult.SUCCESS) {
             retryCount = 0
             val successfulLessonId = currentLesson.id
-            guardianLessonProgressStorage.markCompleted(
-                successfulLessonId,
-                if (receivedHelp) GuardianLessonAssistance.AFTER_HELP
-                else GuardianLessonAssistance.INDEPENDENT,
-            )
+            if (guardianLessonProgressStorage.tracks(successfulLessonId)) {
+                guardianLessonProgressStorage.markCompleted(
+                    successfulLessonId,
+                    if (receivedHelp) GuardianLessonAssistance.AFTER_HELP
+                    else GuardianLessonAssistance.INDEPENDENT,
+                )
+            }
             val minimumSuccessVisibility = async {
                 delay(SuccessCelebrationSpec.DURATION_MS.toLong())
             }

@@ -57,15 +57,21 @@ internal object LearningNavigation {
     fun nextLesson(menu: LearningMenu, currentLesson: LessonSpec): LessonSpec {
         val menuLessons = lessons(menu)
         val currentIndex = menuLessons.indexOfFirst { it.id == currentLesson.id }
-        require(currentIndex >= 0) { "${currentLesson.id} is not in ${menu.name}" }
-        return menuLessons[(currentIndex + 1) % menuLessons.size]
+        if (currentIndex >= 0) return menuLessons[(currentIndex + 1) % menuLessons.size]
+        val stageLessons = KoreanCurriculum.lessons.filter { it.stage == currentLesson.stage }
+        val stageIndex = stageLessons.indexOfFirst { it.id == currentLesson.id }
+        require(stageIndex >= 0) { "${currentLesson.id} is not in the curriculum" }
+        return stageLessons[(stageIndex + 1) % stageLessons.size]
     }
 
     fun previousLesson(menu: LearningMenu, currentLesson: LessonSpec): LessonSpec {
         val menuLessons = lessons(menu)
         val currentIndex = menuLessons.indexOfFirst { it.id == currentLesson.id }
-        require(currentIndex >= 0) { "${currentLesson.id} is not in ${menu.name}" }
-        return menuLessons[(currentIndex - 1 + menuLessons.size) % menuLessons.size]
+        if (currentIndex >= 0) return menuLessons[(currentIndex - 1 + menuLessons.size) % menuLessons.size]
+        val stageLessons = KoreanCurriculum.lessons.filter { it.stage == currentLesson.stage }
+        val stageIndex = stageLessons.indexOfFirst { it.id == currentLesson.id }
+        require(stageIndex >= 0) { "${currentLesson.id} is not in the curriculum" }
+        return stageLessons[(stageIndex - 1 + stageLessons.size) % stageLessons.size]
     }
 
     fun back(destination: LearningDestination): LearningDestination = when (destination) {

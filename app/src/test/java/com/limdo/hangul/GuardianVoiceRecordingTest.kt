@@ -84,6 +84,16 @@ class GuardianVoiceRecordingTest {
     }
 
     @Test
+    fun writingCatalogIncludesEveryProductionLessonWithoutExpandingGuardianList() {
+        assertEquals(
+            KoreanCurriculum.lessons.map { GuardianVoiceKey(it.id) }.distinct(),
+            WritingVoiceCatalog.keys,
+        )
+        assertTrue(WritingVoiceCatalog.keys.contains(GuardianVoiceKey(LessonId.GEO)))
+        assertEquals(38, GuardianVoiceCatalog.keys.size)
+    }
+
+    @Test
     fun firstMiddleAndLastLessonEventsPreserveEveryOtherRecording() {
         val root = Files.createTempDirectory("limdo-guardian-all-lessons").toFile()
         val representativeKeys = listOf(

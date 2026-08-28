@@ -9,6 +9,14 @@ import org.junit.Test
 
 class GuardianLessonProgressStorageTest {
     @Test
+    fun progressTracksOnlyGuardianExposedLessons() {
+        val storage = GuardianLessonProgressStorage(Files.createTempDirectory("limdo-progress-scope").toFile())
+
+        assertTrue(storage.tracks(LessonId.GA))
+        assertFalse(storage.tracks(LessonId.GEO))
+    }
+
+    @Test
     fun practiceAndCompletionPersistByStableLessonIdWithoutChangingOtherLessons() {
         val root = Files.createTempDirectory("limdo-progress").toFile()
         val times = ArrayDeque(listOf(100L, 200L, 300L))
