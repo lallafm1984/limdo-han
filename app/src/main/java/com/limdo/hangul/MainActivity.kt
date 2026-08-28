@@ -11,6 +11,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -47,11 +50,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -59,7 +65,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
@@ -121,6 +129,10 @@ private fun LearningShell() {
             onSelect = {
                 destination = LearningDestination.MenuTransition(it)
             },
+            onOpenGuardian = { destination = LearningDestination.GuardianLessons },
+        )
+        LearningDestination.GuardianLessons -> GuardianLessonScreen(
+            onClose = { destination = LearningDestination.Home },
         )
         is LearningDestination.MenuTransition -> MenuSelectionTransition(
             menu = current.menu,
@@ -187,16 +199,23 @@ private fun MenuSelectionTransition(
 }
 
 @Composable
-private fun LearningMenuHome(onSelect: (LearningMenu) -> Unit) {
-    Row(
+private fun LearningMenuHome(
+    onSelect: (LearningMenu) -> Unit,
+    onOpenGuardian: () -> Unit,
+) {
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(LimDoPlaygroundTokens.playgroundBackground)
-            .padding(LimDoPlaygroundTokens.SCREEN_PADDING_DP.dp),
-        horizontalArrangement = Arrangement.spacedBy(LimDoPlaygroundTokens.CARD_GAP_DP.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .background(LimDoPlaygroundTokens.playgroundBackground),
     ) {
-        LearningMenu.entries.forEachIndexed { index, menu ->
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(LimDoPlaygroundTokens.SCREEN_PADDING_DP.dp),
+            horizontalArrangement = Arrangement.spacedBy(LimDoPlaygroundTokens.CARD_GAP_DP.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            LearningMenu.entries.forEachIndexed { index, menu ->
             val visuals = menu.visuals()
             val interactionSource = remember { MutableInteractionSource() }
             val isPressed by interactionSource.collectIsPressedAsState()
@@ -245,6 +264,165 @@ private fun LearningMenuHome(onSelect: (LearningMenu) -> Unit) {
                 ) {
                     Text(menu.symbol, fontSize = 76.sp, fontWeight = FontWeight.Bold)
                     Text(menu.label, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            }
+        }
+        GuardianEntry(
+            onOpen = onOpenGuardian,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 12.dp),
+        )
+    }
+}
+
+private const val GUARDIAN_HOLD_MILLIS = 2_000L
+
+@Composable
+private fun GuardianEntry(
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .size(68.dp)
+            .pointerInput(onOpen) {
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false)
+                    val releasedEarly = withTimeoutOrNull(GUARDIAN_HOLD_MILLIS) {
+                        waitForUpOrCancellation()
+                    }
+                    if (releasedEarly == null) {
+                        onOpen()
+                        waitForUpOrCancellation()
+                    }
+                }
+            }
+            .semantics {
+                contentDescription = "보호자 메뉴"
+                onLongClick("2초간 길게 눌러 보호자 메뉴 열기") {
+                    onOpen()
+                    true
+                }
+            },
+        color = Color(0xFFF7E7B6),
+        shape = RoundedCornerShape(22.dp),
+        shadowElevation = 3.dp,
+        border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF806D42)),
+    ) {
+        Canvas(Modifier.padding(16.dp).fillMaxSize()) {
+            val strokeWidth = size.minDimension * 0.12f
+            drawArc(
+                color = Color(0xFF665638),
+                startAngle = 190f,
+                sweepAngle = 160f,
+                useCenter = false,
+                topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.23f, 0f),
+                size = androidx.compose.ui.geometry.Size(size.width * 0.54f, size.height * 0.58f),
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+            )
+            drawRoundRect(
+                color = Color(0xFF665638),
+                topLeft = androidx.compose.ui.geometry.Offset(0f, size.height * 0.42f),
+                size = androidx.compose.ui.geometry.Size(size.width, size.height * 0.58f),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.width * 0.16f),
+            )
+            drawCircle(
+                color = Color(0xFFF7E7B6),
+                radius = size.minDimension * 0.09f,
+                center = center.copy(y = size.height * 0.68f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun GuardianLessonScreen(onClose: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFFF8EC))
+            .padding(28.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            Surface(
+                onClick = onClose,
+                modifier = Modifier
+                    .size(width = 112.dp, height = 68.dp)
+                    .semantics { contentDescription = "보호자 화면 닫기" },
+                color = Color(0xFF3F725E),
+                shape = RoundedCornerShape(22.dp),
+                shadowElevation = 4.dp,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text("닫기", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            Column {
+                Text("보호자 lesson 목록", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                Text("현재 아이 화면에 보이는 38개 lesson입니다.", fontSize = 18.sp)
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            GuardianLessonCatalog.groups.forEachIndexed { index, group ->
+                GuardianLessonGroupCard(
+                    group = group,
+                    accent = LearningMenu.entries[index].visuals().accent,
+                    surface = LearningMenu.entries[index].visuals().softSurface,
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GuardianLessonGroupCard(
+    group: GuardianLessonGroup,
+    accent: Color,
+    surface: Color,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.border(3.dp, accent, RoundedCornerShape(30.dp)),
+        color = surface,
+        shape = RoundedCornerShape(30.dp),
+        shadowElevation = 5.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Text(group.label, color = accent, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            group.lessons.chunked(7).forEach { lessonRow ->
+                Row(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    lessonRow.forEach { lesson ->
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .semantics { contentDescription = "lesson ${lesson.glyph}" },
+                            color = Color.White.copy(alpha = 0.82f),
+                            shape = RoundedCornerShape(18.dp),
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(lesson.glyph, fontSize = 34.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                    repeat(7 - lessonRow.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
         }

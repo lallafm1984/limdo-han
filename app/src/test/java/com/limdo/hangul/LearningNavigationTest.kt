@@ -103,6 +103,22 @@ class LearningNavigationTest {
     }
 
     @Test
+    fun guardianCatalogShowsExactlyTheThirtyEightProductionLessonsInThreeGroups() {
+        assertEquals(listOf("자음 14개", "모음 10개", "글자 14개"), GuardianLessonCatalog.groups.map { it.label })
+        assertEquals(listOf(14, 10, 14), GuardianLessonCatalog.groups.map { it.lessons.size })
+        assertEquals(38, GuardianLessonCatalog.lessons.size)
+        assertEquals(38, GuardianLessonCatalog.lessons.map { it.id }.distinct().size)
+        assertEquals(
+            LearningMenu.entries.flatMap(LearningNavigation::lessons).map { it.id },
+            GuardianLessonCatalog.lessons.map { it.id },
+        )
+        assertEquals(
+            LearningDestination.Home,
+            LearningNavigation.back(LearningDestination.GuardianLessons),
+        )
+    }
+
+    @Test
     fun previousAndNextLessonsStayInsideEachMenuAndWrapBothDirections() {
         val expected = listOf(
             LessonId.NA, LessonId.DA, LessonId.RA, LessonId.MA, LessonId.BA, LessonId.SA,
