@@ -134,3 +134,14 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`NuAssemblyFlowTest` 1/1, 오순서 거부·정방향 3획·성공·`DA` 다음·홈 통과.
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 `ㄴ·ㅜ` 조각, 위·아래 빈칸, 재안내, 완성 카드, 큰 쓰기판, 성공 체크와 네 그림 조작을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+## 루프 220 반복 1 최종 근거
+
+- 변경 전: `captures/loop219/iteration2/after/target-selection.png`와 hierarchy. 변경 후: `captures/loop220/iteration1/after/` 선택·시작·오순서·완성·쓰기·성공 PNG와 각 hierarchy·focus.
+- 환경: `alarmquest-qa` snapshot 없이 cold boot, uptime `9.76`초에서 시작해 최종 수집 `73.77`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, 여섯 focus 모두 `com.limdo.hangul/.MainActivity`.
+- APK SHA-256: `8c76da8f674964e70a4f905737698795b13b2330c99761ced1a5742bdff83b7c`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 실측: 조립 조각 341 × 368 px, 위·아래 칸 284 × 284 px, WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 네 조작 각 168 × 168 px. 성공 overlay는 `[189,0][2151,1080]`의 쓰기판 내부에만 머물렀다.
+- 자산 필요 판정: 불필요 — production `NYU` geometry와 기존 정답·조작 atlas 재사용, 새 raster 0건. 기존 atlas의 APK production 소비를 성공 PNG·semantics로 재확인했다.
+- 자동 그래픽 디자인 역할: 통과 — `누`의 아래쪽 짧은 획 하나와 `뉴`의 두 획이 선택·조립·쓰기·성공에서 구분되고 잘림·왜곡·가림·halo·검은 배경은 0건이다.
+- 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`NyuAssemblyFlowTest` 1/1, 오순서 거부·정방향 4획·성공·`DA` 다음·홈을 통과했다.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 `ㄴ·ㅠ` 조각, 위·아래 빈칸, 오순서 재강조, 완성 카드, 큰 쓰기판, 성공 체크와 네 그림 조작을 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
