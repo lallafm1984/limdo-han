@@ -118,6 +118,23 @@ class GuardianVoiceRecordingTest {
     }
 
     @Test
+    fun productionHasNoSyntheticSpeechEngineOrLegacyPlaybackStateModel() {
+        val sourceRoot = File(rootProject(), "app/src/main/java")
+        val productionSource = sourceRoot.walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .joinToString("\n") { it.readText() }
+
+        assertFalse(productionSource.contains("android.speech.tts.TextToSpeech"))
+        assertFalse(productionSource.contains("SpeechPlaybackState"))
+        assertFalse(productionSource.contains("SpeechPlaybackTracker"))
+        assertFalse(productionSource.contains("shouldResumeSuccessCue"))
+        assertFalse(productionSource.contains("shouldResumeInitialCue"))
+        assertTrue(productionSource.contains("GuardianVoiceEvent.START"))
+        assertTrue(productionSource.contains("GuardianVoiceEvent.SUCCESS"))
+        assertTrue(productionSource.contains("GuardianVoiceState.EMPTY"))
+    }
+
+    @Test
     fun recordingPermissionIsTheOnlyRuntimePermissionAndIsRequestedFromRecordingAction() {
         val project = rootProject()
         val manifest = File(project, "app/src/main/AndroidManifest.xml").readText()

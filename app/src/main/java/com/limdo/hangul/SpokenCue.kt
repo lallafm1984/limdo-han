@@ -196,21 +196,3 @@ internal object SpokenCueModel {
         else -> first
     }
 }
-
-internal fun shouldResumeSuccessCue(
-    speechState: SpeechPlaybackState,
-    traceResult: GieokTraceResult?,
-    successSpeechPending: Boolean,
-    alreadyHandled: Boolean,
-): Boolean = speechState == SpeechPlaybackState.Ready &&
-    traceResult == GieokTraceResult.SUCCESS &&
-    successSpeechPending &&
-    !alreadyHandled
-
-internal fun shouldResumeInitialCue(
-    speechState: SpeechPlaybackState,
-    initialSpeechPending: Boolean,
-    alreadyHandled: Boolean,
-): Boolean = speechState == SpeechPlaybackState.Ready &&
-    initialSpeechPending &&
-    !alreadyHandled

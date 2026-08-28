@@ -6467,6 +6467,18 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 카드·색 token과 원·사각형·재생 삼각형 같은 단순 Canvas 상태 도형으로 녹음·정지·재생·삭제를 색 이외의 실루엣으로 구분할 수 있어 새 bitmap이 과제나 다음 행동을 더 명확하게 하지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·실제 기기·아이 대리 QA와 구분한다.
 
+### 2026-08-28 루프 188 반복 1 결과
+
+- 최소 제품 변경: production에서 호출되지 않던 `SpeechPlaybackState`·`SpeechPlaybackTracker`, 합성 음성 재개 함수와 그 전용 test를 제거했다. 동적 획 시범의 cue identity·geometry와 보호자 `GuardianVoiceState`·`START`·`SUCCESS` controller는 유지했다.
+- 회귀 검사 고정: `GuardianVoiceRecordingTest.productionHasNoSyntheticSpeechEngineOrLegacyPlaybackStateModel`이 production의 Android `TextToSpeech` API·과거 합성 재생 상태·재개 함수 0건과 보호자 두 event·무음 `EMPTY` 상태 존재를 함께 검사한다.
+- 자동 검증: `./scripts/verify.sh`의 자동화 계약·전체 unit·Android lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`가 모두 통과했다. APK SHA-256은 `f162e4ab8b3633bf892b4f9687bc577c27bb3eefcc79ccacfc460554a7237347`이다.
+- 실제 기기: 무선 ADB `SM_S931N`에 `adb install -r`가 `Success`였고 물리 1080 × 2340·`user_rotation=1`, 앱 2340 × 1080, `com.limdo.hangul/.MainActivity` 전면 focus를 확인했다. 최초 세로·YouTube focus 캡처는 근거에서 제외하고 `captures/loop188/iteration1/device/home-landscape.png`·XML만 사용한다.
+- 화면 직접 판정: 새 2340 × 1080 홈을 원본 크기로 읽었고 세 메뉴 대표 글자·색·큰 카드, 보호자 잠금, 잘림·겹침·시스템 바 비가림이 이전 루프와 동일하다. 이번 비시각 변경으로 화면·조작·내용·터치 회귀와 새 P0·P1·진행 방해 P2는 0건이다.
+- 보호자 회귀: 보호자 START·SUCCESS 파일명·event 격리·원자 저장·background 공통 release·손상 M4A 무음 fallback은 전용 전체 검사에서 통과했다. 제품 상태 이름 `EMPTY·RECORDING·READY·PLAYING`은 합성 음성이 아니라 실제 보호자 녹음 controller의 필수 event 상태로 보존했다.
+- 이전 비교·가설 판정: 루프 187 APK에는 호출되지 않는 합성 재생 상태 model과 test가 남았으나 새 APK에서는 production 참조 0건이 자동 계약으로 고정됐고 보호자 녹음·무음·실화면 반증이 없어 가설을 `채택`한다.
+- 완료·전환: 루프 188 성공 조건을 통과했다. M1 완료 관문의 가장 앞선 미충족 제품 작업인 현재 노출 38개 lesson 각각의 `쓰기 전`·`정답 후` 두 녹음 칸 연결을 루프 189로 준비하고 구현은 다음 새 세션에 맡긴다.
+- 자동 그래픽 디자인 역할: 비시각 변경으로 기존 production 화면 일관성 유지 통과. 자동 QA 역할: 통과. 아이 대리 QA: 통과. 실제 아이 관찰: 실행 안 함.
+
 ### 2026-08-28 루프 185 반복 5 기록 위치 정정
 
 - 반복 5 가설의 첫 패치가 반복 1 기록 뒤에 삽입되었다. 덧붙이기 전용 계약에 따라 기존 기록은 수정·삭제하지 않고, 이 정정과 아래 결과를 현재 문서 끝에 남겨 시간 순서를 명확히 한다.
@@ -6740,3 +6752,19 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 완료·전환: 루프 187 성공 조건 1~6, 자동 그래픽 디자인·자동 QA·아이 대리 QA, 새 P0·P1·진행 P2 0건을 통과해 완료한다.
 - 다음 루프: M1의 사용되지 않는 합성 문구·재생 상태 model 정리라로 루프 188을 준비한다. 이 자업은 다음 새션에 늠긴다.
 - 실제 아이 관찰: 실행 안 함.
+### 2026-08-28 루프 188 반복 1 가설 — 합성 음성 재생 상태 model 제거
+
+- 가장 중요한 미충족 조건: production에서 `SpeechPlaybackState`·`SpeechPlaybackTracker`와 합성 음성 재개 함수가 전혀 호출되지 않지만 test가 과거 TTS 재생 상태와 합성 문구 계약을 계속 제품 계약처럼 유지한다.
+- 반증 가능한 가설: 사용되지 않는 합성 음성 재생 상태·재개 함수와 그 전용 test를 제거하고, production에 TTS API·합성 재생 상태가 없다는 source 계약을 보호자 `START`·`SUCCESS` event 검사와 함께 고정하면 보호자 녹음 lifecycle과 아이 무음 학습 흐름은 그대로 통과할 것이다.
+- 반증 기준: 제거 뒤 production에 `SpeechPlaybackState`·`SpeechPlaybackTracker`·`shouldResumeSuccessCue`·`shouldResumeInitialCue` 또는 Android `TextToSpeech` 호출이 남거나, 보호자 `START`·`SUCCESS` 파일명·callback·background·손상 fallback 검사와 전체 unit·lint·build 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: 사용되지 않는 합성 재생 상태 model과 재개 함수·전용 test만 제거하고, 동적 획 시범에 사용되는 cue identity·geometry·보호자 녹음 controller·UI는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오. 자산 필요 판정: 불필요 — 호출되지 않는 상태 model 정리이며 새 bitmap은 제품 가치를 더하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·실제 기기·아이 대리 QA와 구분한다.
+
+### 2026-08-28 루프 188 반복 1 최신 결과 인계
+
+- 기록 위치 정정: 반복 1 결과가 과거 루프 185 기록 사이에 먼저 삽입됐다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 위 결과와 이 절을 루프 188의 최신 인계로 사용한다.
+- 최신 판정: 합성 재생 상태 model·재개 함수 제거, production TTS·과거 상태 0건 자동 계약, 전체 unit·lint·build·`git diff --check`·시각 루프 검사, 실제 `SM_S931N`의 2340 × 1080 LimDo focus와 홈 비회귀를 통과해 가설을 `채택`하고 루프 188을 완료한다.
+- 전환 정정: 최초에는 M1의 38개 lesson 녹음 확장을 준비했으나 작업 중 최신 `.loop/user-directives.md`에 `카` 하단 기울기·`하` 자모 분리 결함이 추가됐다. 최신 사용자 지시 우선 계약에 따라 루프 189를 이 자형 결함으로 준비하며 38개 녹음 확장은 그 뒤 미완료 작업으로 유지한다.
+- 커밋·push: 루프 188 완료와 최신 사용자 지시를 반영한 루프 189 준비를 체크포인트 하나로 커밋하고 일반 push한다.
+- 실제 아이 관찰: 실행 안 함.

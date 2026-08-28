@@ -65,24 +65,4 @@ class SpokenCueModelTest {
         )
     }
 
-    @Test
-    fun restoredSuccessResumesOnlyOnceWhenNewSpeechEngineIsReady() {
-        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Initializing, GieokTraceResult.SUCCESS, true, false))
-        assertTrue(shouldResumeSuccessCue(SpeechPlaybackState.Ready, GieokTraceResult.SUCCESS, true, false))
-        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, GieokTraceResult.SUCCESS, true, true))
-        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, GieokTraceResult.SUCCESS, false, false))
-        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, null, true, false))
-        assertFalse(shouldResumeSuccessCue(SpeechPlaybackState.Ready, GieokTraceResult.OFF_GUIDE, true, false))
-    }
-
-    @Test
-    fun restoredManualInitialResumesOnlyOnceWhenNewSpeechEngineIsReady() {
-        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Initializing, true, false))
-        assertTrue(shouldResumeInitialCue(SpeechPlaybackState.Ready, true, false))
-        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Ready, true, true))
-        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Ready, false, false))
-        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Completed(SpokenCue.INITIAL), true, false))
-        assertFalse(shouldResumeInitialCue(SpeechPlaybackState.Error(SpokenCue.INITIAL), true, false))
-    }
-
 }
