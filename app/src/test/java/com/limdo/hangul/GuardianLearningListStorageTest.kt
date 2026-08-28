@@ -5,6 +5,7 @@ import java.nio.file.Files
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class GuardianLearningListStorageTest {
@@ -41,5 +42,29 @@ class GuardianLearningListStorageTest {
         val ids = GuardianLessonCatalog.lessons.map(LessonSpec::id)
         assertEquals(38, ids.size)
         assertEquals(38, ids.distinct().size)
+    }
+
+    @Test
+    fun moveAndRemoveUseTheSelectedDuplicateIndexAndPersistAtomically() {
+        val root = Files.createTempDirectory("limdo-list-edit").toFile()
+        val storage = GuardianLearningListStorage(root)
+        val original = listOf(LessonId.GIEOK, LessonId.A, LessonId.GIEOK, LessonId.NIEUN)
+
+        val moved = storage.move(original, 2, 1)
+        assertEquals(listOf(LessonId.GIEOK, LessonId.GIEOK, LessonId.A, LessonId.NIEUN), moved)
+        val removed = storage.removeAt(moved, 1)
+        assertEquals(listOf(LessonId.GIEOK, LessonId.A, LessonId.NIEUN), removed)
+        assertEquals(removed, GuardianLearningListStorage(root).load())
+        assertFalse(File(root, "guardian-learning-list.txt.tmp").exists())
+    }
+
+    @Test
+    fun moveRejectsFirstPreviousAndLastNextBoundaries() {
+        val root = Files.createTempDirectory("limdo-list-boundary").toFile()
+        val storage = GuardianLearningListStorage(root)
+        val lessons = listOf(LessonId.GIEOK, LessonId.NIEUN)
+
+        assertThrows(IllegalArgumentException::class.java) { storage.move(lessons, 0, -1) }
+        assertThrows(IllegalArgumentException::class.java) { storage.move(lessons, 1, 2) }
     }
 }

@@ -125,9 +125,9 @@ esac
 (( iteration <= 15 )) || fail "15회 반복 중지 조건을 넘음"
 
 if [[ "$active_loop" == "없음" ]]; then
-    [[ "$status" == "완료" || "$status" == "차단" ]] || fail "활성 루프가 없지만 상태가 $status임"
+    [[ "$status" == "완료" || "$status" == "차단" ]] || fail "활성 루프가 없지만 상태가 ${status}임"
 else
-    [[ "$active_loop" == "$goal_loop" ]] || fail "활성 루프 $active_loop와 목표 루프 $goal_loop가 일치하지 않음"
+    [[ "$active_loop" == "$goal_loop" ]] || fail "활성 루프 ${active_loop}와 목표 루프 ${goal_loop}가 일치하지 않음"
 fi
 
 echo "자동화 계약 통과"

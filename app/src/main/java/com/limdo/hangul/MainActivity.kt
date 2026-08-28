@@ -173,6 +173,19 @@ private fun LearningShell(
                     lessonId,
                 )
             },
+            onMoveLesson = { fromIndex, toIndex ->
+                guardianLearningList = guardianLearningListStorage.move(
+                    guardianLearningList,
+                    fromIndex,
+                    toIndex,
+                )
+            },
+            onRemoveLesson = { index ->
+                guardianLearningList = guardianLearningListStorage.removeAt(
+                    guardianLearningList,
+                    index,
+                )
+            },
         )
         is LearningDestination.GuardianStartRecording -> GuardianStartRecordingScreen(
             lesson = GuardianLessonCatalog.lessons.single { it.id == current.lessonId },
@@ -404,9 +417,11 @@ private fun GuardianLessonScreen(
     onOpenStartRecording: (LessonId) -> Unit,
     learningList: List<LessonId>,
     onAddLesson: (LessonId) -> Unit,
+    onMoveLesson: (Int, Int) -> Unit,
+    onRemoveLesson: (Int) -> Unit,
 ) {
     var selectedGroupIndex by remember { mutableStateOf(0) }
-    var addingToLearningList by remember { mutableStateOf(false) }
+    var guardianMode by remember { mutableIntStateOf(0) }
     val selectedGroup = GuardianLessonCatalog.groups[selectedGroupIndex]
     val selectedVisuals = LearningMenu.entries[selectedGroupIndex].visuals()
     Column(
@@ -435,16 +450,16 @@ private fun GuardianLessonScreen(
                 }
             }
             Column {
-                Text("보호자 lesson 목록", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                Text("보호자 설정", fontSize = 32.sp, fontWeight = FontWeight.Bold)
                 Text("자유 학습 목록 ${learningList.size}개 · 같은 글자 반복 가능", fontSize = 18.sp)
             }
             Spacer(Modifier.weight(1f))
-            listOf(false to "녹음 관리", true to "목록 추가").forEach { (adding, label) ->
-                val selected = addingToLearningList == adding
+            listOf("녹음 관리", "목록 추가", "목록 편집").forEachIndexed { mode, label ->
+                val selected = guardianMode == mode
                 Surface(
-                    onClick = { addingToLearningList = adding },
+                    onClick = { guardianMode = mode },
                     modifier = Modifier
-                        .size(width = 150.dp, height = 74.dp)
+                        .size(width = 88.dp, height = 74.dp)
                         .semantics {
                             contentDescription = label
                             stateDescription = if (selected) "선택됨" else "선택 안 됨"
@@ -463,6 +478,15 @@ private fun GuardianLessonScreen(
                     }
                 }
             }
+        }
+        if (guardianMode == 2) {
+            GuardianLearningListEditor(
+                learningList = learningList,
+                modifier = Modifier.fillMaxSize(),
+                onMoveLesson = onMoveLesson,
+                onRemoveLesson = onRemoveLesson,
+            )
+            return@Column
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -502,10 +526,132 @@ private fun GuardianLessonScreen(
             surface = selectedVisuals.softSurface,
             modifier = Modifier.fillMaxSize(),
             onOpenStartRecording = onOpenStartRecording,
-            addingToLearningList = addingToLearningList,
+            addingToLearningList = guardianMode == 1,
             learningList = learningList,
             onAddLesson = onAddLesson,
         )
+    }
+}
+
+@Composable
+private fun GuardianLearningListEditor(
+    learningList: List<LessonId>,
+    modifier: Modifier = Modifier,
+    onMoveLesson: (Int, Int) -> Unit,
+    onRemoveLesson: (Int) -> Unit,
+) {
+    val pageSize = 5
+    val pageCount = maxOf(1, (learningList.size + pageSize - 1) / pageSize)
+    var pageIndex by rememberSaveable { mutableIntStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(-1) }
+    if (pageIndex >= pageCount) pageIndex = pageCount - 1
+    if (selectedIndex !in learningList.indices) selectedIndex = -1
+    val pageStart = pageIndex * pageSize
+    val pageItems = learningList.drop(pageStart).take(pageSize)
+    val accent = Color(0xFF3F725E)
+
+    Surface(
+        modifier = modifier.border(3.dp, accent, RoundedCornerShape(30.dp)),
+        color = Color(0xFFE7F2EC),
+        shape = RoundedCornerShape(30.dp),
+        shadowElevation = 5.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            if (pageItems.isEmpty()) {
+                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text("목록이 비어 있어요", fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                }
+            } else {
+                Row(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    pageItems.forEachIndexed { offset, lessonId ->
+                        val absoluteIndex = pageStart + offset
+                        val lesson = GuardianLessonCatalog.lessons.single { it.id == lessonId }
+                        val selected = absoluteIndex == selectedIndex
+                        Surface(
+                            onClick = { selectedIndex = absoluteIndex },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .semantics {
+                                    contentDescription = "${absoluteIndex + 1}번 lesson ${lesson.glyph}"
+                                    stateDescription = if (selected) "선택됨" else "선택 안 됨"
+                                },
+                            color = if (selected) accent else Color.White,
+                            shape = RoundedCornerShape(22.dp),
+                            border = BorderStroke(3.dp, accent),
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                                Text("${absoluteIndex + 1}", fontSize = 18.sp, color = if (selected) Color.White else accent)
+                                Text(lesson.glyph, fontSize = 46.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else Color(0xFF26332E))
+                            }
+                        }
+                    }
+                    repeat(pageSize - pageItems.size) { Spacer(Modifier.weight(1f)) }
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                GuardianEditorAction("이전 페이지", pageIndex > 0, Modifier.weight(1f)) {
+                    pageIndex -= 1
+                    selectedIndex = -1
+                }
+                Box(Modifier.weight(1f).height(74.dp), contentAlignment = Alignment.Center) {
+                    Text("${pageIndex + 1} / $pageCount", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                }
+                GuardianEditorAction("다음 페이지", pageIndex < pageCount - 1, Modifier.weight(1f)) {
+                    pageIndex += 1
+                    selectedIndex = -1
+                }
+                GuardianEditorAction("앞으로", selectedIndex > 0, Modifier.weight(1f)) {
+                    val from = selectedIndex
+                    onMoveLesson(from, from - 1)
+                    selectedIndex = from - 1
+                    pageIndex = selectedIndex / pageSize
+                }
+                GuardianEditorAction("뒤로", selectedIndex in 0 until learningList.lastIndex, Modifier.weight(1f)) {
+                    val from = selectedIndex
+                    onMoveLesson(from, from + 1)
+                    selectedIndex = from + 1
+                    pageIndex = selectedIndex / pageSize
+                }
+                GuardianEditorAction("삭제", selectedIndex in learningList.indices, Modifier.weight(1f), Color(0xFF9A4B43)) {
+                    onRemoveLesson(selectedIndex)
+                    selectedIndex = -1
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GuardianEditorAction(
+    label: String,
+    enabled: Boolean,
+    modifier: Modifier,
+    color: Color = Color(0xFF3F725E),
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+            .height(74.dp)
+            .semantics {
+                contentDescription = label
+                stateDescription = if (enabled) "사용 가능" else "사용 불가"
+            },
+        color = if (enabled) color else Color(0xFFD5D8D6),
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(3.dp, if (enabled) color else Color(0xFF9EA5A1)),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(label, color = if (enabled) Color.White else Color(0xFF6D7470), fontSize = 21.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 

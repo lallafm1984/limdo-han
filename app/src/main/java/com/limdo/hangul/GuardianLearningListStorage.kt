@@ -26,6 +26,24 @@ internal class GuardianLearningListStorage(
         return updated
     }
 
+    fun move(current: List<LessonId>, fromIndex: Int, toIndex: Int): List<LessonId> {
+        require(fromIndex in current.indices)
+        require(toIndex in current.indices)
+        if (fromIndex == toIndex) return current
+        val updated = current.toMutableList().apply {
+            add(toIndex, removeAt(fromIndex))
+        }
+        save(updated)
+        return updated
+    }
+
+    fun removeAt(current: List<LessonId>, index: Int): List<LessonId> {
+        require(index in current.indices)
+        val updated = current.toMutableList().apply { removeAt(index) }
+        save(updated)
+        return updated
+    }
+
     private fun save(lessonIds: List<LessonId>) {
         require(lessonIds.all(supportedIds::contains))
         noBackupRoot.mkdirs()
