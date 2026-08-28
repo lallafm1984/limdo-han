@@ -44,15 +44,21 @@ internal fun GaAssemblyScreen(onHome: () -> Unit, onWrite: (LessonId) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             HomeAction(onClick = onHome, modifier = Modifier.size(64.dp))
-            GaAssemblyTarget.entries.forEach { choice ->
-                Surface(
-                    onClick = { target = choice; state = GaAssemblyState() },
-                    shape = RoundedCornerShape(36.dp),
-                    color = Color.White,
-                    modifier = Modifier.size(73.dp).semantics {
-                        contentDescription = "${choice.glyph} 조립 선택"
-                    },
-                ) { GaGeometry(choice, piece = null, active = true, modifier = Modifier.padding(20.dp)) }
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                GaAssemblyTarget.entries.toList().chunked(5).forEach { choices ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        choices.forEach { choice ->
+                            Surface(
+                                onClick = { target = choice; state = GaAssemblyState() },
+                                shape = RoundedCornerShape(36.dp),
+                                color = Color.White,
+                                modifier = Modifier.size(120.dp).semantics {
+                                    contentDescription = "${choice.glyph} 조립 선택"
+                                },
+                            ) { GaGeometry(choice, piece = null, active = true, modifier = Modifier.padding(28.dp)) }
+                        }
+                    }
+                }
             }
         }
         return
@@ -114,8 +120,8 @@ private fun AssemblyPiece(target: GaAssemblyTarget, piece: GaAssemblyPiece, plac
         shape = RoundedCornerShape(32.dp),
         color = if (retry) Color(0xFFFFE0B2) else if (placed) Color(0xFFE2DDD4) else Color.White,
         modifier = Modifier.fillMaxWidth().height(140.dp).semantics {
-            contentDescription = if (piece == GaAssemblyPiece.GIEOK) "기역 조각" else "${target.vowelName()} 모음 조각"
-            stateDescription = if (placed) "놓음" else if (retry) "기역을 먼저 놓아요" else "선택 가능"
+            contentDescription = if (piece == GaAssemblyPiece.GIEOK) "${target.initialName} 조각" else "${target.vowelName()} 모음 조각"
+            stateDescription = if (placed) "놓음" else if (retry) "${target.initialName}을 먼저 놓아요" else "선택 가능"
         },
     ) { GaGeometry(target, piece, active = !placed, modifier = Modifier.padding(16.dp)) }
 }
@@ -130,9 +136,9 @@ private fun AssemblySlot(target: GaAssemblyTarget, piece: GaAssemblyPiece, fille
         ).background(if (filled) Color(0xFFE4F4DE) else Color(0xFFF7F2E8), RoundedCornerShape(28.dp))
             .padding(16.dp).semantics {
                 contentDescription = when {
-                    target.isHorizontalVowel && piece == GaAssemblyPiece.GIEOK -> "위쪽 기역 칸"
+                    target.isHorizontalVowel && piece == GaAssemblyPiece.GIEOK -> "위쪽 ${target.initialName} 칸"
                     target.isHorizontalVowel -> "아래쪽 ${target.vowelName()} 모음 칸"
-                    piece == GaAssemblyPiece.GIEOK -> "왼쪽 기역 칸"
+                    piece == GaAssemblyPiece.GIEOK -> "왼쪽 ${target.initialName} 칸"
                     else -> "오른쪽 ${target.vowelName()} 모음 칸"
                 }
                 stateDescription = if (filled) "채움" else "비어 있음"
@@ -151,6 +157,7 @@ private fun GaAssemblyTarget.vowelName(): String = when (this) {
     GaAssemblyTarget.GYU -> "유"
     GaAssemblyTarget.GEU -> "으"
     GaAssemblyTarget.GI -> "이"
+    GaAssemblyTarget.NA -> "아"
 }
 
 @Composable
@@ -160,8 +167,8 @@ private fun GaGeometry(target: GaAssemblyTarget, piece: GaAssemblyPiece?, active
         val lesson = KoreanCurriculum.lessons.single { it.id == target.lessonId }
         val geometry = WritingCanvasGeometry.glyph(lesson, size.width, size.height)
         val strokes = when (piece) {
-            GaAssemblyPiece.GIEOK -> geometry.strokes.take(1)
-            GaAssemblyPiece.VOWEL -> geometry.strokes.drop(1)
+            GaAssemblyPiece.GIEOK -> geometry.strokes.take(target.initialStrokeCount)
+            GaAssemblyPiece.VOWEL -> geometry.strokes.drop(target.initialStrokeCount)
             null -> geometry.strokes
         }
         strokes.forEach { stroke ->

@@ -1275,13 +1275,6 @@ private fun WritingLesson(
                 alpha = 0.32f,
             )
 
-            if (traceResult == GieokTraceResult.SUCCESS) {
-                SuccessFeedbackOverlay(
-                    progress = celebrationProgress.value,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
             WritingBoardPreview(
                 lesson = currentLesson,
                 clearRequest = clearRequest,
@@ -1307,6 +1300,13 @@ private fun WritingLesson(
                         vertical = LearningShellSpec.CANVAS_VERTICAL_PADDING_DP.dp,
                     ),
             )
+
+            if (traceResult == GieokTraceResult.SUCCESS) {
+                SuccessFeedbackOverlay(
+                    progress = celebrationProgress.value,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
 
             EdgeActionColumns(
                 onHome = {

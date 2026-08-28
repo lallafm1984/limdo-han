@@ -1,6 +1,11 @@
 package com.limdo.hangul
 
-internal enum class GaAssemblyTarget(val lessonId: LessonId, val glyph: String) {
+internal enum class GaAssemblyTarget(
+    val lessonId: LessonId,
+    val glyph: String,
+    val initialName: String = "기역",
+    val initialStrokeCount: Int = 1,
+) {
     GA(LessonId.GA, "가"),
     GEO(LessonId.GEO, "거"),
     GYEO(LessonId.GYEO, "겨"),
@@ -10,6 +15,7 @@ internal enum class GaAssemblyTarget(val lessonId: LessonId, val glyph: String) 
     GYU(LessonId.GYU, "규"),
     GEU(LessonId.GEU, "그"),
     GI(LessonId.GI, "기"),
+    NA(LessonId.NA, "나", initialName = "니은"),
 }
 
 internal val GaAssemblyTarget.isHorizontalVowel: Boolean

@@ -1,19 +1,19 @@
 # 현재 시각 루프 증거
 
-루프: 213
-상태: 완료 — 반복 2 `기` 성공 동시점 근거 통과
+루프: 214
+상태: 완료 — 반복 2 `나` 조립·쓰기·성공·`다` 다음·홈 통과
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop210/iteration1/after/target-selection.png
-변경 전 hierarchy: captures/loop210/iteration1/after/target-selection.xml
-변경 후 PNG: captures/loop211/iteration1/after/target-selection.png
-변경 후 hierarchy: captures/loop211/iteration1/after/target-selection.xml
-성공 PNG: captures/loop211/iteration2/attempt4/gyu-success.png
-성공 hierarchy: captures/loop211/iteration2/attempt4/gyu-success.xml
+변경 전 PNG: captures/loop213/iteration1/after/target-selection-final.png
+변경 전 hierarchy: captures/loop213/iteration1/after/target-selection-final.xml
+변경 후 PNG: captures/loop214/iteration1/after/assembly-selection.png
+변경 후 hierarchy: captures/loop214/iteration1/after/assembly-selection.xml
+성공 PNG: captures/loop214/iteration2/after/na-success-samepoint.png
+성공 hierarchy: captures/loop214/iteration2/after/na-success-samepoint-hierarchy.txt
 package: com.limdo.hangul
-focus: 통과 — `captures/loop211/iteration2/attempt4/gyu-success-focus.txt`의 `mCurrentFocus`·`mFocusedApp`이 LimDo
-APK SHA-256: e7c8fad3f185f615f3b6d70d57b3a09784493a900419b4af87b93c9903b6479b
+focus: 통과 — `captures/loop214/iteration2/after/na-success-samepoint-focus.txt`의 `mCurrentFocus`·`mFocusedApp`이 LimDo
+APK SHA-256: c6d0f4b52b6f63415e52cbc2b26b3c9ff95b161959cd94b2d8a4d9b3b82616c9
 Git commit: 현재 HEAD 기준 미커밋 작업 트리
-자산 필요 판정: 불필요 — production `GYU` geometry와 기존 token·성공·조작 atlas 재사용
+자산 필요 판정: 불필요 — production `NA` geometry와 기존 조립 token·성공·조작 atlas 재사용
 자산 자동 검사: 불필요 — 새 raster 0건
 자동 그래픽 디자인 역할: 통과
 자동 QA 역할: 통과
