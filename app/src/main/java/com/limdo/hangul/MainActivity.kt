@@ -1,12 +1,17 @@
 package com.limdo.hangul
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.Canvas
@@ -35,6 +40,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -56,6 +62,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
@@ -71,12 +78,20 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
+    private lateinit var guardianVoiceController: GuardianVoiceController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        guardianVoiceController = GuardianVoiceController(applicationContext)
         hideSystemBars()
         setContent {
-            LimDoApp()
+            LimDoApp(guardianVoiceController)
         }
+    }
+
+    override fun onStop() {
+        guardianVoiceController.release()
+        super.onStop()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -104,19 +119,19 @@ private val LimDoColorScheme = lightColorScheme(
 )
 
 @Composable
-private fun LimDoApp() {
+private fun LimDoApp(guardianVoiceController: GuardianVoiceController) {
     MaterialTheme(colorScheme = LimDoColorScheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            LearningShell()
+            LearningShell(guardianVoiceController)
         }
     }
 }
 
 @Composable
-private fun LearningShell() {
+private fun LearningShell(guardianVoiceController: GuardianVoiceController) {
     var destination by remember { mutableStateOf<LearningDestination>(LearningDestination.Home) }
     var nextWritingSessionId by rememberSaveable { mutableIntStateOf(0) }
 
@@ -133,6 +148,15 @@ private fun LearningShell() {
         )
         LearningDestination.GuardianLessons -> GuardianLessonScreen(
             onClose = { destination = LearningDestination.Home },
+            onOpenStartRecording = { destination = LearningDestination.GuardianStartRecording(it) },
+        )
+        is LearningDestination.GuardianStartRecording -> GuardianStartRecordingScreen(
+            lesson = GuardianLessonCatalog.lessons.single { it.id == current.lessonId },
+            controller = guardianVoiceController,
+            onClose = {
+                guardianVoiceController.release()
+                destination = LearningDestination.GuardianLessons
+            },
         )
         is LearningDestination.MenuTransition -> MenuSelectionTransition(
             menu = current.menu,
@@ -338,7 +362,10 @@ private fun GuardianEntry(
 }
 
 @Composable
-private fun GuardianLessonScreen(onClose: () -> Unit) {
+private fun GuardianLessonScreen(
+    onClose: () -> Unit,
+    onOpenStartRecording: (LessonId) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -379,6 +406,7 @@ private fun GuardianLessonScreen(onClose: () -> Unit) {
                     accent = LearningMenu.entries[index].visuals().accent,
                     surface = LearningMenu.entries[index].visuals().softSurface,
                     modifier = Modifier.weight(1f).fillMaxHeight(),
+                    onOpenStartRecording = onOpenStartRecording,
                 )
             }
         }
@@ -391,6 +419,7 @@ private fun GuardianLessonGroupCard(
     accent: Color,
     surface: Color,
     modifier: Modifier = Modifier,
+    onOpenStartRecording: (LessonId) -> Unit,
 ) {
     Surface(
         modifier = modifier.border(3.dp, accent, RoundedCornerShape(30.dp)),
@@ -409,12 +438,22 @@ private fun GuardianLessonGroupCard(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     lessonRow.forEach { lesson ->
+                        val isRepresentative = lesson.id == LessonId.GIEOK
                         Surface(
+                            onClick = { if (isRepresentative) onOpenStartRecording(lesson.id) },
+                            enabled = isRepresentative,
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
-                                .semantics { contentDescription = "lesson ${lesson.glyph}" },
-                            color = Color.White.copy(alpha = 0.82f),
+                                .semantics {
+                                    contentDescription = if (isRepresentative) {
+                                        "lesson ${lesson.glyph}, 쓰기 전 녹음 열기"
+                                    } else {
+                                        "lesson ${lesson.glyph}, 녹음은 아직 사용할 수 없음"
+                                    }
+                                    stateDescription = if (isRepresentative) "사용 가능" else "사용 불가"
+                                },
+                            color = Color.White.copy(alpha = if (isRepresentative) 0.96f else 0.62f),
                             shape = RoundedCornerShape(18.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -424,6 +463,142 @@ private fun GuardianLessonGroupCard(
                     }
                     repeat(7 - lessonRow.size) { Spacer(Modifier.weight(1f)) }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GuardianStartRecordingScreen(
+    lesson: LessonSpec,
+    controller: GuardianVoiceController,
+    onClose: () -> Unit,
+) {
+    val context = LocalContext.current
+    var voiceState by remember { mutableStateOf(controller.currentState()) }
+    var permissionDenied by remember { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        permissionDenied = !granted
+        if (granted) controller.startRecording()
+    }
+    DisposableEffect(controller) {
+        controller.observe { voiceState = it }
+        onDispose { controller.release() }
+    }
+    val stateLabel = when (voiceState) {
+        GuardianVoiceState.EMPTY -> "녹음 없음"
+        GuardianVoiceState.RECORDING -> "녹음 중 · 최대 8초"
+        GuardianVoiceState.READY -> "녹음 완료"
+        GuardianVoiceState.PLAYING -> "미리 듣는 중"
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize().background(Color(0xFFFFF8EC)).padding(28.dp),
+        verticalArrangement = Arrangement.spacedBy(22.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(22.dp),
+        ) {
+            GuardianTextAction("목록", "녹음 화면 닫기", Color(0xFF3F725E), onClose)
+            Text(lesson.glyph, fontSize = 54.sp, fontWeight = FontWeight.Bold)
+            Column {
+                Text("쓰기 전 보호자 녹음", fontSize = 31.sp, fontWeight = FontWeight.Bold)
+                Text(stateLabel, fontSize = 21.sp)
+            }
+        }
+        Surface(
+            modifier = Modifier.fillMaxSize().border(3.dp, Color(0xFF3F725E), RoundedCornerShape(30.dp)),
+            color = Color(0xFFEAF5EF),
+            shape = RoundedCornerShape(30.dp),
+            shadowElevation = 5.dp,
+        ) {
+            Row(
+                modifier = Modifier.fillMaxSize().padding(32.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    RecordingStateSymbol(voiceState, Modifier.size(80.dp))
+                    Text(stateLabel, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+                    if (permissionDenied) {
+                        Text(
+                            "마이크 권한이 없어 녹음하지 않았습니다. 목록과 아이 학습은 그대로 사용할 수 있습니다.",
+                            fontSize = 18.sp,
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier.weight(2f),
+                    horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    when (voiceState) {
+                        GuardianVoiceState.EMPTY -> GuardianTextAction("녹음", "쓰기 전 녹음 시작", Color(0xFFD95D4F)) {
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                                controller.startRecording()
+                            } else {
+                                permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                            }
+                        }
+                        GuardianVoiceState.RECORDING -> GuardianTextAction("정지", "녹음 정지하고 저장", Color(0xFFD95D4F)) { controller.stopRecording() }
+                        GuardianVoiceState.READY -> {
+                            GuardianTextAction("듣기", "녹음 미리 듣기", Color(0xFF3F725E)) { controller.play() }
+                            GuardianTextAction("다시 녹음", "기존 녹음을 보존하고 새로 녹음", Color(0xFFD9873A)) {
+                                if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) controller.startRecording()
+                                else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                            }
+                            GuardianTextAction("삭제", "쓰기 전 녹음 삭제", Color(0xFF765B50)) { controller.delete() }
+                        }
+                        GuardianVoiceState.PLAYING -> GuardianTextAction("듣기 정지", "미리 듣기 정지", Color(0xFF3F725E)) { controller.stopPlayback() }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GuardianTextAction(
+    label: String,
+    description: String,
+    color: Color,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.size(width = 148.dp, height = 72.dp).semantics { contentDescription = description },
+        color = color,
+        shape = RoundedCornerShape(22.dp),
+        shadowElevation = 4.dp,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(label, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun RecordingStateSymbol(state: GuardianVoiceState, modifier: Modifier = Modifier) {
+    Canvas(modifier.semantics { stateDescription = state.name }) {
+        when (state) {
+            GuardianVoiceState.EMPTY -> drawCircle(Color(0xFFD95D4F), radius = size.minDimension * 0.34f)
+            GuardianVoiceState.RECORDING -> drawRoundRect(Color(0xFFD95D4F), size = size.copy(width = size.width * 0.62f, height = size.height * 0.62f), topLeft = center.copy(x = size.width * 0.19f, y = size.height * 0.19f), cornerRadius = androidx.compose.ui.geometry.CornerRadius(14f))
+            GuardianVoiceState.READY -> {
+                drawCircle(Color(0xFF3F725E), radius = size.minDimension * 0.46f)
+                val p = androidx.compose.ui.graphics.Path().apply { moveTo(size.width * 0.40f, size.height * 0.28f); lineTo(size.width * 0.76f, size.height * 0.50f); lineTo(size.width * 0.40f, size.height * 0.72f); close() }
+                drawPath(p, Color.White)
+            }
+            GuardianVoiceState.PLAYING -> repeat(3) { index ->
+                val x = size.width * (0.30f + index * 0.20f)
+                drawLine(Color(0xFF3F725E), androidx.compose.ui.geometry.Offset(x, size.height * (0.38f - index * 0.08f)), androidx.compose.ui.geometry.Offset(x, size.height * (0.62f + index * 0.08f)), strokeWidth = size.width * 0.08f, cap = StrokeCap.Round)
             }
         }
     }
