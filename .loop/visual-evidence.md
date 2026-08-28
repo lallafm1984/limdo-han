@@ -1,6 +1,6 @@
 # 현재 시각 루프 증거
 
-루프: 189
+루프: 190
 상태: 완료
 
 기준 화면: 2340 × 1080
@@ -120,4 +120,18 @@ production 소비 검사: 통과
 - 자동 그래픽 디자인 역할: 통과 — 상태 형태·기존 카드·색·모서리·그림자 일관, 잘림·겹침·비가림 없음.
 - 자동 QA 역할: 통과 — 전체 검증·focus·PLAYING→READY·손상→EMPTY·SHA 보존 통과.
 - 아이 대리 QA: 통과 — 화면 이탈 후 재생이 멈추고 무음·손상 대안이 아이 학습을 멈추지 않음.
+- 새 P0: 0, 새 P1: 0, 진행 방해 P2: 0. 실제 아이 관찰: 실행 안 함.
+
+### 루프 190 반복 7 — 38개 lesson 두 녹음 칸 연결 최종 근거
+
+- 상태·기준 화면: 완료, 2340 × 1080, `alarmquest-qa` 물리 1080 × 2340, `user_rotation=1`.
+- 변경 전 PNG·hierarchy: `captures/loop185/iteration7/device/empty.png`, `empty.xml` — 대표 `ㄱ` START 단일 controller 화면.
+- 변경 후 PNG·hierarchy: `captures/loop190/iteration7/emulator/` 대표 `ㄱ`·`ㅛ`·`하` START·SUCCESS의 `*-empty.png|xml`, `*-ready.png|xml`, `*-playing.png`, `*-empty-after-delete.png|xml`.
+- package·focus: `com.limdo.hangul`, 모든 상태 `mCurrentFocus`·`mFocusedApp` 통과.
+- APK SHA-256: `664aa18913c3ba66954d651f6a7293ff29e8b069d41d3068b2f25b05bf6a33c3`.
+- production 자산: 새 bitmap 없음. 기존 Compose 카드·상태 실루엣·색 token을 재사용했고 38 lesson×2 controller mapping이 실제 소비 경로다.
+- 자산 자동 검사: 불필요. production 소비·APK 포함·unit·lint·build 통과.
+- 자동 그래픽 디자인 역할: 통과 — 상태·event 위계, 카드·색·모서리·실루엣 일관성, 잘림·겹침 0건.
+- 자동 QA 역할: 통과 — 76개 유일 경로, 대표 6개 상태 행렬, 파일 SHA-256 격리, 389 × 194 px 조작, focus·무인터넷·no-backup 통과.
+- 아이 대리 QA: 통과 — 보호자 흐름과 아이 흐름이 분리되고 녹음 없음·삭제 후에도 무음 쓰기 대안을 유지한다.
 - 새 P0: 0, 새 P1: 0, 진행 방해 P2: 0. 실제 아이 관찰: 실행 안 함.

@@ -62,6 +62,51 @@ class GuardianVoiceRecordingTest {
     }
 
     @Test
+    fun allThirtyEightLessonsHaveTwoUniqueRecordingPaths() {
+        val root = File("/private/app/no_backup")
+        val expectedKeys = GuardianLessonCatalog.lessons.flatMap { lesson ->
+            GuardianVoiceEvent.entries.map { event -> GuardianVoiceKey(lesson.id, event) }
+        }
+        val paths = GuardianVoiceCatalog.keys.map { key ->
+            GuardianVoiceStorage.finalFile(root, key.lessonId, key.event).path
+        }
+
+        assertEquals(38, GuardianLessonCatalog.lessons.size)
+        assertEquals(76, GuardianVoiceCatalog.keys.size)
+        assertEquals(expectedKeys, GuardianVoiceCatalog.keys)
+        assertEquals(76, paths.toSet().size)
+    }
+
+    @Test
+    fun firstMiddleAndLastLessonEventsPreserveEveryOtherRecording() {
+        val root = Files.createTempDirectory("limdo-guardian-all-lessons").toFile()
+        val representativeKeys = listOf(
+            GuardianVoiceCatalog.keys.first(),
+            GuardianVoiceCatalog.keys[GuardianVoiceCatalog.keys.size / 2],
+            GuardianVoiceCatalog.keys.last(),
+        )
+        GuardianVoiceCatalog.keys.forEach { key ->
+            GuardianVoiceStorage.finalFile(root, key.lessonId, key.event).apply {
+                parentFile!!.mkdirs()
+                writeText("original-${key.lessonId}-${key.event}")
+            }
+        }
+
+        representativeKeys.forEach { changedKey ->
+            val before = GuardianVoiceCatalog.keys.associateWith { key ->
+                GuardianVoiceStorage.finalFile(root, key.lessonId, key.event).readBytes()
+            }
+            val changed = GuardianVoiceStorage.finalFile(root, changedKey.lessonId, changedKey.event)
+            GuardianVoiceStorage.tempFile(changed).writeText("changed-$changedKey")
+            GuardianVoiceStorage.commit(GuardianVoiceStorage.tempFile(changed), changed)
+            GuardianVoiceCatalog.keys.filter { it != changedKey }.forEach { preservedKey ->
+                val preserved = GuardianVoiceStorage.finalFile(root, preservedKey.lessonId, preservedKey.event)
+                assertTrue(before.getValue(preservedKey).contentEquals(preserved.readBytes()))
+            }
+        }
+    }
+
+    @Test
     fun completedTemporaryFileAtomicallyReplacesExistingRecording() {
         val root = Files.createTempDirectory("limdo-guardian-voice").toFile()
         val finalFile = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK)
@@ -112,8 +157,7 @@ class GuardianVoiceRecordingTest {
         assertTrue(controllerSource.contains("fun release()"))
         assertTrue(controllerSource.contains("stopRecording(save = false)\n        stopPlayback()"))
         assertTrue(activitySource.contains("override fun onStop()"))
-        assertTrue(activitySource.contains("guardianStartVoiceController.release()"))
-        assertTrue(activitySource.contains("guardianSuccessVoiceController.release()"))
+        assertTrue(activitySource.contains("guardianVoiceControllers.values.forEach(GuardianVoiceController::release)"))
         assertTrue(activitySource.contains("onDispose { controller.release() }"))
     }
 

@@ -79,28 +79,21 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
-    private lateinit var guardianStartVoiceController: GuardianVoiceController
-    private lateinit var guardianSuccessVoiceController: GuardianVoiceController
+    private lateinit var guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        guardianStartVoiceController = GuardianVoiceController(
-            applicationContext,
-            event = GuardianVoiceEvent.START,
-        )
-        guardianSuccessVoiceController = GuardianVoiceController(
-            applicationContext,
-            event = GuardianVoiceEvent.SUCCESS,
-        )
+        guardianVoiceControllers = GuardianVoiceCatalog.keys.associateWith { key ->
+            GuardianVoiceController(applicationContext, key.lessonId, key.event)
+        }
         hideSystemBars()
         setContent {
-            LimDoApp(guardianStartVoiceController, guardianSuccessVoiceController)
+            LimDoApp(guardianVoiceControllers)
         }
     }
 
     override fun onStop() {
-        guardianStartVoiceController.release()
-        guardianSuccessVoiceController.release()
+        guardianVoiceControllers.values.forEach(GuardianVoiceController::release)
         super.onStop()
     }
 
@@ -130,23 +123,21 @@ private val LimDoColorScheme = lightColorScheme(
 
 @Composable
 private fun LimDoApp(
-    guardianStartVoiceController: GuardianVoiceController,
-    guardianSuccessVoiceController: GuardianVoiceController,
+    guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
 ) {
     MaterialTheme(colorScheme = LimDoColorScheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            LearningShell(guardianStartVoiceController, guardianSuccessVoiceController)
+            LearningShell(guardianVoiceControllers)
         }
     }
 }
 
 @Composable
 private fun LearningShell(
-    guardianStartVoiceController: GuardianVoiceController,
-    guardianSuccessVoiceController: GuardianVoiceController,
+    guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
 ) {
     var destination by remember { mutableStateOf<LearningDestination>(LearningDestination.Home) }
     var nextWritingSessionId by rememberSaveable { mutableIntStateOf(0) }
@@ -169,19 +160,15 @@ private fun LearningShell(
         is LearningDestination.GuardianStartRecording -> GuardianStartRecordingScreen(
             lesson = GuardianLessonCatalog.lessons.single { it.id == current.lessonId },
             event = current.event,
-            controller = if (current.event == GuardianVoiceEvent.START) {
-                guardianStartVoiceController
-            } else {
-                guardianSuccessVoiceController
-            },
+            controller = requireNotNull(
+                guardianVoiceControllers[GuardianVoiceKey(current.lessonId, current.event)],
+            ),
             onSelectEvent = { selectedEvent ->
-                guardianStartVoiceController.release()
-                guardianSuccessVoiceController.release()
+                guardianVoiceControllers.values.forEach(GuardianVoiceController::release)
                 destination = current.copy(event = selectedEvent)
             },
             onClose = {
-                guardianStartVoiceController.release()
-                guardianSuccessVoiceController.release()
+                guardianVoiceControllers.values.forEach(GuardianVoiceController::release)
                 destination = LearningDestination.GuardianLessons
             },
         )
@@ -465,22 +452,16 @@ private fun GuardianLessonGroupCard(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     lessonRow.forEach { lesson ->
-                        val isRepresentative = lesson.id == LessonId.GIEOK
                         Surface(
-                            onClick = { if (isRepresentative) onOpenStartRecording(lesson.id) },
-                            enabled = isRepresentative,
+                            onClick = { onOpenStartRecording(lesson.id) },
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .semantics {
-                                    contentDescription = if (isRepresentative) {
-                                        "lesson ${lesson.glyph}, 쓰기 전 녹음 열기"
-                                    } else {
-                                        "lesson ${lesson.glyph}, 녹음은 아직 사용할 수 없음"
-                                    }
-                                    stateDescription = if (isRepresentative) "사용 가능" else "사용 불가"
+                                    contentDescription = "lesson ${lesson.glyph}, 쓰기 전 녹음 열기"
+                                    stateDescription = "사용 가능"
                                 },
-                            color = Color.White.copy(alpha = if (isRepresentative) 0.96f else 0.62f),
+                            color = Color.White.copy(alpha = 0.96f),
                             shape = RoundedCornerShape(18.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -651,7 +632,7 @@ private fun GuardianTextAction(
 ) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.size(width = 148.dp, height = 72.dp).semantics { contentDescription = description },
+        modifier = Modifier.size(width = 148.dp, height = 74.dp).semantics { contentDescription = description },
         color = color,
         shape = RoundedCornerShape(22.dp),
         shadowElevation = 4.dp,

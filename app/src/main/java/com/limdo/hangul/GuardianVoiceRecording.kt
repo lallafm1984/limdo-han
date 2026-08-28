@@ -14,6 +14,17 @@ internal enum class GuardianVoiceEvent(val fileSuffix: String, val label: String
     SUCCESS("success", "정답 후"),
 }
 
+internal data class GuardianVoiceKey(
+    val lessonId: LessonId,
+    val event: GuardianVoiceEvent,
+)
+
+internal object GuardianVoiceCatalog {
+    val keys: List<GuardianVoiceKey> = GuardianLessonCatalog.lessons.flatMap { lesson ->
+        GuardianVoiceEvent.entries.map { event -> GuardianVoiceKey(lesson.id, event) }
+    }
+}
+
 internal object GuardianVoiceStorage {
     const val DIRECTORY = "guardian_voice"
     const val MAX_DURATION_MILLIS = 8_000
