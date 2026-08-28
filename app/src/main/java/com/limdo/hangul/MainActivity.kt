@@ -76,6 +76,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
 
@@ -785,11 +787,26 @@ private fun WritingLesson(
     LaunchedEffect(traceResult) {
         celebrationProgress.snapTo(0f)
         if (traceResult == GieokTraceResult.SUCCESS) {
+            val successfulLessonId = currentLesson.id
+            val minimumSuccessVisibility = async {
+                delay(SuccessCelebrationSpec.DURATION_MS.toLong())
+            }
             celebrationProgress.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(SuccessCelebrationSpec.DURATION_MS),
             )
-            currentVoiceController.play()
+            minimumSuccessVisibility.await()
+            val playbackFinished = CompletableDeferred<Unit>()
+            val playbackStarted = currentVoiceController.play {
+                playbackFinished.complete(Unit)
+            }
+            if (playbackStarted) playbackFinished.await()
+            if (traceResult == GieokTraceResult.SUCCESS && currentLesson.id == successfulLessonId) {
+                clearRequest += 1
+                traceResult = null
+                val nextLesson = LearningNavigation.nextLesson(menu, currentLesson)
+                lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == nextLesson.id }
+            }
         }
     }
 

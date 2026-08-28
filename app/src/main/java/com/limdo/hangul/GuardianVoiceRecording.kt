@@ -148,16 +148,20 @@ internal class GuardianVoiceController(
         notifyState()
     }
 
-    fun play(): Boolean {
+    fun play(onFinished: () -> Unit = {}): Boolean {
         stopRecording(save = false)
         stopPlayback()
         if (!validFinalFile()) return false
         val nextPlayer = MediaPlayer()
         return runCatching {
             nextPlayer.setDataSource(finalFile.absolutePath)
-            nextPlayer.setOnCompletionListener { stopPlayback() }
+            nextPlayer.setOnCompletionListener {
+                stopPlayback()
+                onFinished()
+            }
             nextPlayer.setOnErrorListener { _, _, _ ->
                 stopPlayback()
+                onFinished()
                 true
             }
             nextPlayer.prepare()

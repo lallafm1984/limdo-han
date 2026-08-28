@@ -190,9 +190,29 @@ class GuardianVoiceRecordingTest {
         assertTrue(source.contains("guardianVoiceControllers[GuardianVoiceKey(currentLesson.id)]"))
         assertTrue(source.contains("LaunchedEffect(currentLesson.id) {\n        currentVoiceController.play()"))
         assertTrue(source.contains("if (traceResult == GieokTraceResult.SUCCESS)"))
-        assertEquals(2, Regex("currentVoiceController\\.play\\(\\)").findAll(source).count())
+        assertEquals(1, Regex("currentVoiceController\\.play\\(\\)").findAll(source).count())
+        assertEquals(1, Regex("currentVoiceController\\.play \\{").findAll(source).count())
         assertTrue(source.contains("onDispose { currentVoiceController.stopPlayback() }"))
         assertEquals(5, Regex("currentVoiceController\\.stopPlayback\\(\\)").findAll(source).count())
+        assertTrue(source.contains("val playbackFinished = CompletableDeferred<Unit>()"))
+        assertTrue(source.contains("val minimumSuccessVisibility = async"))
+        assertTrue(source.contains("delay(SuccessCelebrationSpec.DURATION_MS.toLong())"))
+        assertTrue(source.contains("minimumSuccessVisibility.await()"))
+        assertTrue(source.contains("if (playbackStarted) playbackFinished.await()"))
+        assertTrue(source.contains("currentLesson.id == successfulLessonId"))
+        assertTrue(source.contains("LearningNavigation.nextLesson(menu, currentLesson)"))
+    }
+
+    @Test
+    fun completedAndFailedSuccessPlaybackBothReleaseTheFlowWithoutDeletingRecording() {
+        val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/GuardianVoiceRecording.kt").readText()
+        val playBody = source.substringAfter("fun play(onFinished: () -> Unit = {}): Boolean")
+            .substringBefore("fun stopPlayback()")
+
+        assertEquals(2, Regex("onFinished\\(\\)").findAll(playBody).count())
+        assertTrue(playBody.contains("setOnCompletionListener"))
+        assertTrue(playBody.contains("setOnErrorListener"))
+        assertFalse(playBody.contains("finalFile.delete()"))
     }
 
     @Test

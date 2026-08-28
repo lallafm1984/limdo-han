@@ -1,17 +1,17 @@
 # 현재 시각 루프 증거
 
-루프: 195
+루프: 196
 상태: 완료
 
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop195/iteration1/before/home.png
-변경 전 hierarchy: captures/loop195/iteration1/before/home.xml
-변경 후 PNG: captures/loop195/iteration1/after/home-v2.png
-변경 후 hierarchy: captures/loop195/iteration1/after/home-v2.xml
+변경 전 PNG: captures/loop194/iteration5/emulator/g-success.png
+변경 전 hierarchy: captures/loop194/iteration5/emulator/g-success.xml
+변경 후 PNG: captures/loop196/iteration4/emulator/attempt.png
+변경 후 hierarchy: captures/loop196/iteration4/emulator/attempt.xml
 package: com.limdo.hangul
 focus: 통과
-APK SHA-256: abd827aba1632ad4632d09556eff876e404373179ffa7479b2b530972b8ceda9
-production 자산 경로: 새 bitmap 없음 — 기존 보호자 자물쇠 실루엣·홈 카드·색 token 재사용
+APK SHA-256: 1e1d4040b6bf381e5d48712e7a47fdd30e16f5853efe2957cd2418f6828cd71d
+production 자산 경로: 새 bitmap 없음 — 기존 성공 overlay·녹음 player·navigation 재사용
 production 소비 검사: 통과
 자산 자동 검사: 불필요
 자동 그래픽 디자인 역할: 통과
@@ -22,6 +22,11 @@ production 소비 검사: 통과
 진행 방해 P2: 0
 
 ## 판정 근거
+
+- 변경 전은 정답 후 성공 overlay에 머물렀고, 변경 후는 `alarmquest-qa` 물리 1080 × 2340·`user_rotation=1`·LimDo focus에서 1,200 ms 실제 노출과 녹음 재생 완료 뒤 `ㄱ`→`ㄴ`으로 정확히 한 번 이동했다.
+- `attempt.png`의 성공 원형은 완성 `ㄱ`의 중앙을 열어 자형을 읽을 수 있고, 네 조작 168 × 168 px은 overlay 위에서도 보이고 누를 수 있다. `after-playback.png`의 `ㄴ`는 1962 × 954 px WritingCanvas 안에 잘림·겹침 없이 초기 안내로 복귀했다.
+- 성공 노출·재생 중 홈·다시쓰기·이전·다음을 각각 선택한 뒤 3초 대기해도 홈·`ㄱ`·`ㅎ`·`ㄴ`에 그대로 머물러 느은 자동 이동이 0건이었다. 재생 실패 후에도 `ㄴ`로 이동했고 실패 파일 hash는 변경되지 않았으며 원본 `gieok.m4a` SHA-256은 `e395589b6f8ca5d62d0033d302e4e59af77d3878710af5a81c5039033b983c8e`로 복원·보존됐다.
+- 자동 그래픽 디자인·자동 QA·아이 대리 QA는 새 P0·P1·진행 방해 P2 0건으로 통과했다. 실제 아이 관찰: 실행 안 함.
 
 - 변경 전 보호자 접근은 `[1081,869][1260,1048]`=179 × 179 px로 모음 카드 위에 겹쳤다. 변경 후 터치 영역은 `[74,74][268,268]`=194 × 194 px이고 내부 시각 Surface는 48 dp로 분리됐다.
 - 변경 후 첫 카드는 y=294부터 시작해 보호자 터치 영역과 26 px 떨어지고, 세 카드 폭은 688~689 px다. 원본 PNG에서 대표 글자·라벨·테두리·그림자·화면 외곽의 잘림·겹침·왜곡은 0건이다.
