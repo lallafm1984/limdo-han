@@ -32,49 +32,55 @@ class GuardianVoiceRecordingTest {
         val finalFile = GuardianVoiceStorage.finalFile(noBackupRoot, LessonId.GIEOK)
         val tempFile = GuardianVoiceStorage.tempFile(finalFile)
 
-        assertEquals(File(noBackupRoot, "guardian_voice/gieok_start.m4a"), finalFile)
-        assertEquals(File(noBackupRoot, "guardian_voice/.gieok_start.m4a.recording"), tempFile)
+        assertEquals(File(noBackupRoot, "guardian_voice/gieok.m4a"), finalFile)
+        assertEquals(File(noBackupRoot, "guardian_voice/.gieok.m4a.recording"), tempFile)
         assertEquals(8_000, GuardianVoiceStorage.MAX_DURATION_MILLIS)
     }
 
     @Test
-    fun successRecordingUsesAnEventSpecificPathAndCannotReplaceStartBytes() {
+    fun legacyStartIsPreferredAndCopiedWithoutDeletingEitherLegacyFile() {
         val root = Files.createTempDirectory("limdo-guardian-events").toFile()
-        val start = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK, GuardianVoiceEvent.START)
-        val success = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK, GuardianVoiceEvent.SUCCESS)
-        val otherLesson = GuardianVoiceStorage.finalFile(root, LessonId.NIEUN, GuardianVoiceEvent.START)
+        val start = GuardianVoiceStorage.legacyFile(root, LessonId.GIEOK, GuardianVoiceEvent.START)
+        val success = GuardianVoiceStorage.legacyFile(root, LessonId.GIEOK, GuardianVoiceEvent.SUCCESS)
         start.parentFile!!.mkdirs()
-        start.writeBytes("start bytes".encodeToByteArray())
-        otherLesson.writeBytes("other lesson bytes".encodeToByteArray())
-        val originalStart = start.readBytes()
-        val originalOtherLesson = otherLesson.readBytes()
-        val successTemp = GuardianVoiceStorage.tempFile(success)
-        successTemp.writeBytes("success bytes".encodeToByteArray())
+        writeM4a(start, 1)
+        writeM4a(success, 2)
 
-        GuardianVoiceStorage.commit(successTemp, success)
-        success.delete()
+        val unified = GuardianVoiceStorage.migrateLegacyRecording(root, LessonId.GIEOK)
 
-        assertEquals(File(root, "guardian_voice/gieok_success.m4a"), success)
-        assertTrue(originalStart.contentEquals(start.readBytes()))
-        assertTrue(originalOtherLesson.contentEquals(otherLesson.readBytes()))
+        assertTrue(start.readBytes().contentEquals(unified.readBytes()))
         assertTrue(start.exists())
-        assertFalse(success.exists())
+        assertTrue(success.exists())
     }
 
     @Test
-    fun allThirtyEightLessonsHaveTwoUniqueRecordingPaths() {
+    fun damagedLegacyStartFallsBackToSuccessWithoutDeletingSources() {
+        val root = Files.createTempDirectory("limdo-guardian-fallback").toFile()
+        val start = GuardianVoiceStorage.legacyFile(root, LessonId.GIEOK, GuardianVoiceEvent.START)
+        val success = GuardianVoiceStorage.legacyFile(root, LessonId.GIEOK, GuardianVoiceEvent.SUCCESS)
+        start.parentFile!!.mkdirs()
+        start.writeBytes(byteArrayOf(1, 2, 3))
+        writeM4a(success, 7)
+
+        val unified = GuardianVoiceStorage.migrateLegacyRecording(root, LessonId.GIEOK)
+
+        assertTrue(success.readBytes().contentEquals(unified.readBytes()))
+        assertTrue(start.exists())
+        assertTrue(success.exists())
+    }
+
+    @Test
+    fun allThirtyEightLessonsHaveOneUniqueRecordingPath() {
         val root = File("/private/app/no_backup")
-        val expectedKeys = GuardianLessonCatalog.lessons.flatMap { lesson ->
-            GuardianVoiceEvent.entries.map { event -> GuardianVoiceKey(lesson.id, event) }
-        }
+        val expectedKeys = GuardianLessonCatalog.lessons.map { GuardianVoiceKey(it.id) }
         val paths = GuardianVoiceCatalog.keys.map { key ->
-            GuardianVoiceStorage.finalFile(root, key.lessonId, key.event).path
+            GuardianVoiceStorage.finalFile(root, key.lessonId).path
         }
 
         assertEquals(38, GuardianLessonCatalog.lessons.size)
-        assertEquals(76, GuardianVoiceCatalog.keys.size)
+        assertEquals(38, GuardianVoiceCatalog.keys.size)
         assertEquals(expectedKeys, GuardianVoiceCatalog.keys)
-        assertEquals(76, paths.toSet().size)
+        assertEquals(38, paths.toSet().size)
     }
 
     @Test
@@ -86,21 +92,21 @@ class GuardianVoiceRecordingTest {
             GuardianVoiceCatalog.keys.last(),
         )
         GuardianVoiceCatalog.keys.forEach { key ->
-            GuardianVoiceStorage.finalFile(root, key.lessonId, key.event).apply {
+            GuardianVoiceStorage.finalFile(root, key.lessonId).apply {
                 parentFile!!.mkdirs()
-                writeText("original-${key.lessonId}-${key.event}")
+                writeText("original-${key.lessonId}")
             }
         }
 
         representativeKeys.forEach { changedKey ->
             val before = GuardianVoiceCatalog.keys.associateWith { key ->
-                GuardianVoiceStorage.finalFile(root, key.lessonId, key.event).readBytes()
+                GuardianVoiceStorage.finalFile(root, key.lessonId).readBytes()
             }
-            val changed = GuardianVoiceStorage.finalFile(root, changedKey.lessonId, changedKey.event)
+            val changed = GuardianVoiceStorage.finalFile(root, changedKey.lessonId)
             GuardianVoiceStorage.tempFile(changed).writeText("changed-$changedKey")
             GuardianVoiceStorage.commit(GuardianVoiceStorage.tempFile(changed), changed)
             GuardianVoiceCatalog.keys.filter { it != changedKey }.forEach { preservedKey ->
-                val preserved = GuardianVoiceStorage.finalFile(root, preservedKey.lessonId, preservedKey.event)
+                val preserved = GuardianVoiceStorage.finalFile(root, preservedKey.lessonId)
                 assertTrue(before.getValue(preservedKey).contentEquals(preserved.readBytes()))
             }
         }
@@ -122,21 +128,19 @@ class GuardianVoiceRecordingTest {
     }
 
     @Test
-    fun backgroundReleaseAlwaysDiscardsEachEventTemporaryFileWithoutChangingCompletedBytes() {
+    fun backgroundReleaseDiscardsTemporaryFileWithoutChangingCompletedBytes() {
         val root = Files.createTempDirectory("limdo-guardian-background").toFile()
-        GuardianVoiceEvent.entries.forEach { event ->
-            val completed = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK, event)
-            completed.parentFile!!.mkdirs()
-            val originalBytes = "completed-${event.fileSuffix}".encodeToByteArray()
-            completed.writeBytes(originalBytes)
-            val temporary = GuardianVoiceStorage.tempFile(completed)
-            temporary.writeText("unfinished")
+        val completed = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK)
+        completed.parentFile!!.mkdirs()
+        val originalBytes = "completed".encodeToByteArray()
+        completed.writeBytes(originalBytes)
+        val temporary = GuardianVoiceStorage.tempFile(completed)
+        temporary.writeText("unfinished")
 
-            GuardianVoiceStorage.discardTemporaryFile(completed)
+        GuardianVoiceStorage.discardTemporaryFile(completed)
 
-            assertFalse(temporary.exists())
-            assertTrue(originalBytes.contentEquals(completed.readBytes()))
-        }
+        assertFalse(temporary.exists())
+        assertTrue(originalBytes.contentEquals(completed.readBytes()))
         val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/GuardianVoiceRecording.kt").readText()
         assertTrue(source.contains("fun release()"))
         assertTrue(source.contains("stopRecording(save = false)\n        stopPlayback()\n        GuardianVoiceStorage.discardTemporaryFile(finalFile)"))
@@ -173,9 +177,33 @@ class GuardianVoiceRecordingTest {
         assertFalse(productionSource.contains("SpeechPlaybackTracker"))
         assertFalse(productionSource.contains("shouldResumeSuccessCue"))
         assertFalse(productionSource.contains("shouldResumeInitialCue"))
-        assertTrue(productionSource.contains("GuardianVoiceEvent.START"))
-        assertTrue(productionSource.contains("GuardianVoiceEvent.SUCCESS"))
+        assertTrue(productionSource.contains("START(\"start\", \"쓰기 전\")"))
+        assertTrue(productionSource.contains("SUCCESS(\"success\", \"정답 후\")"))
         assertTrue(productionSource.contains("GuardianVoiceState.EMPTY"))
+        assertFalse(File(rootProject(), "app/src/main/java/com/limdo/hangul/MainActivity.kt").readText().contains("GuardianEventAction("))
+    }
+
+    @Test
+    fun writingFlowUsesTheSameLessonRecordingOnEntryAndAfterSuccess() {
+        val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/MainActivity.kt").readText()
+
+        assertTrue(source.contains("guardianVoiceControllers[GuardianVoiceKey(currentLesson.id)]"))
+        assertTrue(source.contains("LaunchedEffect(currentLesson.id) {\n        currentVoiceController.play()"))
+        assertTrue(source.contains("if (traceResult == GieokTraceResult.SUCCESS)"))
+        assertEquals(2, Regex("currentVoiceController\\.play\\(\\)").findAll(source).count())
+        assertTrue(source.contains("onDispose { currentVoiceController.stopPlayback() }"))
+        assertEquals(5, Regex("currentVoiceController\\.stopPlayback\\(\\)").findAll(source).count())
+    }
+
+    @Test
+    fun playbackFailureNeverDeletesTheCompletedRecording() {
+        val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/GuardianVoiceRecording.kt").readText()
+        val playBody = source.substringAfter("fun play(): Boolean").substringBefore("fun stopPlayback()")
+        val validationBody = source.substringAfter("private fun validFinalFile()").substringBefore("\n    }")
+
+        assertFalse(playBody.contains("finalFile.delete()"))
+        assertFalse(validationBody.contains("finalFile.delete()"))
+        assertEquals(1, Regex("finalFile\\.delete\\(\\)").findAll(source).count())
     }
 
     @Test
@@ -208,5 +236,12 @@ class GuardianVoiceRecordingTest {
     private fun rootProject(): File {
         val workingDirectory = File(requireNotNull(System.getProperty("user.dir")))
         return if (File(workingDirectory, "app").isDirectory) workingDirectory else workingDirectory.parentFile
+    }
+
+    private fun writeM4a(file: File, marker: Byte) {
+        file.writeBytes(ByteArray(16).also { bytes ->
+            "ftyp".encodeToByteArray().copyInto(bytes, destinationOffset = 4)
+            bytes[12] = marker
+        })
     }
 }

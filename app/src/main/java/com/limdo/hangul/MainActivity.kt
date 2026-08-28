@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -84,7 +85,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         guardianVoiceControllers = GuardianVoiceCatalog.keys.associateWith { key ->
-            GuardianVoiceController(applicationContext, key.lessonId, key.event)
+            GuardianVoiceController(applicationContext, key.lessonId)
         }
         hideSystemBars()
         setContent {
@@ -159,14 +160,9 @@ private fun LearningShell(
         )
         is LearningDestination.GuardianStartRecording -> GuardianStartRecordingScreen(
             lesson = GuardianLessonCatalog.lessons.single { it.id == current.lessonId },
-            event = current.event,
             controller = requireNotNull(
-                guardianVoiceControllers[GuardianVoiceKey(current.lessonId, current.event)],
+                guardianVoiceControllers[GuardianVoiceKey(current.lessonId)],
             ),
-            onSelectEvent = { selectedEvent ->
-                guardianVoiceControllers.values.forEach(GuardianVoiceController::release)
-                destination = current.copy(event = selectedEvent)
-            },
             onClose = {
                 guardianVoiceControllers.values.forEach(GuardianVoiceController::release)
                 destination = LearningDestination.GuardianLessons
@@ -192,6 +188,7 @@ private fun LearningShell(
             WritingLesson(
                 initialLessonId = current.lessonId,
                 menu = current.menu,
+                guardianVoiceControllers = guardianVoiceControllers,
                 onHome = { destination = LearningDestination.Home },
             )
         }
@@ -380,6 +377,9 @@ private fun GuardianLessonScreen(
     onClose: () -> Unit,
     onOpenStartRecording: (LessonId) -> Unit,
 ) {
+    var selectedGroupIndex by remember { mutableStateOf(0) }
+    val selectedGroup = GuardianLessonCatalog.groups[selectedGroupIndex]
+    val selectedVisuals = LearningMenu.entries[selectedGroupIndex].visuals()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -411,19 +411,44 @@ private fun GuardianLessonScreen(
             }
         }
         Row(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             GuardianLessonCatalog.groups.forEachIndexed { index, group ->
-                GuardianLessonGroupCard(
-                    group = group,
-                    accent = LearningMenu.entries[index].visuals().accent,
-                    surface = LearningMenu.entries[index].visuals().softSurface,
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
-                    onOpenStartRecording = onOpenStartRecording,
-                )
+                val visuals = LearningMenu.entries[index].visuals()
+                val selected = index == selectedGroupIndex
+                Surface(
+                    onClick = { selectedGroupIndex = index },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(74.dp)
+                        .semantics {
+                            contentDescription = "${group.label} 분류"
+                            stateDescription = if (selected) "선택됨" else "선택 안 됨"
+                        },
+                    color = if (selected) visuals.accent else visuals.softSurface,
+                    shape = RoundedCornerShape(22.dp),
+                    border = BorderStroke(3.dp, visuals.accent),
+                    shadowElevation = if (selected) 5.dp else 0.dp,
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            group.label,
+                            color = if (selected) Color.White else visuals.accent,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
             }
         }
+        GuardianLessonGroupCard(
+            group = selectedGroup,
+            accent = selectedVisuals.accent,
+            surface = selectedVisuals.softSurface,
+            modifier = Modifier.fillMaxSize(),
+            onOpenStartRecording = onOpenStartRecording,
+        )
     }
 }
 
@@ -441,15 +466,15 @@ private fun GuardianLessonGroupCard(
         shape = RoundedCornerShape(30.dp),
         shadowElevation = 5.dp,
     ) {
+        val columnCount = if (group.lessons.size == 10) 5 else 7
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(group.label, color = accent, fontSize = 26.sp, fontWeight = FontWeight.Bold)
-            group.lessons.chunked(7).forEach { lessonRow ->
+            group.lessons.chunked(columnCount).forEach { lessonRow ->
                 Row(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
                     lessonRow.forEach { lesson ->
                         Surface(
@@ -458,18 +483,19 @@ private fun GuardianLessonGroupCard(
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .semantics {
-                                    contentDescription = "lesson ${lesson.glyph}, 쓰기 전 녹음 열기"
+                                    contentDescription = "lesson ${lesson.glyph}, 녹음 열기"
                                     stateDescription = "사용 가능"
                                 },
                             color = Color.White.copy(alpha = 0.96f),
                             shape = RoundedCornerShape(18.dp),
+                            border = BorderStroke(2.dp, accent.copy(alpha = 0.45f)),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text(lesson.glyph, fontSize = 34.sp, fontWeight = FontWeight.Bold)
+                                Text(lesson.glyph, fontSize = 42.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
-                    repeat(7 - lessonRow.size) { Spacer(Modifier.weight(1f)) }
+                    repeat(columnCount - lessonRow.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
         }
@@ -479,9 +505,7 @@ private fun GuardianLessonGroupCard(
 @Composable
 private fun GuardianStartRecordingScreen(
     lesson: LessonSpec,
-    event: GuardianVoiceEvent,
     controller: GuardianVoiceController,
-    onSelectEvent: (GuardianVoiceEvent) -> Unit,
     onClose: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -519,18 +543,9 @@ private fun GuardianStartRecordingScreen(
             GuardianTextAction("목록", "녹음 화면 닫기", Color(0xFF3F725E), onClose)
             Text(lesson.glyph, fontSize = 54.sp, fontWeight = FontWeight.Bold)
             Column {
-                Text("${event.label} 보호자 녹음", fontSize = 31.sp, fontWeight = FontWeight.Bold)
+                Text("보호자 녹음", fontSize = 31.sp, fontWeight = FontWeight.Bold)
                 Text(stateLabel, fontSize = 21.sp)
             }
-            Spacer(Modifier.weight(1f))
-            GuardianEventAction(
-                label = "쓰기 전",
-                selected = event == GuardianVoiceEvent.START,
-            ) { onSelectEvent(GuardianVoiceEvent.START) }
-            GuardianEventAction(
-                label = "정답 후",
-                selected = event == GuardianVoiceEvent.SUCCESS,
-            ) { onSelectEvent(GuardianVoiceEvent.SUCCESS) }
         }
         Surface(
             modifier = Modifier.fillMaxSize().border(3.dp, Color(0xFF3F725E), RoundedCornerShape(30.dp)),
@@ -570,7 +585,7 @@ private fun GuardianStartRecordingScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     when (voiceState) {
-                        GuardianVoiceState.EMPTY -> GuardianTextAction("녹음", "${event.label} 녹음 시작", Color(0xFFD95D4F)) {
+                        GuardianVoiceState.EMPTY -> GuardianTextAction("녹음", "${lesson.glyph} 녹음 시작", Color(0xFFD95D4F)) {
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                                 controller.startRecording()
                             } else {
@@ -584,41 +599,12 @@ private fun GuardianStartRecordingScreen(
                                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) controller.startRecording()
                                 else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                             }
-                            GuardianTextAction("삭제", "${event.label} 녹음 삭제", Color(0xFF765B50)) { controller.delete() }
+                            GuardianTextAction("삭제", "${lesson.glyph} 녹음 삭제", Color(0xFF765B50)) { controller.delete() }
                         }
                         GuardianVoiceState.PLAYING -> GuardianTextAction("듣기 정지", "미리 듣기 정지", Color(0xFF3F725E)) { controller.stopPlayback() }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun GuardianEventAction(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier
-            .size(width = 124.dp, height = 64.dp)
-            .semantics {
-                contentDescription = "$label 녹음 관리"
-                stateDescription = if (selected) "선택됨" else "선택 안 됨"
-            },
-        color = if (selected) Color(0xFF3F725E) else Color(0xFFDCE9E2),
-        shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(3.dp, Color(0xFF3F725E)),
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                label,
-                color = if (selected) Color.White else Color(0xFF26332D),
-                fontSize = 19.sp,
-                fontWeight = FontWeight.Bold,
-            )
         }
     }
 }
@@ -743,6 +729,7 @@ private fun LessonSelection(
 private fun WritingLesson(
     initialLessonId: LessonId,
     menu: LearningMenu,
+    guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
     onHome: () -> Unit,
 ) {
     var clearRequest by rememberSaveable { mutableIntStateOf(0) }
@@ -755,7 +742,18 @@ private fun WritingLesson(
     var retryEvent by rememberSaveable { mutableIntStateOf(0) }
     var retryLessonIndex by rememberSaveable { mutableIntStateOf(-1) }
     val currentLesson = KoreanCurriculum.lessons[lessonIndex]
+    val currentVoiceController = requireNotNull(
+        guardianVoiceControllers[GuardianVoiceKey(currentLesson.id)],
+    )
     val retryVisuals = retryAnimationVisuals(retryProgress.value)
+
+    LaunchedEffect(currentLesson.id) {
+        currentVoiceController.play()
+    }
+
+    DisposableEffect(currentVoiceController) {
+        onDispose { currentVoiceController.stopPlayback() }
+    }
 
     LaunchedEffect(retryEvent, currentLesson.id, retryLessonIndex) {
         if (retryEvent > 0 && retryLessonIndex == lessonIndex) {
@@ -781,6 +779,7 @@ private fun WritingLesson(
                 targetValue = 1f,
                 animationSpec = tween(SuccessCelebrationSpec.DURATION_MS),
             )
+            currentVoiceController.play()
         }
     }
 
@@ -831,13 +830,18 @@ private fun WritingLesson(
             }
 
             EdgeActionColumns(
-                onHome = onHome,
+                onHome = {
+                    currentVoiceController.stopPlayback()
+                    onHome()
+                },
                 onClear = {
+                    currentVoiceController.stopPlayback()
                     retryLessonIndex = -1
                     clearRequest += 1
                     traceResult = null
                 },
                 onPrevious = {
+                    currentVoiceController.stopPlayback()
                     retryLessonIndex = -1
                     clearRequest += 1
                     traceResult = null
@@ -845,6 +849,7 @@ private fun WritingLesson(
                     lessonIndex = KoreanCurriculum.lessons.indexOfFirst { it.id == previousLesson.id }
                 },
                 onNext = {
+                    currentVoiceController.stopPlayback()
                     retryLessonIndex = -1
                     clearRequest += 1
                     traceResult = null

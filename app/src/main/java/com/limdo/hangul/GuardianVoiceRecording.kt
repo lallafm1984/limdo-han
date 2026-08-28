@@ -16,13 +16,10 @@ internal enum class GuardianVoiceEvent(val fileSuffix: String, val label: String
 
 internal data class GuardianVoiceKey(
     val lessonId: LessonId,
-    val event: GuardianVoiceEvent,
 )
 
 internal object GuardianVoiceCatalog {
-    val keys: List<GuardianVoiceKey> = GuardianLessonCatalog.lessons.flatMap { lesson ->
-        GuardianVoiceEvent.entries.map { event -> GuardianVoiceKey(lesson.id, event) }
-    }
+    val keys: List<GuardianVoiceKey> = GuardianLessonCatalog.lessons.map { GuardianVoiceKey(it.id) }
 }
 
 internal object GuardianVoiceStorage {
@@ -32,11 +29,28 @@ internal object GuardianVoiceStorage {
     fun finalFile(
         noBackupFilesDir: File,
         lessonId: LessonId,
-        event: GuardianVoiceEvent = GuardianVoiceEvent.START,
     ): File = File(
         File(noBackupFilesDir, DIRECTORY),
-        "${lessonId.name.lowercase()}_${event.fileSuffix}.m4a",
+        "${lessonId.name.lowercase()}.m4a",
     )
+
+    fun legacyFile(noBackupFilesDir: File, lessonId: LessonId, event: GuardianVoiceEvent): File =
+        File(File(noBackupFilesDir, DIRECTORY), "${lessonId.name.lowercase()}_${event.fileSuffix}.m4a")
+
+    fun migrateLegacyRecording(noBackupFilesDir: File, lessonId: LessonId): File {
+        val unified = finalFile(noBackupFilesDir, lessonId)
+        if (isSupportedM4a(unified)) return unified
+        if (unified.exists()) unified.delete()
+        val source = GuardianVoiceEvent.entries
+            .map { legacyFile(noBackupFilesDir, lessonId, it) }
+            .firstOrNull(::isSupportedM4a)
+            ?: return unified
+        unified.parentFile?.mkdirs()
+        val migrationFile = File(unified.parentFile, ".${unified.name}.migration")
+        source.copyTo(migrationFile, overwrite = true)
+        commit(migrationFile, unified)
+        return unified
+    }
 
     fun tempFile(finalFile: File): File = File(finalFile.parentFile, ".${finalFile.name}.recording")
 
@@ -70,12 +84,11 @@ internal object GuardianVoiceStorage {
 internal class GuardianVoiceController(
     private val context: Context,
     private val lessonId: LessonId = LessonId.GIEOK,
-    private val event: GuardianVoiceEvent = GuardianVoiceEvent.START,
 ) {
     private var recorder: MediaRecorder? = null
     private var player: MediaPlayer? = null
     private var onStateChanged: ((GuardianVoiceState) -> Unit)? = null
-    private val finalFile get() = GuardianVoiceStorage.finalFile(context.noBackupFilesDir, lessonId, event)
+    private val finalFile get() = GuardianVoiceStorage.migrateLegacyRecording(context.noBackupFilesDir, lessonId)
     private val tempFile get() = GuardianVoiceStorage.tempFile(finalFile)
 
     fun observe(callback: (GuardianVoiceState) -> Unit) {
@@ -144,7 +157,7 @@ internal class GuardianVoiceController(
             nextPlayer.setDataSource(finalFile.absolutePath)
             nextPlayer.setOnCompletionListener { stopPlayback() }
             nextPlayer.setOnErrorListener { _, _, _ ->
-                discardFailedPlayback()
+                stopPlayback()
                 true
             }
             nextPlayer.prepare()
@@ -154,7 +167,6 @@ internal class GuardianVoiceController(
             true
         }.getOrElse {
             nextPlayer.release()
-            finalFile.delete()
             notifyState()
             false
         }
@@ -185,14 +197,6 @@ internal class GuardianVoiceController(
     private fun notifyState() = onStateChanged?.invoke(currentState())
 
     private fun validFinalFile(): Boolean {
-        if (GuardianVoiceStorage.isSupportedM4a(finalFile)) return true
-        if (finalFile.exists()) finalFile.delete()
-        return false
-    }
-
-    private fun discardFailedPlayback() {
-        stopPlayback()
-        finalFile.delete()
-        notifyState()
+        return GuardianVoiceStorage.isSupportedM4a(finalFile)
     }
 }
