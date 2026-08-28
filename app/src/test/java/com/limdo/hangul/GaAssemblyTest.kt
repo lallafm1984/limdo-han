@@ -17,16 +17,18 @@ class GaAssemblyTest {
         assertTrue(afterGieok.place(GaAssemblyPiece.VOWEL).complete)
     }
 
-    @Test fun targetsKeepGaGeoGyeoGoAndGyoAsDistinctProductionLessons() {
+    @Test fun targetsKeepGaThroughGuAsDistinctProductionLessons() {
         assertTrue(GaAssemblyTarget.GA.lessonId == LessonId.GA)
         assertTrue(GaAssemblyTarget.GEO.lessonId == LessonId.GEO)
         assertTrue(GaAssemblyTarget.GYEO.lessonId == LessonId.GYEO)
         assertTrue(GaAssemblyTarget.GO.lessonId == LessonId.GO)
         assertTrue(GaAssemblyTarget.GYO.lessonId == LessonId.GYO)
-        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교"))
+        assertTrue(GaAssemblyTarget.GU.lessonId == LessonId.GU)
+        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구"))
         assertFalse(GaAssemblyTarget.GA.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GYO.isHorizontalVowel)
+        assertTrue(GaAssemblyTarget.GU.isHorizontalVowel)
     }
 
     @Test fun geoWritingKeepsStageNavigationWithoutExpandingGanadaSelection() {
@@ -69,5 +71,15 @@ class GaAssemblyTest {
         ))
         assertTrue(geometry.strokes.first().maxOf { it.y } < geometry.strokes.drop(1).flatten().maxOf { it.y })
         assertTrue(geometry.strokes.drop(2).map { it.first().x }.distinct().size == 2)
+    }
+
+    @Test fun guUsesOneDownwardVowelStrokeBelowTheProductionInitial() {
+        val gu = KoreanCurriculum.lessons.single { it.id == LessonId.GU }
+        val geometry = WritingCanvasGeometry.glyph(gu, 1962f, 954f)
+
+        assertTrue(gu.strokeCount == 3)
+        assertTrue(gu.strokeDirections.drop(1) == listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN))
+        assertTrue(geometry.strokes.first().maxOf { it.y } < geometry.strokes.drop(1).flatten().maxOf { it.y })
+        assertTrue(geometry.strokes.last().first().y < geometry.strokes.last().last().y)
     }
 }
