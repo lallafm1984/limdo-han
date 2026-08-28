@@ -5,10 +5,11 @@ internal enum class GaAssemblyTarget(val lessonId: LessonId, val glyph: String) 
     GEO(LessonId.GEO, "거"),
     GYEO(LessonId.GYEO, "겨"),
     GO(LessonId.GO, "고"),
+    GYO(LessonId.GYO, "교"),
 }
 
 internal val GaAssemblyTarget.isHorizontalVowel: Boolean
-    get() = this == GaAssemblyTarget.GO
+    get() = this == GaAssemblyTarget.GO || this == GaAssemblyTarget.GYO
 
 internal enum class GaAssemblyPiece { GIEOK, VOWEL }
 
