@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.limdo"
+    namespace = "com.nullplaying.limdo"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.limdo"
+        applicationId = "com.nullplaying.limdo"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -40,4 +40,3 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
 }
-

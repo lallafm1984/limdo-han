@@ -2542,3 +2542,14 @@
 - 자동 디자인 역할: `design-qa-before.png`의 단일 직선 P1 불일치를 곡선으로 교정했고 `design-qa-after.png`는 첨부 이미지형 초성 실루엣 범위에서 P0·P1·P2 없이 통과했다. 자동 연출 역할: 통과. 자동 QA 역할: 통과. 실제 사람 팀의 승인이 아니다.
 - 실제 휴대폰: `SM-S931N`이 무선 ADB 장치나 mDNS 서비스로 검색되지 않아 이번 APK 설치·실화면 QA는 수행하지 못했다.
 - 실제 아이 관찰: 실행 안 함.
+
+## QA-138 — 루프 181 정식 package·백업 차단 비시각 회귀 아이 대리 QA
+
+- 상태: 통과, 루프 181 범위의 새 P0·P1 미해결 불편 없음.
+- 근거: `captures/loop181/iteration1/new-package-home.png`와 hierarchy, 새 APK manifest, package·백업 정책 자동 검사와 전체 검증. 에뮬레이터는 물리 1080 × 2340·`user_rotation=1`, 전면 `com.nullplaying.limdo/.MainActivity`, 앱 화면 정확한 2340 × 1080이었다.
+- 화면 판정: package·백업 정책은 아이가 보는 UI를 바꾸지 않는다. 새 package 홈은 기존 노랑 배경과 자음·모음·가나다 세 카드의 큰 글자 모양을 유지하고, 카드 터치 영역은 왼쪽 688 × 912 px·가운데와 오른쪽 각각 689 × 912 px로 모두 `clickable=true`·`enabled=true`다. 글을 읽지 못해도 서로 다른 자모 모양 세 묶음에서 시작할 곳을 고를 수 있다.
+- 개인정보 판정: 이번 반복은 아이나 보호자의 데이터를 새로 수집하지 않는다. 후속 보호자 녹음은 app-private `noBackupFilesDir`에만 두고 cloud backup·device transfer·원격 저장에서 제외하도록 기획과 Android 정책을 함께 고정했다.
+- 범위 판정: 보호자 녹음, 재생, 자유 lesson 목록과 정답 후 자동 다음은 아직 UI에 없으므로 실제 동작을 검증했다고 표현하지 않는다. 이번 근거는 정식 앱 식별자·백업 정책과 기존 홈 비회귀에 한정한다.
+- 실제 휴대폰: `SM-S931N`이 무선 ADB 장치나 mDNS 서비스로 검색되지 않아 새 package 설치·실화면 QA는 수행하지 못했다.
+- 자동 QA 역할: 통과. 실제 사람 QA 팀의 승인이 아니다.
+- 실제 아이 관찰: 실행 안 함.

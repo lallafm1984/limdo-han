@@ -6363,3 +6363,25 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 실제 휴대폰 전달 제한: 최종 시점의 `adb devices -l`에는 `emulator-5554`만 있었고 `adb mdns services`에도 `SM-S931N`이 검색되지 않아 무선 설치를 수행하지 못했다. 과거 설치를 이번 설치로 표현하지 않는다.
 - 이전 비교·가설 판정: 단일 직선 대각선과 달리 최종 초성은 참고 이미지처럼 꺾임 직후 거의 수직으로 시작한 뒤 왼쪽으로 완만하게 휜다. 자동 geometry·실제 입력·디자인 비교·비회귀에서 반증이 없어 최신 보강 가설을 `채택`한다.
 - 완료 판정: 루프 180 최신 성공 조건과 `QA-137`을 통과했다. 새 P0·P1 불편과 미완료 사용자 지시가 없어 활성 큐를 `없음`으로 전환하고 `IDLE`로 종료한다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-28 루프 181 반복 1 가설 — 정식 package·무백업과 교정된 보호자 음성 기획
+
+- 가장 중요한 미충족 조건: 설치 식별자가 개발용 `com.example.limdo`이고 manifest의 `android:allowBackup=true` 때문에 앞으로 저장할 진도·보호자 녹음의 로컬 경계와 맞지 않는다. 2차 기획도 사용자가 원하지 않는 하루 세 글자·5분과 조건부 생성 음성을 전제로 한다.
+- 반증 가능한 가설: source·Gradle package를 `com.nullplaying.limdo`로 통일하고 `allowBackup=false`와 Android 버전별 전체 제외 규칙을 함께 적용하며, 기획을 보호자 자유 lesson 목록·lesson별 시작/정답 녹음·결과 뒤 자동 다음으로 교정하면 정식 설치 정체성과 로컬 개인정보 경계를 확보하면서 최신 제품 의도를 구현 가능한 계약으로 고정할 수 있다.
+- 반증 기준: 최종 APK package·`allowBackup`·backup rule 중 하나가 다르거나, 새 package 앱이 실행되지 않거나, 문서에 고정 일일 학습량·합성/내장 음성·원격 음성 저장이 남거나, 녹음 없음·권한 거부·재생 실패·수동 이동의 안전 흐름이 빠지면 가설을 기각한다.
+- 합리적 최소 변경: package·백업 설정과 이를 검증하는 계약, 2차 기획 문서만 바꾼다. 실제 녹음 UI와 `RECORD_AUDIO`, 재생기, 자동 진행 callback은 별도 제품 루프로 남긴다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터 근거와 구분한다.
+
+### 2026-08-28 루프 181 반복 1 결과
+
+- 제품 변경: Android namespace·applicationId와 main/test Kotlin package를 개발용 이름에서 `com.nullplaying.limdo`로 통일했다. package 변경은 Android에서 별도 앱으로 취급되므로 에뮬레이터의 기존 개발용 package는 사용자 데이터 보호를 위해 자동 삭제하지 않았다.
+- 백업 경계: manifest의 `android:allowBackup`을 `false`로 바꾸고 Android 11 이하용 `backup_rules.xml`, Android 12 이상용 `data_extraction_rules.xml`에서 cloud backup과 device transfer의 `root·file·database·sharedpref·external·device_*` 전체 domain을 제외했다. 일부 Android 12 이상 제조사 기기에서 `allowBackup=false`만으로 기기 간 전송까지 보장되지 않는 공식 동작을 고려한 이중 차단이다.
+- 기획 교정: `docs/2차-목표-제품-기획서.md`에서 합성·내장·생성·캐릭터 모사 음성을 제거하고, 보호자 전용 메뉴의 lesson별 `쓰기 전`·`정답 후` 두 녹음, app-private `noBackupFilesDir` 저장, 시작 전 1회 재생, 정답 뒤 1회 재생 후 자동 다음, 오류 시 무음 대안과 수동 조작 우선 계약을 확정했다.
+- 학습량 교정: 하루 세 글자·5분·2/3/5개·연속 출석·진도 잠금 같은 고정 제약을 두지 않는다. 보호자는 최소·최대 없이 원하는 lesson 수·순서·중복을 구성할 수 있고 목록이 없으면 기존 자유 쓰기와 순환을 사용한다.
+- 구현 경계: 이번 반복에는 마이크 권한, 보호자 메뉴, 녹음·재생기, 학습 목록 저장과 자동 다음 callback을 추가하지 않았다. 해당 기능은 승인된 기획의 후속 제품 구현 범위다.
+- 자동 검증: `AppIdentityAndBackupPolicyTest`를 추가해 Gradle 식별자, 모든 Kotlin package, manifest 백업 플래그와 두 XML의 전체 제외 domain을 고정했다. `./scripts/verify.sh`의 작업 가치·자동화 계약, 단위 테스트 108개, Android lint와 debug build가 모두 통과했고 `git diff --check`도 통과했다.
+- APK·에뮬레이터 근거: 최종 debug APK는 package `com.nullplaying.limdo`, versionCode 1, versionName 0.1.0, 25,871,282 bytes, SHA-256 `e2bc088374de45e8f16b6d361804d971c0b3a47f0901ed22caefd1977fe0e5ff`다. `emulator-5554`에 설치해 cold launch 2613 ms, 물리 1080 × 2340·`user_rotation=1`, 전면 focus `com.nullplaying.limdo/.MainActivity`, 정확한 앱 화면 2340 × 1080과 치명 오류 0건을 확인했다. 새 근거는 `captures/loop181/iteration1/`에 저장했다.
+- 아이 대리 QA: package와 백업은 아이 화면을 바꾸지 않는다. 새 package 홈 화면에서 자음·모음·가나다 세 카드가 각각 큰 모양과 688~689 × 912 px 터치 영역으로 유지돼 기존 첫 선택 흐름에 새 P0·P1 회귀가 없었다. 실제 아이 관찰은 실행하지 않았다.
+- 실제 휴대폰 제한: 최종 시점의 `adb devices -l`에는 `emulator-5554`만 있었고 `adb mdns services`에도 `SM-S931N`이 검색되지 않아 새 package APK를 무선 설치하지 못했다. 과거 개발용 package 설치를 이번 설치로 표현하지 않는다.
+- 이전 비교·가설 판정: 개발용 설치 식별자·OS 백업 허용·고정 일일 학습량·생성 음성 전제에서 정식 식별자·백업 차단·보호자 자유 구성·직접 녹음 계약으로 바뀌었고 자동·APK·에뮬레이터 근거에서 반증이 없어 반복 1 가설을 `채택`한다.
+- 완료 판정: 루프 181 성공 조건과 `QA-138`을 통과했다. 사용자가 요청한 것은 2차 기능의 기획 추가였으므로 실제 기능 구현을 자동 시작하지 않고 활성 큐를 `없음`으로 전환해 `IDLE`로 종료한다. 실제 아이 관찰: 실행 안 함.
