@@ -67,4 +67,36 @@ class GuardianLearningListStorageTest {
         assertThrows(IllegalArgumentException::class.java) { storage.move(lessons, 0, -1) }
         assertThrows(IllegalArgumentException::class.java) { storage.move(lessons, 1, 2) }
     }
+
+    @Test
+    fun currentIndexIsClampedPersistedAndRestartedAtomically() {
+        val root = Files.createTempDirectory("limdo-list-current").toFile()
+        val storage = GuardianLearningListStorage(root)
+        val lessons = listOf(LessonId.GIEOK, LessonId.A, LessonId.NIEUN)
+
+        storage.currentIndexStorageFile().writeText("99")
+        assertEquals(2, storage.continueFromCurrent(lessons))
+        assertEquals(2, GuardianLearningListStorage(root).loadCurrentIndex(lessons))
+        assertEquals(0, storage.restartFromBeginning(lessons))
+        assertEquals(0, GuardianLearningListStorage(root).loadCurrentIndex(lessons))
+        assertEquals(-1, storage.restartFromBeginning(emptyList()))
+        assertFalse(File(root, "guardian-learning-current-index.txt.tmp").exists())
+    }
+
+    @Test
+    fun moveAndRemoveKeepTheSameDuplicateOccurrenceCurrentByIndex() {
+        val root = Files.createTempDirectory("limdo-list-current-edit").toFile()
+        val storage = GuardianLearningListStorage(root)
+        val original = listOf(LessonId.GIEOK, LessonId.A, LessonId.GIEOK, LessonId.NIEUN)
+        storage.currentIndexStorageFile().writeText("2")
+
+        val moved = storage.move(original, 2, 1)
+        assertEquals(1, storage.loadCurrentIndex(moved))
+        val removedBeforeCurrent = storage.removeAt(moved, 0)
+        assertEquals(0, storage.loadCurrentIndex(removedBeforeCurrent))
+        val removedCurrent = storage.removeAt(removedBeforeCurrent, 0)
+        assertEquals(0, storage.loadCurrentIndex(removedCurrent))
+        val emptied = storage.removeAt(storage.removeAt(removedCurrent, 1), 0)
+        assertEquals(-1, storage.loadCurrentIndex(emptied))
+    }
 }

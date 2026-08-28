@@ -96,6 +96,15 @@ Codex 앱 heartbeat 자동화 `LimDo 진행 상황 보고`가 10분마다 이 �
 
 공용 에뮬레이터 충돌을 막기 위해 저장소에 템플릿이 있다는 이유만으로 설치하거나 켜지 않는다. 사용자의 명시적 재개와 에뮬레이터 사용 가능 확인 뒤에만 `enable`한다.
 
+### 에뮬레이터 2시간 재시작 관문
+
+- 각 작업자는 첫 에뮬레이터 QA 직전과 장시간 검증의 새 시나리오 시작 전에 `adb -s emulator-5554 shell cat /proc/uptime`을 읽는다.
+- 첫 값이 7,200초 미만일 때만 새 입력·PNG·hierarchy 수집을 시작한다. 7,200초 이상이면 해당 시점부터 새 화면 근거를 만들지 않는다.
+- 현재 LimDo가 사용하는 `alarmquest-qa`임을 확인한 뒤 `adb -s emulator-5554 emu kill`을 실행하고, `adb devices`에서 `emulator-5554`가 사라질 때까지 기다린다. 다른 프로젝트가 사용 중이면 임의 종료하지 않고 작업을 중지해 충돌을 기록한다.
+- `/Users/lim/Library/Android/sdk/emulator/emulator -avd alarmquest-qa -no-snapshot-load -no-snapshot-save -no-boot-anim -gpu host`로 cold boot하고 `sys.boot_completed=1`까지 기다린다.
+- 재실행 뒤 `wm size`가 물리 1080 × 2340, `user_rotation=1`, 앱 화면 2340 × 1080인지 확인하고 최신 APK를 다시 설치·실행해 `mCurrentFocus`와 `mFocusedApp`이 LimDo인지 확인한다.
+- 재시작 시간과 전·후 uptime을 현재 반복 이력 또는 검증 로그에 남긴다. 재시작 전 7,200초 이후 캡처는 완료 근거에서 제외한다.
+
 ### 외부 루프 사용법에서의 선택
 
 세부 대응과 적용하지 않은 이유는 `docs/루프-엔지니어링-적용.md`에 기록한다. 특히 자동 검사 뒤 화면 확인 전에 커밋하는 일반 규칙은 채택하지 않는다. LimDo는 화면까지 검증한 완료 루프만 커밋하고, 중단 시에는 작업 트리와 한글 상태·이력에서 재개한다.

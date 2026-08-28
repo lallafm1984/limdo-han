@@ -151,6 +151,9 @@ private fun LearningShell(
     var guardianLearningList by remember {
         mutableStateOf(guardianLearningListStorage.load())
     }
+    var guardianLearningCurrentIndex by remember {
+        mutableIntStateOf(guardianLearningListStorage.loadCurrentIndex(guardianLearningList))
+    }
 
     BackHandler(enabled = destination != LearningDestination.Home) {
         destination = LearningNavigation.back(destination)
@@ -167,11 +170,13 @@ private fun LearningShell(
             onClose = { destination = LearningDestination.Home },
             onOpenStartRecording = { destination = LearningDestination.GuardianStartRecording(it) },
             learningList = guardianLearningList,
+            learningCurrentIndex = guardianLearningCurrentIndex,
             onAddLesson = { lessonId ->
                 guardianLearningList = guardianLearningListStorage.append(
                     guardianLearningList,
                     lessonId,
                 )
+                guardianLearningCurrentIndex = guardianLearningListStorage.loadCurrentIndex(guardianLearningList)
             },
             onMoveLesson = { fromIndex, toIndex ->
                 guardianLearningList = guardianLearningListStorage.move(
@@ -179,12 +184,20 @@ private fun LearningShell(
                     fromIndex,
                     toIndex,
                 )
+                guardianLearningCurrentIndex = guardianLearningListStorage.loadCurrentIndex(guardianLearningList)
             },
             onRemoveLesson = { index ->
                 guardianLearningList = guardianLearningListStorage.removeAt(
                     guardianLearningList,
                     index,
                 )
+                guardianLearningCurrentIndex = guardianLearningListStorage.loadCurrentIndex(guardianLearningList)
+            },
+            onContinueLearning = {
+                guardianLearningCurrentIndex = guardianLearningListStorage.continueFromCurrent(guardianLearningList)
+            },
+            onRestartLearning = {
+                guardianLearningCurrentIndex = guardianLearningListStorage.restartFromBeginning(guardianLearningList)
             },
         )
         is LearningDestination.GuardianStartRecording -> GuardianStartRecordingScreen(
@@ -416,9 +429,12 @@ private fun GuardianLessonScreen(
     onClose: () -> Unit,
     onOpenStartRecording: (LessonId) -> Unit,
     learningList: List<LessonId>,
+    learningCurrentIndex: Int,
     onAddLesson: (LessonId) -> Unit,
     onMoveLesson: (Int, Int) -> Unit,
     onRemoveLesson: (Int) -> Unit,
+    onContinueLearning: () -> Unit,
+    onRestartLearning: () -> Unit,
 ) {
     var selectedGroupIndex by remember { mutableStateOf(0) }
     var guardianMode by remember { mutableIntStateOf(0) }
@@ -482,9 +498,12 @@ private fun GuardianLessonScreen(
         if (guardianMode == 2) {
             GuardianLearningListEditor(
                 learningList = learningList,
+                currentIndex = learningCurrentIndex,
                 modifier = Modifier.fillMaxSize(),
                 onMoveLesson = onMoveLesson,
                 onRemoveLesson = onRemoveLesson,
+                onContinueLearning = onContinueLearning,
+                onRestartLearning = onRestartLearning,
             )
             return@Column
         }
@@ -536,9 +555,12 @@ private fun GuardianLessonScreen(
 @Composable
 private fun GuardianLearningListEditor(
     learningList: List<LessonId>,
+    currentIndex: Int,
     modifier: Modifier = Modifier,
     onMoveLesson: (Int, Int) -> Unit,
     onRemoveLesson: (Int) -> Unit,
+    onContinueLearning: () -> Unit,
+    onRestartLearning: () -> Unit,
 ) {
     val pageSize = 5
     val pageCount = maxOf(1, (learningList.size + pageSize - 1) / pageSize)
@@ -573,14 +595,23 @@ private fun GuardianLearningListEditor(
                         val absoluteIndex = pageStart + offset
                         val lesson = GuardianLessonCatalog.lessons.single { it.id == lessonId }
                         val selected = absoluteIndex == selectedIndex
+                        val current = absoluteIndex == currentIndex
                         Surface(
                             onClick = { selectedIndex = absoluteIndex },
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
+                                .border(
+                                    width = if (current) 7.dp else 0.dp,
+                                    color = if (current) Color(0xFFF0A660) else Color.Transparent,
+                                    shape = RoundedCornerShape(22.dp),
+                                )
                                 .semantics {
                                     contentDescription = "${absoluteIndex + 1}번 lesson ${lesson.glyph}"
-                                    stateDescription = if (selected) "선택됨" else "선택 안 됨"
+                                    stateDescription = listOfNotNull(
+                                        if (current) "현재 시작 위치" else null,
+                                        if (selected) "선택됨" else "선택 안 됨",
+                                    ).joinToString(", ")
                                 },
                             color = if (selected) accent else Color.White,
                             shape = RoundedCornerShape(22.dp),
@@ -589,6 +620,9 @@ private fun GuardianLearningListEditor(
                             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                                 Text("${absoluteIndex + 1}", fontSize = 18.sp, color = if (selected) Color.White else accent)
                                 Text(lesson.glyph, fontSize = 46.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else Color(0xFF26332E))
+                                if (current) {
+                                    Text("현재", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else Color(0xFF9A5B18))
+                                }
                             }
                         }
                     }
@@ -596,14 +630,14 @@ private fun GuardianLearningListEditor(
                 }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                GuardianEditorAction("이전 페이지", pageIndex > 0, Modifier.weight(1f)) {
+                GuardianEditorAction("이전 쪽", pageIndex > 0, Modifier.weight(1f)) {
                     pageIndex -= 1
                     selectedIndex = -1
                 }
                 Box(Modifier.weight(1f).height(74.dp), contentAlignment = Alignment.Center) {
                     Text("${pageIndex + 1} / $pageCount", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 }
-                GuardianEditorAction("다음 페이지", pageIndex < pageCount - 1, Modifier.weight(1f)) {
+                GuardianEditorAction("다음 쪽", pageIndex < pageCount - 1, Modifier.weight(1f)) {
                     pageIndex += 1
                     selectedIndex = -1
                 }
@@ -622,6 +656,13 @@ private fun GuardianLearningListEditor(
                 GuardianEditorAction("삭제", selectedIndex in learningList.indices, Modifier.weight(1f), Color(0xFF9A4B43)) {
                     onRemoveLesson(selectedIndex)
                     selectedIndex = -1
+                }
+                GuardianEditorAction("이어하기", learningList.isNotEmpty(), Modifier.weight(1f)) {
+                    onContinueLearning()
+                }
+                GuardianEditorAction("처음부터", learningList.isNotEmpty(), Modifier.weight(1f), Color(0xFFF0A660)) {
+                    onRestartLearning()
+                    pageIndex = 0
                 }
             }
         }

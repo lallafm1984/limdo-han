@@ -17,6 +17,15 @@
 
 코드, 화면, 에뮬레이터, 성인 판단을 `실제 아이 관찰`로 표현하지 않는다.
 
+## 에뮬레이터 장시간 사용 관문
+
+- 각 에뮬레이터 QA 시작 전에 `adb -s emulator-5554 shell cat /proc/uptime`의 첫 값으로 현재 부팅 뒤 사용 시간을 확인한다.
+- 7,200초 미만이면 검수를 계속할 수 있다. 7,200초 이상이면 메모리 누적·버벅임이 화면과 입력 판정을 오염시킬 수 있으므로 새 입력·캡처를 즉시 중지한다.
+- `adb -s emulator-5554 emu kill` 뒤 `adb devices`에서 serial 소멸을 확인하고, `alarmquest-qa`를 `-no-snapshot-load -no-snapshot-save`로 cold boot한다.
+- `adb -s emulator-5554 wait-for-device`, `getprop sys.boot_completed` 값 `1`, `wm size` 물리 1080 × 2340, `settings get system user_rotation` 값 `1`을 차례로 확인한다.
+- 최신 APK를 다시 설치·실행한 뒤 앱 화면 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo, 필요한 시험 fixture 복원을 확인하고 QA를 재개한다.
+- 재시작 뒤 uptime은 7,200초 미만이어야 한다. 재시작 전 한계를 넘긴 뒤 얻은 PNG·hierarchy·focus는 완료 증거로 인정하지 않는다.
+
 ## 다섯 살 이해 가능성 관문
 
 - 한 화면에 분명한 학습 과제 하나만 제시한다.

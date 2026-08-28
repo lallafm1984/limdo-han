@@ -574,3 +574,12 @@
 - 금지: 목록 탐색에 `LazyColumn`·`LazyRow`·`verticalScroll`·`horizontalScroll`·swipe pager 또는 손가락 drag 기반 스크롤을 사용하지 않는다. 항목마다 작은 세 동작을 욱여넣어 터치 목표가 192 px 미만이 되는 안도 금지한다.
 - 회귀 고정: 보호자 lesson 선택 목록과 자유 학습 편집 목록에서 스크롤안이 각각 기각됐으므로 `docs/회귀-규칙.md`에 공통 비스크롤 탐색 규칙을 승격하고 production 소스·hierarchy 검사로 고정한다.
 - 에뮬레이터 검수: `alarmquest-qa` 2340 × 1080에서 빈 목록·중복 목록·1페이지·중간 페이지·마지막 페이지, 페이지 이동·첫/마지막 비활성·중복 하나 이동·삭제·재실행 복원을 실제 탭과 새 PNG·hierarchy·focus로 판정한다.
+
+## 2026-08-28 — 에뮬레이터 2시간 사용 후 의무 재시작
+
+- 상태: 즉시 적용하는 영구 루프 운영 규칙이다.
+- 사용자 지시: 루프 엔지니어링 중 에뮬레이터를 오래 켜 두면 메모리가 누적돼 버벅이고 느려지므로, 테스트 사용 시간이 2시간 이상이면 에뮬레이터를 종료하고 다시 실행한다.
+- 측정: 각 에뮬레이터 QA 전에 `adb -s emulator-5554 shell cat /proc/uptime` 첫 값을 읽고 7,200초 이상인지 확인한다.
+- 조치: 7,200초 이상이면 새 테스트 입력·캡처를 중지하고 `adb -s emulator-5554 emu kill`→serial 소멸 확인→`alarmquest-qa` cold boot를 수행한다. snapshot memory를 복원하지 않도록 `-no-snapshot-load -no-snapshot-save`를 사용한다.
+- 재개 관문: `sys.boot_completed=1`, 물리 1080 × 2340, `user_rotation=1`, 최신 APK 재설치, LimDo 2340 × 1080·focus를 다시 확인한 뒤에만 테스트를 이어 간다.
+- 증거: 재시작 전·후 uptime을 현재 반복 기록에 남기고, 한계 도달 뒤 재시작 전에 수집한 화면은 완료 근거로 사용하지 않는다.
