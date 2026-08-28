@@ -44,7 +44,6 @@ private val TraceCenterGuide = Color(0xFF176B52)
 private val StartMarker = Color(0xFF35A77B)
 private val FinishMarker = Color(0xFFFFA93A)
 private val ChildStroke = Color(0xFF174F73)
-private val DirectionArrow = Color(0xFF176B52)
 private val DemonstrationMarker = Color(0xFF36BFAF)
 private val DemonstrationMarkerOutline = Color(0xFF0E5862)
 private val DemonstrationMarkerGlyph = Color(0xFFFFF3C4)
@@ -146,22 +145,6 @@ internal fun WritingCanvas(
     } else {
         null
     }
-    val inputGuideMotion = if (attempt.stroke.points.isNotEmpty() && attempt.result == null) {
-        val transition = rememberInfiniteTransition(label = "입력 중 다음 방향")
-        val progress by transition.animateFloat(
-            initialValue = 0f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = keyframes { durationMillis = 650 },
-                repeatMode = RepeatMode.Reverse,
-            ),
-            label = "손가락 앞 짧은 움직임",
-        )
-        progress
-    } else {
-        null
-    }
-
     LaunchedEffect(clearRequest) {
         if (clearRequest != handledClearRequest) {
             handledClearRequest = clearRequest
@@ -395,81 +378,5 @@ internal fun WritingCanvas(
             )
         }
 
-        inputGuideMotion?.let { motion ->
-            val guide = WritingCanvasGeometry.inputDirectionGuide(
-                lesson = lesson,
-                width = size.width,
-                height = size.height,
-                strokeIndex = attempt.completedStrokes.size,
-                input = attempt.stroke.points.last(),
-                motionProgress = motion,
-            )
-            drawDirectionArrow(
-                center = Offset(guide.center.x, guide.center.y),
-                direction = Offset(guide.direction.x, guide.direction.y),
-                length = arrowLength * 0.58f * WritingCanvasGeometry.strokeGuideScale(
-                    lesson,
-                    attempt.completedStrokes.size,
-                ),
-                headLength = WritingCanvasGeometry.directionArrowHeadLength(
-                    lesson = lesson,
-                    width = size.width,
-                    height = size.height,
-                    strokeIndex = attempt.completedStrokes.size,
-                    arrowLength = arrowLength * 0.58f * WritingCanvasGeometry.strokeGuideScale(
-                        lesson,
-                        attempt.completedStrokes.size,
-                    ),
-                ),
-                strokeWidth = arrowStroke * WritingCanvasGeometry.strokeGuideScale(
-                    lesson,
-                    attempt.completedStrokes.size,
-                ),
-            )
-        }
-
-    }
-}
-
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawDirectionArrow(
-    center: Offset,
-    direction: Offset,
-    length: Float,
-    headLength: Float,
-    strokeWidth: Float,
-) {
-    val halfLength = length / 2f
-    val tail = Offset(
-        x = center.x - (direction.x * halfLength),
-        y = center.y - (direction.y * halfLength),
-    )
-    val tip = Offset(
-        x = center.x + (direction.x * halfLength),
-        y = center.y + (direction.y * halfLength),
-    )
-    val perpendicular = Offset(-direction.y, direction.x)
-    val headBase = Offset(
-        x = tip.x - (direction.x * headLength),
-        y = tip.y - (direction.y * headLength),
-    )
-
-    drawLine(
-        color = DirectionArrow,
-        start = tail,
-        end = tip,
-        strokeWidth = strokeWidth,
-        cap = StrokeCap.Round,
-    )
-    listOf(-1f, 1f).forEach { side ->
-        drawLine(
-            color = DirectionArrow,
-            start = tip,
-            end = Offset(
-                x = headBase.x + (perpendicular.x * headLength * side),
-                y = headBase.y + (perpendicular.y * headLength * side),
-            ),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round,
-        )
     }
 }
