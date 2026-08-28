@@ -9,6 +9,7 @@ internal enum class GaAssemblyTarget(val lessonId: LessonId, val glyph: String) 
     GU(LessonId.GU, "구"),
     GYU(LessonId.GYU, "규"),
     GEU(LessonId.GEU, "그"),
+    GI(LessonId.GI, "기"),
 }
 
 internal val GaAssemblyTarget.isHorizontalVowel: Boolean

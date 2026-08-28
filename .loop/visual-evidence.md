@@ -1,7 +1,7 @@
 # 현재 시각 루프 증거
 
-루프: 212
-상태: 완료 — 반복 3 `그` 성공 동시점 근거 통과
+루프: 213
+상태: 완료 — 반복 2 `기` 성공 동시점 근거 통과
 기준 화면: 2340 × 1080
 변경 전 PNG: captures/loop210/iteration1/after/target-selection.png
 변경 전 hierarchy: captures/loop210/iteration1/after/target-selection.xml
@@ -72,3 +72,16 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 자동 QA 역할: 통과 — verify·diff·`GeuAssemblyFlowTest` 1/1, 2획 성공·`GI` 다음·홈, 1962 × 954 px WritingCanvas와 네 168 × 168 px 조작을 통과했다.
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 초성 아래의 단일 평행 가로획, 완성 글자, 큰 체크와 기쁜 캐릭터, 네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0
+
+## 루프 213 반복 2 최종 근거
+
+- 변경 전: `captures/loop212/iteration1/after/target-selection-final.png`와 hierarchy. 변경 후: `captures/loop213/iteration1/after/target-selection-final.png`와 hierarchy.
+- 성공 동시점: `captures/loop213/iteration2/after/gi-success-samepoint.png`, `gi-success-samepoint-hierarchy.txt`, `gi-success-samepoint-focus.txt`.
+- 환경: `alarmquest-qa` cold boot uptime `8.72`초에서 시작, 성공 focus 수집 uptime `237.09`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo.
+- APK SHA-256: `dad728f0dee18926c5aa900af7844fd80513dca40dfb41a9233c2171ba4a2c44`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- hierarchy: `정답이에요`, `기를 2획으로`, 홈·다시쓰기·이전·다음 callback을 같은 성공 고정 구간에서 노출한다.
+- 자산 필요 판정: 불필요 — production `GI` geometry와 기존 성공·조작 atlas 재사용. 새 raster 0건.
+- 자동 그래픽 디자인 역할: 통과 — 완성 `기`가 가장 크고, 체크·도마뱀·별·색종이는 글자 뒤에서 결과를 강조하며 글자·네 조작 가림·잘림·왜곡·halo·검은 배경은 0건이다.
+- 자동 QA 역할: 통과 — `verify.sh`·diff·시각 계약·`GiAssemblyFlowTest` 1/1, 2획 성공·`RA` 다음·홈, WritingCanvas 1962 × 954 px와 네 168 × 168 px 조작을 통과했다.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 왼쪽 `ㄱ`·오른쪽 단일 세로획, 완성 글자, 큰 체크와 기쁜 캐릭터, 네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.

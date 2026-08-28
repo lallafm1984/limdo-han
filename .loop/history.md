@@ -584,6 +584,36 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예(반복 1 변경의 최종 경계 판정이며 이번 반복의 신규 시각 변경은 없음). 자산 필요 판정: 불필요 — 기존 production 점선·시작점·동적 시범 geometry 상태 경계 검증이며 bitmap은 lifecycle 정확성을 높이지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
 
+### 2026-08-29 루프 213 반복 2 결과 — `기` 성공 동시점 근거 통과·루프 완료
+
+- 최소 검증 변경: production 코드·geometry·자산은 더 바꾸지 않았다. `GiAssemblyFlowTest`에서 성공 직후 Compose clock을 고정하고 완성 Canvas·정답 semantics·네 조작을 확인한 뒤 2340 × 1080 PNG와 unmerged Compose hierarchy를 수집하도록 계측 근거만 보강했다.
+- 실패·교정 비교: 첫 300 ms와 600 ms 수집은 `정답이에요` semantics는 있었지만 animation LaunchedEffect 시작 frame 전 progress 0을 잡아 atlas가 투명했다. 성공 구성 직후 한 frame을 먼저 진행한 뒤 600 ms를 진행하는 최소 계측 교정으로 실제 atlas와 semantics를 일치시켰다.
+- 새 동시점 근거: `captures/loop213/iteration2/after/gi-success-samepoint.png`는 2340 × 1080에서 완성 `기`·큰 초록 체크·기쁜 도마뱀·별·색종이·네 조작을 동시에 보여 준다. 같은 고정 구간의 hierarchy는 `정답이에요`·`기를 2획으로`·홈·다시쓰기·이전·다음을 노출하고, 호스트 동시 수집 focus의 `mCurrentFocus`·`mFocusedApp`은 `com.limdo.hangul/.MainActivity`다.
+- 에뮬레이터 관문: serial이 없는 상태에서 `alarmquest-qa`를 cold boot했고 시작 uptime `8.72`초, 성공 focus 수집 `237.09`초로 7,200초 미만이었다. 물리 1080 × 2340, `user_rotation=1`, LimDo 2340 × 1080을 확인했다. APK SHA-256은 `dad728f0dee18926c5aa900af7844fd80513dca40dfb41a9233c2171ba4a2c44`이다.
+- 시각 직접 판정: `기`가 화면에서 가장 크고 `ㄱ`과 오른쪽 단일 세로획 `ㅣ`의 상대 위치가 보존된다. 정답 atlas는 글자 뒤에 머물고 네 조작을 가리지 않으며, 잘림·겹침·왜곡·halo·검은 배경은 0건이다.
+- 자동 검증: `./scripts/verify.sh`의 unit·Android lint·debug build, `git diff --check`, `./scripts/check-visual-loop.sh`가 통과했다. `GiAssemblyFlowTest` 단독 1/1과 전체 5/5는 오순서 거부·2획 성공·`RA` 다음·홈을 통과했고, WritingCanvas 1962 × 954 px·네 조작 168 × 168 px는 반복 1 근거를 유지했다.
+- 이전 반복 비교·가설 판정: 반복 1의 진행 프레임만 있던 상태와 달리 성공 PNG·hierarchy·focus가 같은 고정 구간을 가리켜 가설을 `채택`한다. 진행 방해 P2 1건은 해소됐고 새 P0·P1·진행 방해 P2는 0건이다.
+- 역할 QA: 자동 그래픽 디자인·자동 QA·에뮬레이터·아이 대리 QA는 모두 통과했다. 글을 읽지 않는다고 가정해도 왼쪽 `ㄱ`·오른쪽 `ㅣ`, 완성 글자, 큰 체크·기쁜 캐릭터·네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
+- 완료·전환: 루프 213을 반복 2에서 완료했다. `QA-170`에 새 불편이 없어 2차 교육과정 3단계의 첫 미구현 초성 확장 `ㄴ + ㅏ → 나`를 루프 214로 준비했다. 이 작업자는 루프 214를 구현하지 않는다.
+
+### 2026-08-29 루프 213 반복 1 결과 — `기` 조립·쓰기 동작 통과, 성공 동시점 화면 미판정
+
+- 기록 위치 정정: 반복 1 가설이 과거 기록 사이에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 절을 수정·삭제하지 않고 해당 가설과 이 절을 반복 1의 최신 기록으로 사용한다.
+- 최소 제품 변경: `GaAssemblyTarget.GI`·`이` 모음 semantics·순서·production 단일 세로획 검사를 추가했다. 첫 실화면에서 아홉 번째 카드가 121 px로 잘린 직접 결함을 확인해 모든 조립 선택 카드를 73 dp로 통일했고, 최종 9개가 각각 192 × 192 px·간격 32 px로 잘림 없이 노출됐다.
+- 자동 검증: `./scripts/verify.sh`의 unit·Android lint·debug build, `git diff --check`가 통과했다. `GiAssemblyFlowTest` 1/1은 모음 먼저 입력의 미완성, `ㄱ`→`ㅣ`, production 2획 semantics 성공, 교육과정의 다음 `RA`, 홈 복귀를 통과했다. APK SHA-256은 `dad728f0dee18926c5aa900af7844fd80513dca40dfb41a9233c2171ba4a2c44`이다.
+- 에뮬레이터 근거: serial이 없어 `alarmquest-qa`를 cold boot했고 uptime `8.84`초, 물리 1080 × 2340, `user_rotation=1`, LimDo focus·앱 2340 × 1080을 확인했다. `captures/loop213/iteration1/after/`의 대상 선택·시작·오순서·완성·쓰기 PNG·hierarchy·focus에서 `ㅣ` 단일 세로획, 왼칸 `ㄱ`·오른칸 `ㅣ`, 잘림·겹침·가림 0건, WritingCanvas `[189,63][2151,1017]`=1962 × 954 px와 네 조작 168 × 168 px를 확인했다.
+- 이전 루프 비교·가설 판정: 루프 212의 8개 선택에 `기`가 추가되고, `그`의 가로 모음과 다른 오른쪽 단일 세로획·쓰기 연결이 유지되어 기능 가설은 채택한다. 다만 `gi-success.png`는 정답 overlay가 아닌 마지막 획 안내 화면이어서 성공 시각 가설은 `미판정`이다.
+- 남은 조건·종료: 정답 overlay·완성 `기`·네 조작이 같은 노출 구간에 보이는 PNG·hierarchy·focus, `.loop/visual-evidence.md`·아이 대리 QA·시각 계약 통과가 남았다. 진행 방해 P2 1건으로 루프 213을 `진행 중` 반복 1로 보존하고 완료 커밋·push를 실행하지 않는다. 자산 필요 판정: 불필요. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-29 루프 213 반복 1 가설 — 아홉 조립 목표와 production `기` geometry 재사용
+
+- 가장 중요한 미충족 조건: 현재 조립 진입에서는 `가·거·겨·고·교·구·규·그`만 고를 수 있어, 초성 오른쪽에 세로획 하나만 놓는 `ㄱ + ㅣ → 기`를 완성하고 production `기` 쓰기로 연결할 수 없다.
+- 반증 가능한 가설: 기존 `GaAssemblyTarget`에 `LessonId.GI`만 추가하고 선택 lesson의 production geometry로 조각·칸·완성 모양을 그리면, 기존 여덟 글자와 `기`를 모양으로 구분하면서 오른칸에 `ㅣ` 하나만 표시하고 기존 1962 × 954 px 쓰기판으로 연결할 것이다.
+- 반증 기준: `기` 선택이 누락·중복되거나, `ㅣ` 조각에 세로획 외 다른 획이 보이거나, 모음 먼저·빈 칸이 완성되거나, 완성 callback이 `LessonId.GI`가 아니거나, 기존 8개 조립·navigation·geometry 검사 중 하나라도 회귀하면 가설을 기각한다.
+- 합리적인 최소 변경: 조립 목표 model·모음 접근성 이름·순서와 production 획 검사만 `기`로 확장하고 기존 상태·layout·geometry·쓰기 callback을 재사용한다. 다른 모음·초성·받침은 늘리지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 production `GI` geometry·카드·색·모서리·그림자 token이 짧은 가로획 없는 단일 세로획과 자모 상대 위치를 직접 보여 주며 새 bitmap은 교육 geometry를 더 정확하게 하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
 ### 2026-08-29 루프 212 반복 3 가설 — `그` 성공 동시점 화면·hierarchy·focus 고정
 
 - 가장 중요한 미충족 조건: 반복 2의 on-device 검사는 production 2획 성공 callback·`GI` 다음·홈을 통과했지만, 완성 `그`·정답 atlas·네 조작이 보이는 성공 상태의 PNG·hierarchy·LimDo focus가 동시점으로 1:1 연결되지 않아 최종 역할 QA가 미판정이다.
@@ -8209,3 +8239,16 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예 — 반복 1의 production `그` 추가를 완료 판정하기 위한 실화면 검증을 재개한다.
 - 자산 필요 판정: 불필요 — production `GEU` geometry·기존 성공 atlas·네 조작 atlas가 이미 APK에 연결되어 있으며 새 bitmap은 입력·전환 검증 누락을 해결하지 못한다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+### 2026-08-29 루프 213 반복 2 가설 — `기` 성공 동시점 시각 근거 고정
+
+- 가장 중요한 미충족 조건: 반복 1은 `기` 조립·쓰기·2획 성공·`RA` 다음·홈 callback을 통과했지만, 완성 `기`·정답 overlay·네 조작·LimDo focus가 같은 노출 구간에 있는 2340 × 1080 PNG·hierarchy가 없다.
+- 반증 가능한 가설: 반복 1의 on-device 검사에서 Compose animation clock을 성공 직후 고정하고 상세 semantics와 screenshot을 동시 수집하면, 완성 `기`와 큰 체크·캐릭터·네 그림 조작이 글자 길을 가리지 않고 같은 LimDo focus에서 확인될 것이다.
+- 반증 기준: PNG에 성공 atlas 또는 완성 `기`가 없거나, hierarchy에 `정답이에요`·`기를 2획으로`·홈·다시쓰기·이전·다음 중 하나가 없거나, focus가 `com.limdo.hangul/.MainActivity`가 아니거나, 해상도·회전·WritingCanvas·가림 관문 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: production 코드·geometry·자산을 더 늘리지 않고, 기존 `GiAssemblyFlowTest`의 성공 고정 구간에 PNG·Compose hierarchy 수집만 보강해 시각 관문을 판정한다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 반복 1 제품 시각 변경의 최종 경계 판정이며 이번 반복의 신규 production 시각 변경은 없다.
+- 자산 필요 판정: 불필요 — production `GI` geometry·기존 성공 atlas·네 조작 atlas가 이미 소비되며 새 bitmap은 동시점 근거 누락을 해결하지 못한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 213 반복 2 결과 최신 위치 정정
+
+- 반복 2 결과 전체가 동일한 과거 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 그 기록을 수정·삭제하지 않고 `루프 213 반복 2 결과 — 기 성공 동시점 근거 통과·루프 완료` 절과 이 절을 현재 유효한 최신 결과로 사용한다.

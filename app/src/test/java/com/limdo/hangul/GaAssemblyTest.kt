@@ -17,7 +17,7 @@ class GaAssemblyTest {
         assertTrue(afterGieok.place(GaAssemblyPiece.VOWEL).complete)
     }
 
-    @Test fun targetsKeepGaThroughGeuAsDistinctProductionLessons() {
+    @Test fun targetsKeepGaThroughGiAsDistinctProductionLessons() {
         assertTrue(GaAssemblyTarget.GA.lessonId == LessonId.GA)
         assertTrue(GaAssemblyTarget.GEO.lessonId == LessonId.GEO)
         assertTrue(GaAssemblyTarget.GYEO.lessonId == LessonId.GYEO)
@@ -26,13 +26,15 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.GU.lessonId == LessonId.GU)
         assertTrue(GaAssemblyTarget.GYU.lessonId == LessonId.GYU)
         assertTrue(GaAssemblyTarget.GEU.lessonId == LessonId.GEU)
-        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그"))
+        assertTrue(GaAssemblyTarget.GI.lessonId == LessonId.GI)
+        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기"))
         assertFalse(GaAssemblyTarget.GA.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GYO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GU.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GYU.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GEU.isHorizontalVowel)
+        assertFalse(GaAssemblyTarget.GI.isHorizontalVowel)
     }
 
     @Test fun geoWritingKeepsStageNavigationWithoutExpandingGanadaSelection() {
@@ -110,5 +112,15 @@ class GaAssemblyTest {
         assertTrue(geu.strokeDirections.drop(1) == listOf(StrokeDirection.RIGHT))
         assertTrue(geometry.strokes.first().maxOf { it.y } < geometry.strokes.last().minOf { it.y })
         assertTrue(geometry.strokes.last().first().y == geometry.strokes.last().last().y)
+    }
+
+    @Test fun giUsesOnlyOneVerticalVowelRightOfTheProductionInitial() {
+        val gi = KoreanCurriculum.lessons.single { it.id == LessonId.GI }
+        val geometry = WritingCanvasGeometry.glyph(gi, 1962f, 954f)
+
+        assertTrue(gi.strokeCount == 2)
+        assertTrue(gi.strokeDirections.drop(1) == listOf(StrokeDirection.DOWN))
+        assertTrue(geometry.strokes.first().maxOf { it.x } < geometry.strokes.last().minOf { it.x })
+        assertTrue(geometry.strokes.last().first().x == geometry.strokes.last().last().x)
     }
 }
