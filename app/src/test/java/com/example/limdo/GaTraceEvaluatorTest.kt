@@ -1,6 +1,7 @@
 package com.example.limdo
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class GaTraceEvaluatorTest {
@@ -71,6 +72,23 @@ class GaTraceEvaluatorTest {
         assertEquals(
             GieokTraceResult.INCOMPLETE,
             GaTraceEvaluator.evaluateStroke(width, height, 0, StrokePath(listOf(target.first(), target[1]))),
+        )
+    }
+
+    @Test
+    fun oldVerticalGaInitialNoLongerSucceeds() {
+        val target = strokes[0]
+        val oldVertical = StrokePath(
+            listOf(
+                target.first(),
+                target[1],
+                CanvasPoint(target[1].x, target.last().y),
+            ),
+        )
+
+        assertNotEquals(
+            GieokTraceResult.SUCCESS,
+            GaTraceEvaluator.evaluateStroke(width, height, 0, oldVertical),
         )
     }
 

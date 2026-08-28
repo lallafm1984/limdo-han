@@ -312,17 +312,30 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.50f, 0.08f), CanvasPoint(0.50f, 0.92f)),
     )
 
+    private val verticalGieok = listOf(
+        CanvasPoint(0.05f, 0.12f),
+        CanvasPoint(0.48f, 0.12f),
+        CanvasPoint(0.48f, 0.88f),
+    )
+
+    private val gaCurveCorner = CanvasPoint(0.48f, 0.12f)
+    private val gaCurvedGieok = listOf(
+        CanvasPoint(0.05f, 0.12f),
+        gaCurveCorner,
+    ) + cubicCurve(
+        start = gaCurveCorner,
+        control1 = CanvasPoint(0.48f, 0.46f),
+        control2 = CanvasPoint(0.27f, 0.75f),
+        end = CanvasPoint(0.10f, 0.88f),
+        segmentCount = 12,
+    ).drop(1)
+
     private val gaTemplate = listOf(
-        listOf(
-            CanvasPoint(0.05f, 0.12f),
-            CanvasPoint(0.48f, 0.12f),
-            CanvasPoint(0.48f, 0.88f),
-        ),
+        gaCurvedGieok,
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
-    private val verticalGieok = gaTemplate.first()
     private val horizontalGieok = listOf(
         CanvasPoint(0.12f, 0.08f), CanvasPoint(0.88f, 0.08f), CanvasPoint(0.88f, 0.43f),
     )
@@ -893,6 +906,30 @@ internal object WritingCanvasGeometry {
                 }
             },
         )
+    }
+
+    private fun cubicCurve(
+        start: CanvasPoint,
+        control1: CanvasPoint,
+        control2: CanvasPoint,
+        end: CanvasPoint,
+        segmentCount: Int,
+    ): List<CanvasPoint> {
+        require(segmentCount > 0) { "segmentCount must be positive" }
+        return (0..segmentCount).map { index ->
+            val t = index.toFloat() / segmentCount
+            val inverse = 1f - t
+            val startWeight = inverse * inverse * inverse
+            val control1Weight = 3f * inverse * inverse * t
+            val control2Weight = 3f * inverse * t * t
+            val endWeight = t * t * t
+            CanvasPoint(
+                x = start.x * startWeight + control1.x * control1Weight +
+                    control2.x * control2Weight + end.x * endWeight,
+                y = start.y * startWeight + control1.y * control1Weight +
+                    control2.y * control2Weight + end.y * endWeight,
+            )
+        }
     }
 
     private data class DemonstrationSegment(

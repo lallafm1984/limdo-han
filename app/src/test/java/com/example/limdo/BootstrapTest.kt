@@ -153,15 +153,15 @@ class BootstrapTest {
         assertTrue(gieokHorizontal.center.x > gieokHorizontalInput.x)
         assertEquals(CanvasPoint(1f, 0f), gieokHorizontal.direction)
 
-        val gieokVerticalInput = CanvasPoint(
-            x = strokes[0][1].x,
-            y = (strokes[0][1].y + strokes[0][2].y) / 2f,
+        val gieokCurveInput = strokes[0][strokes[0].size / 2]
+        val gieokCurve = WritingCanvasGeometry.gaInputDirectionGuide(
+            1_962f, 775f, 0, gieokCurveInput, 0f,
         )
-        val gieokVertical = WritingCanvasGeometry.gaInputDirectionGuide(
-            1_962f, 775f, 0, gieokVerticalInput, 0f,
-        )
-        assertTrue(gieokVertical.center.y > gieokVerticalInput.y)
-        assertEquals(CanvasPoint(0f, 1f), gieokVertical.direction)
+        assertTrue(gieokCurve.center.x < gieokCurveInput.x)
+        assertTrue(gieokCurve.center.y > gieokCurveInput.y)
+        assertTrue(gieokCurve.direction.x < 0f)
+        assertTrue(gieokCurve.direction.y > 0f)
+        assertEquals(1f, kotlin.math.hypot(gieokCurve.direction.x, gieokCurve.direction.y), 0.001f)
 
         val aVerticalInput = midpoint(strokes[1])
         val aVertical = WritingCanvasGeometry.gaInputDirectionGuide(
@@ -207,16 +207,51 @@ class BootstrapTest {
         }
 
         assertEquals(3, glyph.strokes.size)
-        val expected = listOf(
-            listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.48f, 0.12f), CanvasPoint(0.48f, 0.88f)),
+        assertEquals(14, normalized[0].size)
+        assertEquals(0.05f, normalized[0].first().x, 0.0001f)
+        assertEquals(0.12f, normalized[0].first().y, 0.0001f)
+        assertEquals(0.48f, normalized[0][1].x, 0.0001f)
+        assertEquals(0.12f, normalized[0][1].y, 0.0001f)
+        assertEquals(0.10f, normalized[0].last().x, 0.0001f)
+        assertEquals(0.88f, normalized[0].last().y, 0.0001f)
+        val expectedRemaining = listOf(
             listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
             listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
         )
-        expected.zip(normalized).forEach { (expectedStroke, actualStroke) ->
+        expectedRemaining.zip(normalized.drop(1)).forEach { (expectedStroke, actualStroke) ->
             expectedStroke.zip(actualStroke).forEach { (expectedPoint, actualPoint) ->
                 assertEquals(expectedPoint.x, actualPoint.x, 0.0001f)
                 assertEquals(expectedPoint.y, actualPoint.y, 0.0001f)
             }
+        }
+    }
+
+    @Test
+    fun onlyGaInitialFollowsTheReferenceCurveWithoutChangingOtherGiyeokLessons() {
+        val ga = WritingCanvasGeometry.ga(width = 1_962f, height = 775f)
+        val gaInitial = ga.strokes.first()
+        val curve = gaInitial.drop(1)
+
+        assertEquals(gaInitial.first().y, gaInitial[1].y, 0.001f)
+        assertEquals(14, gaInitial.size)
+        assertEquals(ga.emSize * 0.38f, gaInitial[1].x - gaInitial.last().x, 0.001f)
+        assertTrue(gaInitial.last().x < gaInitial[1].x)
+        assertTrue(gaInitial.last().y > gaInitial[1].y)
+        assertTrue(curve.zipWithNext().all { (start, end) -> end.x <= start.x && end.y > start.y })
+        assertTrue(curve[1].x >= curve.first().x - ga.emSize * 0.01f)
+        assertTrue(curve[1].y > curve.first().y)
+
+        val unchangedRightAngleLessons = listOf(
+            LessonId.GIEOK,
+            LessonId.GYA,
+            LessonId.GEO,
+            LessonId.GYEO,
+            LessonId.GI,
+        )
+        unchangedRightAngleLessons.forEach { lessonId ->
+            val lesson = KoreanCurriculum.lessons.single { it.id == lessonId }
+            val initial = WritingCanvasGeometry.glyph(lesson, 1_962f, 775f).strokes.first()
+            assertEquals("${lesson.glyph} 직각 보존", initial[1].x, initial.last().x, 0.001f)
         }
     }
 
@@ -290,6 +325,7 @@ class BootstrapTest {
         val totalLength = segmentLengths.sum()
         val boundaries = segmentLengths.runningFold(0f) { distance, length -> distance + length }
             .map { it / totalLength }
+        val firstStrokeSegmentCount = glyph.strokes[0].lastIndex
 
         val start = WritingCanvasGeometry.gaDemonstrationGuide(1_962f, 775f, 0f)
         assertEquals(glyph.strokes[0][0], start.center)
@@ -302,19 +338,21 @@ class BootstrapTest {
         assertEquals(glyph.strokes[0][1].y, firstEnd.center.y, 0.001f)
         assertEquals(CanvasPoint(1f, 0f), firstEnd.direction)
 
-        val gieokVertical = WritingCanvasGeometry.gaDemonstrationGuide(
+        val gieokCurve = WritingCanvasGeometry.gaDemonstrationGuide(
             1_962f,
             775f,
-            (boundaries[1] + boundaries[2]) / 2f,
+            (boundaries[6] + boundaries[7]) / 2f,
         )
-        assertEquals(0, gieokVertical.strokeIndex)
-        assertEquals(1, gieokVertical.segmentIndex)
-        assertEquals(CanvasPoint(0f, 1f), gieokVertical.direction)
+        assertEquals(0, gieokCurve.strokeIndex)
+        assertTrue(gieokCurve.segmentIndex in 1..12)
+        assertTrue(gieokCurve.direction.x < 0f)
+        assertTrue(gieokCurve.direction.y > 0f)
+        assertEquals(1f, kotlin.math.hypot(gieokCurve.direction.x, gieokCurve.direction.y), 0.001f)
 
         val aVertical = WritingCanvasGeometry.gaDemonstrationGuide(
             1_962f,
             775f,
-            (boundaries[2] + boundaries[3]) / 2f,
+            (boundaries[firstStrokeSegmentCount] + boundaries[firstStrokeSegmentCount + 1]) / 2f,
         )
         assertEquals(1, aVertical.strokeIndex)
         assertEquals(0, aVertical.segmentIndex)
@@ -323,7 +361,7 @@ class BootstrapTest {
         val aHorizontal = WritingCanvasGeometry.gaDemonstrationGuide(
             1_962f,
             775f,
-            (boundaries[3] + boundaries[4]) / 2f,
+            (boundaries[firstStrokeSegmentCount + 1] + boundaries[firstStrokeSegmentCount + 2]) / 2f,
         )
         assertEquals(2, aHorizontal.strokeIndex)
         assertEquals(0, aHorizontal.segmentIndex)
