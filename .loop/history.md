@@ -6408,3 +6408,26 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 실제 휴대폰 경계: `SM-S931N`은 무선 ADB에 연결됐지만 그래픽·시스템 완료 뒤 최종 전체 플레이에서만 사용하라는 순서에 따라 이번 package APK를 설치·실행·캡처하지 않았다. 에뮬레이터 근거를 실제 휴대폰 검증으로 표현하지 않는다.
 - 이전 비교·가설 판정: 다른 프로젝트 package가 제거됐고 시각·전체 플레이 계약이 단순 문구가 아닌 조건부 스크립트로 강제되며 새 package 화면이 비회귀해 반복 1 가설을 `채택`한다.
 - 완료 판정: 루프 182 성공 조건과 `QA-139`를 통과했다. 최신 사용자 지시가 2차 구현 계속을 승인했으므로 큐를 비우지 않고 가장 높은 새 화면 결함 하나인 루프 183을 준비한다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-28 루프 183 반복 1 가설 — 선택 화면 HOME atlas 통일
+
+- 가장 중요한 미충족 조건: `LessonSelection`의 HOME만 시스템 문자 `⌂`와 평면 흰 원을 사용해 쓰기 화면의 production HOME atlas와 같은 동작을 다른 그림체로 표시한다.
+- 반증 가능한 가설: 쓰기 화면이 사용하는 `limdo_action_button_atlas.png`의 HOME column과 기본·눌림 row를 선택 화면의 216 × 216 px 이상 HOME 조작에 균형 배치하면, 그림체·둥근 모서리·alpha 여백이 유지되고 이미지·halo·잘림·왜곡·navigation·callback은 회귀하지 않을 것이다.
+- 반증 기준: production source에 `Text("⌂")`가 남거나 선택·쓰기 화면 HOME이 서로 다른 atlas column·state row를 사용하거나, 모서리 alpha·셀 경계·터치 크기·한 번 홈 이동 callback·focus·정확한 2340 × 1080 화면·hierarchy 중 하나라도 어기면 가설을 기각한다.
+- 합리적인 최소 변경: 선택 화면 HOME 표현과 재사용·상태 검증만 바꾸고, 기존 atlas 호출·배치·navigation을 보존한다. 새 자산은 불필요하다.
+
+### 2026-08-28 루프 183 반복 1 결과
+
+- 최소 제품 변경: `LessonSelection`의 `Text("⌂")`·원형 Surface를 제거하고 쓰기 화면과 동일한 `HomeAction`을 재사용했다. 선택 HOME은 같은 `HOME_COLUMN`, `DEFAULT_ROW`, `PRESSED_ROW`와 `ActionAtlasIcon`을 사용하며 84 dp로 두어 실제 221 × 221 px 터치 영역을 확보했다.
+- 자산 판정·검사: 새 bitmap은 만들지 않았다. 기존 `limdo_action_button_atlas.png`는 1254 × 1254, `hasAlpha: yes`, Git 변경 0건이고 최종 APK에 포함됐다. 루프 174의 9셀 네 모서리 alpha 0·최소 21 px 안전 여백·셀 번짐 0 자동 근거를 그대로 재사용했다.
+- 자동 검증: 공통 HOME atlas column·기본·눌림 row를 고정한 단위 검사를 추가했다. `./scripts/verify.sh`의 자동화 계약·단위 테스트·Android lint·debug build, `git diff --check`가 통과했고 production source의 `⌂`는 0건이다.
+- 에뮬레이터 근거: `emulator-5554`의 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, `com.limdo.hangul/.MainActivity` focus에서 `captures/loop183/iteration1/`의 변경 전·후 자음 선택 화면과 HOME callback 뒤 홈을 수집했다. 다른 이전 package가 전면을 가져간 최초 캡처는 근거에서 제외하고 이전 package를 중지한 뒤 현재 package focus를 다시 확인했다.
+- 화면 직접 판정: 변경 전의 얇은 검정 시스템 집 대신 쓰기 화면과 같은 주황 지붕·크림 벽·초록 장식의 입체 집이 표시됐다. 왜곡·흐림·잘림·검은 배경·halo가 없고 14개 lesson 카드보다 작아 과도하게 경쟁하지 않는다. hierarchy는 `[84,84][305,305]` = 221 × 221 px, `clickable=true`, `enabled=true`, `홈으로 돌아가기`를 기록했다.
+- 동작 판정: HOME을 한 번 누르면 세 홈 카드로 복귀했고 전환 전·후 현재 package focus를 유지했다. 카드 순서·크기·선택 callback과 쓰기 geometry·판정은 변경하지 않았다.
+- 이전 비교·가설 판정: 시스템 글리프가 제거되고 동일 production 렌더러·atlas 상태·접근성·callback으로 통일됐으며 반증 조건이 발생하지 않아 반복 1 가설을 `채택`한다.
+- 역할 판정: 자동 그래픽 디자인 역할 통과, 자동 QA 역할 통과, 아이 대리 QA `QA-140` 통과. 실제 사람 팀의 승인이나 실제 아이 관찰이 아니다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-28 루프 183 완료와 184 준비
+
+- 완료 판정: 루프 183 성공 조건 1~7을 새 자동·에뮬레이터·화면·callback 근거로 모두 통과했고 새 P0·P1·진행 방해 P2는 0건이다.
+- 자동 전환: 2차 M1의 가장 앞선 미구현 제품 작업 중 보호자 전용 2초 길게 누르기 진입과 현재 38개 lesson 목록만 루프 184로 준비했다. 녹음·권한·파일 저장은 다음 제품 루프로 분리하며 같은 작업자는 루프 184를 구현하지 않는다.
+- 체크포인트: 루프 183 완료와 루프 184 준비를 한 커밋으로 만들고 `git push origin HEAD` 일반 push를 수행한다.

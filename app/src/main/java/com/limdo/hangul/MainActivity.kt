@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -272,12 +271,10 @@ private fun LessonSelection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(LimDoPlaygroundTokens.CARD_GAP_DP.dp),
         ) {
-            Surface(
+            HomeAction(
                 onClick = onHome,
-                modifier = Modifier.size(72.dp),
-                color = Color.White,
-                shape = CircleShape,
-            ) { Box(contentAlignment = Alignment.Center) { Text("⌂", fontSize = 36.sp) } }
+                modifier = Modifier.size(84.dp),
+            )
             Text(menu.symbol, fontSize = 40.sp, fontWeight = FontWeight.Bold)
         }
         lessons.chunked(7).forEach { rowLessons ->

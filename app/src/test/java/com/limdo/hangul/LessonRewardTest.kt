@@ -17,6 +17,14 @@ class LessonRewardTest {
     }
 
     @Test
+    fun homeActionsShareTheSameAtlasColumnAndPressedRows() {
+        assertEquals(0, ActionButtonAtlasSpec.HOME_COLUMN)
+        assertEquals(0, ActionButtonAtlasSpec.DEFAULT_ROW)
+        assertEquals(1, ActionButtonAtlasSpec.PRESSED_ROW)
+        assertTrue(ActionButtonAtlasSpec.ICON_DP <= 84f)
+    }
+
+    @Test
     fun allRemainingPlaygroundAnimationsStayFiniteAndBounded() {
         val animationDurations = listOf(
             LimDoPlaygroundTokens.HOME_ENTRANCE_DURATION_MS,
