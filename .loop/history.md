@@ -6494,6 +6494,17 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 Canvas 실루엣과 카드 token이 충분하고 이 결함은 raster 자산이 아닌 수직 layout 넘침이 원인이다.
 - 실제 아이 관찰: 실행 안 함. 자동 그래픽 디자인·자동 QA·아이 대리 QA와 구분한다.
 
+### 2026-08-28 루프 186 반복 1 결과
+
+- 최소 제품 변경: `GuardianVoiceEvent.START`·`SUCCESS`로 저장소·controller를 일반화하고, 대표 `ㄱ` 상세에 `쓰기 전`·`정답 후` 선택을 추가했다. SUCCESS는 `no_backup/guardian_voice/gieok_success.m4a`와 독립 임시 파일을 쓴다.
+- 격리·lifecycle: SUCCESS 녹음·재녹음·삭제 전후 `gieok_start.m4a` SHA-256은 일치했다. 자동 검사에서도 같은 lesson START와 다른 lesson START byte를 보존했다. event 전환·목록 복귀·`onStop`은 두 controller를 해제하며 권한 시점·8초·원자 교체·손상 파일 복귀 계약을 공유한다.
+- 자동 검증: `GuardianVoiceRecordingTest` 6건, `./scripts/verify.sh`의 전체 단위 테스트·lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`가 통과했다.
+- 실제 기기·화면: APK SHA-256 `7a8c03d1dedaf84df34147fbea5a3e8002c535776d6c3e33b8624ca2ad68a059`를 `SM_S931N`에 설치했다. 물리 1080 × 2340, 앱 PNG 2340 × 1080, `com.limdo.hangul/.MainActivity` focus에서 SUCCESS 없음·녹음 중·완료·미리 듣기·다시 녹음·삭제를 실제 입력으로 확인했다.
+- 시각 판정: `captures/loop186/iteration1/device/`의 PNG·hierarchy를 원본 크기로 직접 읽었다. event 선택은 192 px, 상태별 동작은 216 px 높이며 제목·외곽·명도·실루엣으로 두 event가 구분되고 잘림·겹침이 없다.
+- 이전 비교·가설 판정: START 전용 화면에서 SUCCESS 독립 경로·상태·조작이 생겼고 격리·lifecycle에 반증이 없어 가설을 `채택`한다.
+- 완료·전환: 루프 186 성공 조건 1~6, 자동 그래픽 디자인·자동 QA·`QA-143` 아이 대리 QA, 새 P0·P1 0건·진행 방해 P2 0건을 통과했다. 다음 M1 단일 작업인 권한 거부·취소·background lifecycle을 루프 187로 준비하며 구현은 다음 세션에 맡긴다.
+- 실제 아이 관찰: 실행 안 함.
+
 ### 2026-08-28 루프 185 반복 7 가설 — 상태·동작의 가로 배치로 64 dp 보존
 
 - 가장 중요한 미충족 조건: 반복 6의 카드 내부 `Column`이 상태 심볼·문구·버튼 행을 세로로 나눠 버튼이 29 px로 강제 축소된다.
@@ -6622,3 +6633,12 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 이전 비교·가설 판정: 반복 6의 29 px 버튼이 반복 7에서 모든 상태 216 px로 회복됐고 반증 조건이 없어 가설을 `채택`한다. `QA-142`의 자동 그래픽 디자인·자동 QA·아이 대리 QA는 통과했고 실제 사람 팀의 승인이 아니다.
 - 완료·자동 전환: 루프 185 성공 조건 1~7과 새 P0·P1 0건·진행 방해 P2 0건을 통과했다. M1의 다음 미구현 제품 작업인 대표 lesson의 `정답 후` 녹음 lifecycle을 루프 186으로 준비했으며 같은 작업자는 구현하지 않는다.
 - 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-28 루프 186 반복 1 가설 — 대표 lesson의 정답 후 녹음 격리
+
+- 가장 중요한 미충족 조건: 대표 `ㄱ` lesson의 보호자 상세는 `쓰기 전` START 파일만 관리하며, `정답 후` SUCCESS를 녹음·정지·미리 듣기·다시 녹음·삭제할 production 상태와 독립 파일이 없다.
+- 반증 가능한 가설: 기존 `GuardianVoiceController`와 상태 화면을 START·SUCCESS event로 일반화하고 두 event 전환 조작을 추가하면, SUCCESS는 `gieok_success.m4a`에 독립적으로 저장되고 녹음·교체·삭제 중 START의 byte와 상태를 보존하며 기존 권한·8초·손상 파일·lifecycle 계약을 그대로 재사용할 수 있다.
+- 반증 기준: SUCCESS 작업 후 START 파일 byte가 달라지거나, 두 event가 같은 완료·임시 경로를 쓰거나, 전환 후 이전 recorder/player가 남거나, 화면 제목·선택 상태·callback으로 두 event를 구분할 수 없거나, 2340 × 1080에서 64 dp 미만·잘림·겹침이 하나라도 나타나면 가설을 기각한다.
+- 합리적인 최소 변경: 대표 `ㄱ` 상세의 event 식별·전환과 SUCCESS 고유 저장 경로만 추가한다. 다른 lesson 확장, 아이 화면 재생, 자동 다음은 변경하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 카드·상태 실루엣·색 token과 텍스트 선택 조작으로 보호자가 START·SUCCESS를 명확히 구분할 수 있어 새 bitmap이 과제를 더 명확하게 하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동 그래픽 디자인·자동 QA·아이 대리 QA와 구분한다.

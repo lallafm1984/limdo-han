@@ -38,6 +38,30 @@ class GuardianVoiceRecordingTest {
     }
 
     @Test
+    fun successRecordingUsesAnEventSpecificPathAndCannotReplaceStartBytes() {
+        val root = Files.createTempDirectory("limdo-guardian-events").toFile()
+        val start = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK, GuardianVoiceEvent.START)
+        val success = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK, GuardianVoiceEvent.SUCCESS)
+        val otherLesson = GuardianVoiceStorage.finalFile(root, LessonId.NIEUN, GuardianVoiceEvent.START)
+        start.parentFile!!.mkdirs()
+        start.writeBytes("start bytes".encodeToByteArray())
+        otherLesson.writeBytes("other lesson bytes".encodeToByteArray())
+        val originalStart = start.readBytes()
+        val originalOtherLesson = otherLesson.readBytes()
+        val successTemp = GuardianVoiceStorage.tempFile(success)
+        successTemp.writeBytes("success bytes".encodeToByteArray())
+
+        GuardianVoiceStorage.commit(successTemp, success)
+        success.delete()
+
+        assertEquals(File(root, "guardian_voice/gieok_success.m4a"), success)
+        assertTrue(originalStart.contentEquals(start.readBytes()))
+        assertTrue(originalOtherLesson.contentEquals(otherLesson.readBytes()))
+        assertTrue(start.exists())
+        assertFalse(success.exists())
+    }
+
+    @Test
     fun completedTemporaryFileAtomicallyReplacesExistingRecording() {
         val root = Files.createTempDirectory("limdo-guardian-voice").toFile()
         val finalFile = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK)

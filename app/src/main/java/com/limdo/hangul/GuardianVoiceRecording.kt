@@ -9,13 +9,23 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 internal enum class GuardianVoiceState { EMPTY, RECORDING, READY, PLAYING }
+internal enum class GuardianVoiceEvent(val fileSuffix: String, val label: String) {
+    START("start", "쓰기 전"),
+    SUCCESS("success", "정답 후"),
+}
 
 internal object GuardianVoiceStorage {
     const val DIRECTORY = "guardian_voice"
     const val MAX_DURATION_MILLIS = 8_000
 
-    fun finalFile(noBackupFilesDir: File, lessonId: LessonId): File =
-        File(File(noBackupFilesDir, DIRECTORY), "${lessonId.name.lowercase()}_start.m4a")
+    fun finalFile(
+        noBackupFilesDir: File,
+        lessonId: LessonId,
+        event: GuardianVoiceEvent = GuardianVoiceEvent.START,
+    ): File = File(
+        File(noBackupFilesDir, DIRECTORY),
+        "${lessonId.name.lowercase()}_${event.fileSuffix}.m4a",
+    )
 
     fun tempFile(finalFile: File): File = File(finalFile.parentFile, ".${finalFile.name}.recording")
 
@@ -45,11 +55,12 @@ internal object GuardianVoiceStorage {
 internal class GuardianVoiceController(
     private val context: Context,
     private val lessonId: LessonId = LessonId.GIEOK,
+    private val event: GuardianVoiceEvent = GuardianVoiceEvent.START,
 ) {
     private var recorder: MediaRecorder? = null
     private var player: MediaPlayer? = null
     private var onStateChanged: ((GuardianVoiceState) -> Unit)? = null
-    private val finalFile get() = GuardianVoiceStorage.finalFile(context.noBackupFilesDir, lessonId)
+    private val finalFile get() = GuardianVoiceStorage.finalFile(context.noBackupFilesDir, lessonId, event)
     private val tempFile get() = GuardianVoiceStorage.tempFile(finalFile)
 
     fun observe(callback: (GuardianVoiceState) -> Unit) {

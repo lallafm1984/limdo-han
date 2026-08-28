@@ -13,7 +13,10 @@ internal enum class LearningMenu(
 internal sealed interface LearningDestination {
     data object Home : LearningDestination
     data object GuardianLessons : LearningDestination
-    data class GuardianStartRecording(val lessonId: LessonId) : LearningDestination
+    data class GuardianStartRecording(
+        val lessonId: LessonId,
+        val event: GuardianVoiceEvent = GuardianVoiceEvent.START,
+    ) : LearningDestination
     data class MenuTransition(val menu: LearningMenu) : LearningDestination
     data class Selection(val menu: LearningMenu) : LearningDestination
     data class Writing(

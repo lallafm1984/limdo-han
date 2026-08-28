@@ -2608,3 +2608,13 @@
 - 아이 대리 판정: 보호자 화면은 아이 화면과 분리되어 있고, 녹음이 없거나 손상돼도 아이 학습은 기존 무음 시각 흐름으로 계속된다.
 - 실제 아이 관찰: 실행 안 함.
 - 다음 제품 작업: 새 불편이 없어 M1의 다음 항목인 대표 lesson의 `정답 후` 녹음 lifecycle을 루프 186으로 준비한다.
+
+### QA-143 — 루프 186 정답 후 녹음·START 격리 아이 대리 QA
+
+- 상태: 통과. 새 P0·P1·진행 방해 P2는 없다.
+- 근거: `captures/loop186/iteration1/device/`의 START·SUCCESS 상태 PNG·hierarchy, `SM_S931N`, 2340 × 1080, `com.limdo.hangul/.MainActivity` focus, APK SHA-256 `7a8c03d1dedaf84df34147fbea5a3e8002c535776d6c3e33b8624ca2ad68a059`.
+- 자동 그래픽 디자인: 통과 — 선택 제목·외곽·명도와 상태 실루엣이 두 event를 구분하고 잘림·겹침이 없다.
+- 자동 QA: 통과 — SUCCESS callback·원자 저장·START SHA 비회귀가 통과했고 event 선택 192 px, 동작 216 px로 64 dp 이상이다.
+- 아이 대리: 통과 — 보호자 전용 화면에서만 녹음하며 SUCCESS가 없거나 삭제돼도 아이의 무음 쓰기 흐름은 유지된다.
+- 실제 아이 관찰: 실행 안 함.
+- 다음 제품 작업: M1의 권한 거부·취소·background lifecycle을 두 event에 공통으로 고정하는 루프 187을 준비한다.

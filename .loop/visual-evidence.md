@@ -46,6 +46,20 @@ production 소비 검사: 통과
 - 진행 방해 P2: 0건
 - 실제 아이 관찰: 실행 안 함
 
+### 루프 186 반복 1 — 정답 후 녹음 최종 근거
+
+- 상태: 완료, 기준 화면: 2340 × 1080
+- 변경 전: `captures/loop185/iteration7/device/empty.png`, `empty.xml`, `ready.png`, `ready.xml`
+- 변경 후: `captures/loop186/iteration1/device/` START·SUCCESS 없음·녹음 중·완료·미리 듣기·삭제 PNG·hierarchy
+- package·focus·기기: `com.limdo.hangul`, `mCurrentFocus`·`mFocusedApp` 통과, `SM_S931N`, 물리 1080 × 2340
+- APK SHA-256: `7a8c03d1dedaf84df34147fbea5a3e8002c535776d6c3e33b8624ca2ad68a059`
+- production 자산: 새 bitmap 없음, 기존 Canvas 상태 실루엣·카드·색 token 재사용; 자산 검사 불필요
+- 자동 그래픽 디자인: 통과 — event 제목·외곽·명도·실루엣 구분, 잘림·겹침 0건
+- 자동 QA: 통과 — SUCCESS callback·저장·START·다른 lesson byte 격리, event 선택 192 px·동작 216 px
+- 아이 대리 QA: 통과 — 보호자 전용 흐름과 아이 무음 쓰기 흐름 분리
+- 새 P0: 0, 새 P1: 0, 진행 방해 P2: 0
+- 실제 아이 관찰: 실행 안 함
+
 ### 루프 185 반복 7 — 보호자 녹음 카드 최종 통과 근거
 
 - 상태: 완료

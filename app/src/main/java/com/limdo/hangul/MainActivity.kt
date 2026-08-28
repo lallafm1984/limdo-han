@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -78,19 +79,28 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
-    private lateinit var guardianVoiceController: GuardianVoiceController
+    private lateinit var guardianStartVoiceController: GuardianVoiceController
+    private lateinit var guardianSuccessVoiceController: GuardianVoiceController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        guardianVoiceController = GuardianVoiceController(applicationContext)
+        guardianStartVoiceController = GuardianVoiceController(
+            applicationContext,
+            event = GuardianVoiceEvent.START,
+        )
+        guardianSuccessVoiceController = GuardianVoiceController(
+            applicationContext,
+            event = GuardianVoiceEvent.SUCCESS,
+        )
         hideSystemBars()
         setContent {
-            LimDoApp(guardianVoiceController)
+            LimDoApp(guardianStartVoiceController, guardianSuccessVoiceController)
         }
     }
 
     override fun onStop() {
-        guardianVoiceController.release()
+        guardianStartVoiceController.release()
+        guardianSuccessVoiceController.release()
         super.onStop()
     }
 
@@ -119,19 +129,25 @@ private val LimDoColorScheme = lightColorScheme(
 )
 
 @Composable
-private fun LimDoApp(guardianVoiceController: GuardianVoiceController) {
+private fun LimDoApp(
+    guardianStartVoiceController: GuardianVoiceController,
+    guardianSuccessVoiceController: GuardianVoiceController,
+) {
     MaterialTheme(colorScheme = LimDoColorScheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            LearningShell(guardianVoiceController)
+            LearningShell(guardianStartVoiceController, guardianSuccessVoiceController)
         }
     }
 }
 
 @Composable
-private fun LearningShell(guardianVoiceController: GuardianVoiceController) {
+private fun LearningShell(
+    guardianStartVoiceController: GuardianVoiceController,
+    guardianSuccessVoiceController: GuardianVoiceController,
+) {
     var destination by remember { mutableStateOf<LearningDestination>(LearningDestination.Home) }
     var nextWritingSessionId by rememberSaveable { mutableIntStateOf(0) }
 
@@ -152,9 +168,20 @@ private fun LearningShell(guardianVoiceController: GuardianVoiceController) {
         )
         is LearningDestination.GuardianStartRecording -> GuardianStartRecordingScreen(
             lesson = GuardianLessonCatalog.lessons.single { it.id == current.lessonId },
-            controller = guardianVoiceController,
+            event = current.event,
+            controller = if (current.event == GuardianVoiceEvent.START) {
+                guardianStartVoiceController
+            } else {
+                guardianSuccessVoiceController
+            },
+            onSelectEvent = { selectedEvent ->
+                guardianStartVoiceController.release()
+                guardianSuccessVoiceController.release()
+                destination = current.copy(event = selectedEvent)
+            },
             onClose = {
-                guardianVoiceController.release()
+                guardianStartVoiceController.release()
+                guardianSuccessVoiceController.release()
                 destination = LearningDestination.GuardianLessons
             },
         )
@@ -471,7 +498,9 @@ private fun GuardianLessonGroupCard(
 @Composable
 private fun GuardianStartRecordingScreen(
     lesson: LessonSpec,
+    event: GuardianVoiceEvent,
     controller: GuardianVoiceController,
+    onSelectEvent: (GuardianVoiceEvent) -> Unit,
     onClose: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -506,9 +535,18 @@ private fun GuardianStartRecordingScreen(
             GuardianTextAction("목록", "녹음 화면 닫기", Color(0xFF3F725E), onClose)
             Text(lesson.glyph, fontSize = 54.sp, fontWeight = FontWeight.Bold)
             Column {
-                Text("쓰기 전 보호자 녹음", fontSize = 31.sp, fontWeight = FontWeight.Bold)
+                Text("${event.label} 보호자 녹음", fontSize = 31.sp, fontWeight = FontWeight.Bold)
                 Text(stateLabel, fontSize = 21.sp)
             }
+            Spacer(Modifier.weight(1f))
+            GuardianEventAction(
+                label = "쓰기 전",
+                selected = event == GuardianVoiceEvent.START,
+            ) { onSelectEvent(GuardianVoiceEvent.START) }
+            GuardianEventAction(
+                label = "정답 후",
+                selected = event == GuardianVoiceEvent.SUCCESS,
+            ) { onSelectEvent(GuardianVoiceEvent.SUCCESS) }
         }
         Surface(
             modifier = Modifier.fillMaxSize().border(3.dp, Color(0xFF3F725E), RoundedCornerShape(30.dp)),
@@ -541,7 +579,7 @@ private fun GuardianStartRecordingScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     when (voiceState) {
-                        GuardianVoiceState.EMPTY -> GuardianTextAction("녹음", "쓰기 전 녹음 시작", Color(0xFFD95D4F)) {
+                        GuardianVoiceState.EMPTY -> GuardianTextAction("녹음", "${event.label} 녹음 시작", Color(0xFFD95D4F)) {
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                                 controller.startRecording()
                             } else {
@@ -555,12 +593,41 @@ private fun GuardianStartRecordingScreen(
                                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) controller.startRecording()
                                 else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                             }
-                            GuardianTextAction("삭제", "쓰기 전 녹음 삭제", Color(0xFF765B50)) { controller.delete() }
+                            GuardianTextAction("삭제", "${event.label} 녹음 삭제", Color(0xFF765B50)) { controller.delete() }
                         }
                         GuardianVoiceState.PLAYING -> GuardianTextAction("듣기 정지", "미리 듣기 정지", Color(0xFF3F725E)) { controller.stopPlayback() }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun GuardianEventAction(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier
+            .size(width = 124.dp, height = 64.dp)
+            .semantics {
+                contentDescription = "$label 녹음 관리"
+                stateDescription = if (selected) "선택됨" else "선택 안 됨"
+            },
+        color = if (selected) Color(0xFF3F725E) else Color(0xFFDCE9E2),
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(3.dp, Color(0xFF3F725E)),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                label,
+                color = if (selected) Color.White else Color(0xFF26332D),
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }
