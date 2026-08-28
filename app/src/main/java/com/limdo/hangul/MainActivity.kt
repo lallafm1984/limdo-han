@@ -79,11 +79,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeoutOrNull
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     private lateinit var guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>
     private lateinit var guardianLearningListStorage: GuardianLearningListStorage
+    private lateinit var guardianLessonProgressStorage: GuardianLessonProgressStorage
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,9 +95,14 @@ class MainActivity : ComponentActivity() {
             GuardianVoiceController(applicationContext, key.lessonId)
         }
         guardianLearningListStorage = GuardianLearningListStorage(noBackupFilesDir)
+        guardianLessonProgressStorage = GuardianLessonProgressStorage(noBackupFilesDir)
         hideSystemBars()
         setContent {
-            LimDoApp(guardianVoiceControllers, guardianLearningListStorage)
+            LimDoApp(
+                guardianVoiceControllers,
+                guardianLearningListStorage,
+                guardianLessonProgressStorage,
+            )
         }
     }
 
@@ -130,13 +139,18 @@ private val LimDoColorScheme = lightColorScheme(
 private fun LimDoApp(
     guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
     guardianLearningListStorage: GuardianLearningListStorage,
+    guardianLessonProgressStorage: GuardianLessonProgressStorage,
 ) {
     MaterialTheme(colorScheme = LimDoColorScheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            LearningShell(guardianVoiceControllers, guardianLearningListStorage)
+            LearningShell(
+                guardianVoiceControllers,
+                guardianLearningListStorage,
+                guardianLessonProgressStorage,
+            )
         }
     }
 }
@@ -145,6 +159,7 @@ private fun LimDoApp(
 private fun LearningShell(
     guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
     guardianLearningListStorage: GuardianLearningListStorage,
+    guardianLessonProgressStorage: GuardianLessonProgressStorage,
 ) {
     var destination by remember { mutableStateOf<LearningDestination>(LearningDestination.Home) }
     var nextWritingSessionId by rememberSaveable { mutableIntStateOf(0) }
@@ -169,6 +184,7 @@ private fun LearningShell(
         LearningDestination.GuardianLessons -> GuardianLessonScreen(
             onClose = { destination = LearningDestination.Home },
             onOpenStartRecording = { destination = LearningDestination.GuardianStartRecording(it) },
+            progressByLesson = guardianLessonProgressStorage.load(),
             learningList = guardianLearningList,
             learningCurrentIndex = guardianLearningCurrentIndex,
             onAddLesson = { lessonId ->
@@ -241,6 +257,7 @@ private fun LearningShell(
                 initialLessonId = current.lessonId,
                 menu = current.menu,
                 guardianVoiceControllers = guardianVoiceControllers,
+                guardianLessonProgressStorage = guardianLessonProgressStorage,
                 onHome = { destination = LearningDestination.Home },
                 guardianLearningList = guardianLearningList,
                 guardianLearningCurrentIndex = guardianLearningCurrentIndex,
@@ -446,6 +463,7 @@ private fun GuardianEntry(
 private fun GuardianLessonScreen(
     onClose: () -> Unit,
     onOpenStartRecording: (LessonId) -> Unit,
+    progressByLesson: Map<LessonId, GuardianLessonProgress>,
     learningList: List<LessonId>,
     learningCurrentIndex: Int,
     onAddLesson: (LessonId) -> Unit,
@@ -565,6 +583,7 @@ private fun GuardianLessonScreen(
             onOpenStartRecording = onOpenStartRecording,
             addingToLearningList = guardianMode == 1,
             learningList = learningList,
+            progressByLesson = progressByLesson,
             onAddLesson = onAddLesson,
         )
     }
@@ -723,6 +742,7 @@ private fun GuardianLessonGroupCard(
     onOpenStartRecording: (LessonId) -> Unit,
     addingToLearningList: Boolean,
     learningList: List<LessonId>,
+    progressByLesson: Map<LessonId, GuardianLessonProgress>,
     onAddLesson: (LessonId) -> Unit,
 ) {
     Surface(
@@ -742,6 +762,8 @@ private fun GuardianLessonGroupCard(
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
                     lessonRow.forEach { lesson ->
+                        val progress = progressByLesson[lesson.id]
+                        val progressSummary = guardianProgressSummary(progress)
                         Surface(
                             onClick = {
                                 if (addingToLearningList) onAddLesson(lesson.id)
@@ -757,9 +779,10 @@ private fun GuardianLessonGroupCard(
                                         "lesson ${lesson.glyph}, 녹음 열기"
                                     }
                                     val count = learningList.count { it == lesson.id }
-                                    stateDescription = if (addingToLearningList) {
-                                        "현재 목록에 ${count}개"
-                                    } else "사용 가능"
+                                    stateDescription = buildList {
+                                        if (addingToLearningList) add("현재 목록에 ${count}개")
+                                        add(progressSummary.semantics)
+                                    }.joinToString(", ")
                                 },
                             color = if (addingToLearningList && lesson.id in learningList) {
                                 accent.copy(alpha = 0.16f)
@@ -767,14 +790,109 @@ private fun GuardianLessonGroupCard(
                             shape = RoundedCornerShape(18.dp),
                             border = BorderStroke(2.dp, accent.copy(alpha = 0.45f)),
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(lesson.glyph, fontSize = 42.sp, fontWeight = FontWeight.Bold)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                modifier = Modifier.fillMaxSize(),
+                            ) {
+                                Text(lesson.glyph, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                                Column(
+                                    horizontalAlignment = Alignment.Start,
+                                    verticalArrangement = Arrangement.Center,
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                                    ) {
+                                        GuardianProgressSymbol(progress, Modifier.size(15.dp))
+                                        Text(
+                                            progressSummary.status,
+                                            fontSize = 8.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = progressSummary.color,
+                                        )
+                                    }
+                                    progressSummary.time?.let {
+                                        Text(it, fontSize = 8.sp, color = Color(0xFF52615A))
+                                    }
+                                }
                             }
                         }
                     }
                     repeat(columnCount - lessonRow.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
+        }
+    }
+}
+
+private data class GuardianProgressSummary(
+    val status: String,
+    val time: String?,
+    val semantics: String,
+    val color: Color,
+)
+
+private fun guardianProgressSummary(progress: GuardianLessonProgress?): GuardianProgressSummary {
+    if (progress == null) return GuardianProgressSummary(
+        status = "연습 전",
+        time = null,
+        semantics = "연습 전",
+        color = Color(0xFF6D7470),
+    )
+    val practiced = guardianProgressTime(progress.lastPracticedAtMillis)
+    val completed = progress.lastCompletedAtMillis?.let(::guardianProgressTime)
+    if (completed == null) return GuardianProgressSummary(
+        status = "연습 중",
+        time = "연 $practiced",
+        semantics = "연습 중, 최근 연습 $practiced",
+        color = Color(0xFF9A5B18),
+    )
+    val status = if (progress.lastAssistance == GuardianLessonAssistance.AFTER_HELP) {
+        "도움 후 완성"
+    } else {
+        "혼자 완성"
+    }
+    return GuardianProgressSummary(
+        status = status,
+        time = "연 $practiced\n완 $completed",
+        semantics = "$status, 최근 연습 $practiced, 최근 완료 $completed",
+        color = Color(0xFF2F7655),
+    )
+}
+
+private fun guardianProgressTime(millis: Long): String =
+    SimpleDateFormat("M/d HH:mm", Locale.KOREA).format(Date(millis))
+
+@Composable
+private fun GuardianProgressSymbol(
+    progress: GuardianLessonProgress?,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier) {
+        val strokeWidth = size.minDimension * 0.13f
+        when {
+            progress?.lastCompletedAtMillis != null -> {
+                drawCircle(Color(0xFFE0F2E8))
+                drawCircle(Color(0xFF2F7655), style = Stroke(strokeWidth))
+                val check = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(size.width * 0.25f, size.height * 0.52f)
+                    lineTo(size.width * 0.44f, size.height * 0.70f)
+                    lineTo(size.width * 0.76f, size.height * 0.32f)
+                }
+                drawPath(check, Color(0xFF2F7655), style = Stroke(strokeWidth, cap = StrokeCap.Round))
+            }
+            progress != null -> {
+                drawCircle(Color(0xFFFFE8C5))
+                drawArc(
+                    color = Color(0xFF9A5B18),
+                    startAngle = -90f,
+                    sweepAngle = 250f,
+                    useCenter = false,
+                    style = Stroke(strokeWidth, cap = StrokeCap.Round),
+                )
+            }
+            else -> drawCircle(Color(0xFF8A918D), style = Stroke(strokeWidth))
         }
     }
 }
@@ -1007,6 +1125,7 @@ private fun WritingLesson(
     initialLessonId: LessonId,
     menu: LearningMenu,
     guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
+    guardianLessonProgressStorage: GuardianLessonProgressStorage,
     onHome: () -> Unit,
     guardianLearningList: List<LessonId>,
     guardianLearningCurrentIndex: Int,
@@ -1025,6 +1144,7 @@ private fun WritingLesson(
         initialLessonId == guardianLearningList.getOrNull(guardianLearningCurrentIndex)
     var guardianIndex by rememberSaveable { mutableIntStateOf(guardianLearningCurrentIndex) }
     var guardianListComplete by rememberSaveable { mutableStateOf(false) }
+    var receivedHelp by rememberSaveable { mutableStateOf(false) }
     val currentLesson = KoreanCurriculum.lessons[lessonIndex]
     val currentVoiceController = requireNotNull(
         guardianVoiceControllers[GuardianVoiceKey(currentLesson.id)],
@@ -1032,6 +1152,8 @@ private fun WritingLesson(
     val retryVisuals = retryAnimationVisuals(retryProgress.value)
 
     LaunchedEffect(currentLesson.id, guardianIndex) {
+        guardianLessonProgressStorage.markPracticed(currentLesson.id)
+        receivedHelp = false
         currentVoiceController.play()
     }
 
@@ -1060,6 +1182,11 @@ private fun WritingLesson(
         celebrationProgress.snapTo(0f)
         if (traceResult == GieokTraceResult.SUCCESS) {
             val successfulLessonId = currentLesson.id
+            guardianLessonProgressStorage.markCompleted(
+                successfulLessonId,
+                if (receivedHelp) GuardianLessonAssistance.AFTER_HELP
+                else GuardianLessonAssistance.INDEPENDENT,
+            )
             val minimumSuccessVisibility = async {
                 delay(SuccessCelebrationSpec.DURATION_MS.toLong())
             }
@@ -1141,6 +1268,7 @@ private fun WritingLesson(
                 onTraceResult = { result, _ ->
                     traceResult = result
                     if (result.isRetryResult()) {
+                        receivedHelp = true
                         retryLessonIndex = lessonIndex
                         retryEvent += 1
                     }
