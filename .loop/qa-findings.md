@@ -2819,3 +2819,13 @@
 - 자동 QA 판정: 단계 상한 2, 주기 3,000·3,600·4,200 ms, 성공·수동 이동 초기화, 판정 geometry 불변, unit·lint·build·diff가 통과했다.
 - 아이 대리 판정: 문장을 읽지 않아도 같은 시작점과 현재 획이 재시도 뒤 더 크고 느리게 보여 어디서 어떻게 다시 시작하는지 분명하다. 실제 아이 관찰: 실행 안 함.
 - 다음 제품 작업: 새 불편은 없다. M4의 다음 미검증 접근성 위험을 루프 204로 준비한다.
+
+## QA-161 — 루프 204 접근성 통합 아이 대리 QA
+
+- 상태: 통과. 새 P0·P1·진행 방해 P2는 0건이다.
+- 근거: `captures/loop204/iteration7/emulator/`의 홈·자음 선택·큰 글자와 animator scale 0·TalkBack 쓰기 PNG·hierarchy·focus, cold boot uptime `8.78`초, 물리 1080 × 2340·가로 2340 × 1080·LimDo focus, APK SHA-256 `dfdfc3d9033b0e35eda4ed2bdffdf5e6010590a5f9db8b5f75b7e8d10bc8e9d3`.
+- 자동 QA 판정: unit·lint·debug build·diff·시각 계약과 on-device instrumentation 2/2가 통과했다. TalkBack 표준 semantics click은 획을 한 번씩 진행하고, animator scale 0에서도 성공 의미를 최소 1,200ms 보존한 뒤 다음 lesson으로 이동한다.
+- 에뮬레이터 판정: TalkBack 탐색 대상은 홈의 세 메뉴, 자음 14개 선택, WritingCanvas와 홈·지우기·이전·다음을 누락 없이 노출했다. 큰 글자·움직임 줄이기 병합 상태에서도 WritingCanvas 1962 × 954 px와 네 168 × 168 px 조작, 잘림·겹침 0건을 유지했다.
+- 아이 대리 판정: 글을 읽지 않는다고 가정해도 큰 쓰기판·초록 시작점·현재 획 점선·동적 표식과 서로 다른 네 그림 조작으로 과제·시작·방향·초기화·이동을 구분할 수 있다. TalkBack 사용자는 Canvas 표준 활성화로 현재 획을 진행할 수 있고 일반 아이의 손가락 입력 geometry와 판정은 바뀌지 않았다.
+- 실제 아이 관찰: 실행 안 함.
+- 다음 제품 작업: 새 불편은 없다. M4에서 아직 구현하지 않은 자음+모음 조립 뒤 교육 확장의 첫 좁은 묶음을 루프 205로 준비한다.

@@ -30,10 +30,13 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntSize
 import kotlin.math.min
 
 private val PracticeSurface = Color(0x5CFFD84F)
@@ -116,6 +119,7 @@ internal fun WritingCanvas(
         mutableStateOf(TraceAttempt())
     }
     var handledClearRequest by rememberSaveable { mutableIntStateOf(clearRequest) }
+    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     val currentOnTraceResult by rememberUpdatedState(onTraceResult)
     val emptyStateDescription = "아직 그린 선이 없어요"
     val drawingStateDescription = "선을 그리고 있어요"
@@ -159,6 +163,7 @@ internal fun WritingCanvas(
         modifier = modifier
             .background(PracticeSurface, shape)
             .border(2.dp, PracticeBorder, shape)
+            .onSizeChanged { canvasSize = it }
             .pointerInput(inputEnabled, lesson.id) {
                 if (!inputEnabled) return@pointerInput
                 val safeInset = 24.dp.toPx()
@@ -197,7 +202,27 @@ internal fun WritingCanvas(
                 }
             }
             .semantics {
-                this.contentDescription = contentDescription
+                this.contentDescription = if (attempt.result == GieokTraceResult.SUCCESS) {
+                    contentDescription
+                } else {
+                    "$contentDescription. ${attempt.completedStrokes.size}/${lesson.strokeCount}획 완료"
+                }
+                if (
+                    inputEnabled &&
+                    attempt.result != GieokTraceResult.SUCCESS &&
+                    canvasSize.width > 0 &&
+                    canvasSize.height > 0
+                ) {
+                    onClick(label = "현재 획 따라 쓰기") {
+                        attempt = attempt.followCurrentGuide(
+                            width = canvasSize.width.toFloat(),
+                            height = canvasSize.height.toFloat(),
+                            lesson = lesson,
+                        )
+                        currentOnTraceResult(attempt.result, attempt.completedStrokes.size)
+                        true
+                    }
+                }
                 stateDescription = when (attempt.result) {
                     GieokTraceResult.SUCCESS -> "${lesson.glyph}를 완성했어요"
                     GieokTraceResult.WRONG_START,

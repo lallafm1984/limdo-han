@@ -584,6 +584,17 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예(반복 1 변경의 최종 경계 판정이며 이번 반복의 신규 시각 변경은 없음). 자산 필요 판정: 불필요 — 기존 production 점선·시작점·동적 시범 geometry 상태 경계 검증이며 bitmap은 lifecycle 정확성을 높이지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
 
+### 2026-08-29 루프 204 반복 5 결과 — semantics click 획별 전이 채택
+
+- 최소 변경: `app/src/androidTest/java/com/limdo/hangul/WritingCanvasAccessibilityTest.kt`에 production `WritingCanvas`를 실제 Compose 호스트에 올리고 표준 `SemanticsActions.OnClick`을 직접 호출하는 on-device 계측 하나를 추가했다. 이를 위한 Compose UI test·AndroidX runner 의존성만 `app/build.gradle.kts`에 추가했고 production 화면·geometry·판정·pointer input·네 조작은 더 변경하지 않았다.
+- 계측 반증 결과: 첫 컴파일은 지원하지 않는 테스트 확장 import 2개로 실패해 제거한 뒤 통과했다. 첫 실행은 content description 부분 문자열을 exact assertion API로 검사해 실패했고, substring semantics matcher로 수정한 최종 `connectedDebugAndroidTest` 1건이 실제 `alarmquest-qa` API 35에서 통과했다.
+- 상태 전이: 동일 semantics 노드에서 click 전 `0/3획 완료`, 1회 뒤 `1/3획 완료`, 2회 뒤 `2/3획 완료`를 순서대로 확인했고 3회 뒤에는 Canvas 노드는 남지만 click action은 제거됐다. 이 경로는 TalkBack 활성화가 사용하는 동일 표준 semantics `ACTION_CLICK` callback이므로 반복 4의 좌표 포커스 주입 불안정과 callback 실패를 분리했다.
+- 자동 검증: `./scripts/verify.sh`의 unit test·Android lint·debug build, `git diff --check`, `./scripts/check-visual-loop.sh`가 모두 통과했다. `:app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.limdo.hangul.WritingCanvasAccessibilityTest`도 최종 1/1 통과했다.
+- 에뮬레이터 관문: serial 부재에서 AVD `alarmquest-qa`를 `-no-snapshot-load -no-snapshot-save -no-boot-anim -gpu host`로 cold boot했다. 재개 uptime `8.45`초, 물리 1080 × 2340, `user_rotation=1`을 확인했고 최종 APK를 설치·실행해 `com.limdo.hangul/.MainActivity` `mCurrentFocus`·`mFocusedApp`과 2340 × 1080 PNG를 확인했다. APK SHA-256은 `dfdfc3d9033b0e35eda4ed2bdffdf5e6010590a5f9db8b5f75b7e8d10bc8e9d3`다.
+- 실화면 직접 판정: `captures/loop204/iteration5/emulator/production-focus.png`의 홈은 정확히 2340 × 1080이고 세 카드·보호자 진입·글자·외곽의 잘림·겹침·새 시각 회귀가 0건이다. 시각 변경이 없어 변경 전·후 자산 비교 관문 대상은 아니다.
+- 이전 반복 비교·가설 판정: 반복 4는 Canvas를 실제 활성화하지 못해 `0/N`에 머물렀지만, 이번에는 on-device 표준 semantics callback으로 한 click당 한 획과 최종 성공 상태를 고정했으므로 가설을 `채택`한다. TalkBack·Canvas 입력 충돌의 진행 방해 P2 1건은 해소로 판정한다.
+- 남은 조건·종료: 움직임 줄이기 설정의 동적 표시·최소 성공 노출·네 조작 상태 구분인 성공 조건 5와 루프 204 최종 역할 QA가 남았다. 이 반복은 정확히 한 번으로 종료하며 완료 커밋·push·다음 루프 전환을 실행하지 않는다. 실제 아이 관찰: 실행 안 함.
+
 ### 2026-08-28 루프 190 반복 6 결과
 
 - 최소 작업: 제품 코드나 자산을 더 변경하지 않고 `alarmquest-qa` `emulator-5554`에 반복 5 APK를 설치해 보호자 목록→`ㄱ` START를 실제 길게 누르기·tap으로 진입하고 녹음·정지·재생을 수행했다.
@@ -7675,3 +7686,139 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 실화면: uptime 6,610.36초(<7,200), AVD `alarmquest-qa`, 물리 1080×2340, `user_rotation=1`, 앱 2340×1080, LimDo focus. 성공 화면의 완성 글자·네 조작 잘림·겹침·가림 0건이다.
 - 판정: 가설 `채택`. 자동 그래픽 디자인·자동 QA·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건. 실제 아이 관찰: 실행 안 함.
 - 완료·전환: 루프 203을 완료하고 M4의 서로 다른 접근성 위험인 TalkBack·Custom Canvas·큰 글자·움직임 줄이기 검증을 루프 204로 준비한다. 이 작업자는 루프 204를 구현하지 않는다.
+
+### 2026-08-29 루프 204 반복 1 가설 — 큰 글자에서 고정 학습판과 네 조작 보존
+
+- 가장 중요한 미충족 조건: 시스템 큰 글자에서 정확한 2340 × 1080 학습 화면의 WritingCanvas 1962 × 954 px와 네 그림 조작이 유지되고 문구·글자·조작의 잘림·겹침이 0건인지 새 근거가 없다.
+- 반증 가능한 가설: 글을 읽지 않는 아이의 주 단서인 production atlas 조작과 Canvas geometry는 글꼴 배율과 독립적이므로, 시스템 `font_scale=2.0`에서도 학습판과 네 조작 bounds는 기준값을 유지할 것이다. 실제로 확대되는 보조 문구에서 겹침이 재현되면 해당 Text의 한 줄 배치 하나만 최소 보정하면 주 과제와 조작을 바꾸지 않고 잘림·겹침을 없앨 수 있다.
+- 반증 기준: 큰 글자에서 WritingCanvas가 1962 × 954 px보다 작아지거나 네 조작 중 하나가 192 px 미만·화면 밖·Canvas 위로 겹치거나, 보조 문구가 주요 글자·시작점·조작을 가리거나, 일반 `font_scale=1.0` 화면·callback·geometry가 바뀌면 가설을 기각한다.
+- 합리적인 최소 변경: 먼저 같은 APK의 `font_scale=1.0`과 `2.0` 학습 화면을 비교하고, 재현된 가장 중요한 단일 Text 배치 결함이 있을 때만 그 Composable의 줄 수·overflow·공간 계약 하나를 고친다. TalkBack 입력과 움직임 줄이기는 이번 반복에서 구현하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오(검증 시작 시점이며 결함 재현 시 최소 layout 변경 여부를 결과에 갱신한다). 자산 필요 판정: 불필요 — 큰 글자 잘림은 typography·layout 제약 문제이며 새 bitmap은 접근성 배치를 해결하지 못한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 204 반복 1 결과 — 큰 글자 학습판 계약 채택
+
+- 에뮬레이터 재시작 관문: QA 시작 uptime이 `7291.68`초여서 새 화면 수집을 중지하고 AVD `alarmquest-qa`를 완전히 종료했다. serial 소멸을 확인한 뒤 `-no-snapshot-load -no-snapshot-save -no-boot-anim -gpu host`로 cold boot했으며 재개 uptime `10.66`초, 물리 1080 × 2340, `user_rotation=1`, LimDo 2340 × 1080과 `com.limdo.hangul/.MainActivity` focus를 확인했다.
+- 최소 변경 판정: 같은 APK의 `font_scale=1.0`과 `2.0`에서 실제 `ㄱ` 쓰기 화면을 새로 수집했으며 재현된 배치 결함이 0건이어서 제품 코드·자산·geometry를 바꾸지 않았다. 결함 없이 Text 제약을 임의 변경하면 일반 화면 회귀만 만들 수 있으므로 이번 반복의 최소 결과는 큰 글자 비회귀 근거 고정이다.
+- 새 화면 근거: `captures/loop204/iteration1/emulator/font-1/writing.png`와 `font-2/writing.png`는 각각 정확한 2340 × 1080이며 SHA-256도 `de6b6d47b9a21d6d72c51d3678eed352560aa5671ace24bd71860a5b25e5668e`로 동일하다. 두 이미지를 원본 크기로 직접 비교했으며 글자 길·시작점·현재 획·홈·지우기·이전·다음의 잘림·겹침·가림은 0건이다.
+- hierarchy 실측: 두 설정 모두 WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 홈·지우기·이전·다음은 각각 168 × 168 px이며 네 조작과 Canvas bounds가 동일하다. 접근성 설명과 callback 노드도 유지됐다.
+- 자동 검증: `./scripts/verify.sh`의 unit test·Android lint·debug build, `git diff --check`, `./scripts/check-visual-loop.sh`가 모두 통과했다. APK SHA-256은 `ce7b301911840a6b0d18d7ccae26d20d474efe90d4fde6d79f5f226ad602a49d`다. 검증 뒤 `font_scale=1.0`으로 복원했다.
+- 이전 비교·가설 판정: 루프 203의 기본 글자 화면과 비교해 큰 글자에서도 학습판·네 조작·production geometry가 픽셀 단위로 같아 가설을 `채택`한다. 성공 조건 4의 대표 학습 화면은 통과했지만 TalkBack 탐색·Canvas 입력 충돌과 움직임 줄이기 조건은 아직 미검증이다.
+- 역할 판정: 자동 QA와 큰 글자 대표 화면의 에뮬레이터·아이 대리 QA는 통과했다. 이번 반복은 시각 변경이 없으므로 자동 그래픽 디자인 변경 전·후 관문 대상이 아니며 새 P0·P1·진행 방해 P2는 현재 근거 범위에서 0건이다. 실제 아이 관찰: 실행 안 함.
+- 완료 금지: 루프 204는 진행 중이다. 모든 성공 조건을 통과하지 않았으므로 완료 커밋·push·다음 루프 전환을 실행하지 않는다. 다음 반복은 TalkBack 탐색 순서와 Custom Canvas 입력 충돌 중 가장 먼저 재현되는 하나를 단일 가설로 검증한다.
+
+### 2026-08-29 루프 204 반복 2 가설 — TalkBack 탐색과 Canvas 입력 충돌
+
+- 가장 중요한 미충족 조건: TalkBack을 켠 홈·세 메뉴·글자 선택·쓰기 화면의 Canvas·네 그림 조작을 크기·지우기·이전·다음 순서로 포커스할 때 포커스 사라짐·입력 충돌이 없는지 새 근거가 없다.
+- 반증 가능한 가설: production semantics가 Canvas를 하나의 탐색 대상으로 노출한다면, TalkBack 포커스는 두 열의 오른쪽 그림 조작을 해당 화면의 Canvas로 이동하고 홈·지우기·이전·다음의 화면 좌·우·아래 순서로 포커스할 것이다.
+- 반증 기준: Canvas가 탐색에서 누락되거나 포커스가 사라지거나, 하나의 탐색이 화면의 오른쪽·Canvas·네 조작 중 어느 하나라도 누락되거나, 홈·지우기·이전·다음 조작 중 포커스가 사라지거나, TalkBack 종료 후 focus가 사라지면 가설을 기각한다.
+- 합리적인 최소 변경: 판정 학습 탐색 순서로 포커스하고 학습 입력 후 화면이 보장되는지 먼저 검증한다. 재현된 결함이 재현될 때만 해당 semantics 경로 하나만 최소로 고친다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오. 자산 필요 판정: 불필요 — 이미 제공된 atlas·시맨틱과 입력 충돌을 해결하지 못하며 새 그림은 학습을 더 명확하게 하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 204 반복 2 결과 — TalkBack 한 손가락 입력 충돌 재현
+
+- 에뮬레이터 관문: 시작 시 serial이 없어 AVD `alarmquest-qa`를 `-no-snapshot-load -no-snapshot-save -no-boot-anim -gpu host`로 cold boot했다. 부팅 완료 직후 uptime `9.24`초, 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, `com.limdo.hangul/.MainActivity` focus를 확인했다.
+- TalkBack 상태: `com.google.android.marvin.talkback/.TalkBackService`를 활성화했고 `dumpsys accessibility`의 bound·enabled service가 모두 TalkBack임을 확인했다. 최초 알림 권한 대화상자는 `허용`한 뒤 LimDo focus로 복귀했다.
+- 탐색 구조: 쓰기 화면 hierarchy에는 WritingCanvas `[189,63][2151,1017]`=1962 × 954 px와 `큰 쓰기판. 초록 점에서 시작해 ㅏ를 2획으로 그려요`, 홈·지우기·이전·다음 168 × 168 px 노드가 `Canvas → 홈 → 지우기 → 이전 → 다음` 순서로 모두 존재했다. TalkBack 초록 포커스도 화면 전환 뒤 홈 조작에서 사라지지 않았다.
+- 입력 충돌: TalkBack 활성 상태에서 production `ㅏ` 첫 획 중심선 `(997,192)→(997,753)`을 700 ms 한 손가락 swipe로 입력해도 파란 아이 획이 0 px로 남았다. 같은 좌표를 TalkBack 해제 후 입력하자 `captures/loop204/iteration2/emulator/writing-after-input-talkback-off.png`에서 파란 첫 획이 즉시 표시돼 geometry·좌표 문제가 아님을 대조했다.
+- 화면 근거: `writing-after-input-talkback.png`는 TalkBack 활성 상태에서 입력 흔적 0건, `writing-after-input-talkback-off.png`는 같은 화면·좌표에서 파란 획 1건이다. 두 화면 모두 정확한 2340 × 1080이며 글자 길과 네 조작의 잘림·겹침은 0건이다.
+- 자동 검사: 제품 코드는 바꾸지 않았다. `git diff --check`, `./scripts/check-visual-loop.sh`, `./scripts/check-automation.sh`는 통과했다. TalkBack은 검증 후 비활성(`enabled_accessibility_services=null`, `accessibility_enabled=0`)으로 복원했다.
+- 이전 비교·가설 판정: 반복 1의 일반·큰 글자 입력 가능 상태와 달리 TalkBack이 한 손가락 drag를 탐색 제스처로 소비하는 충돌이 재현돼 가설을 `기각`한다. 성공 조건 3과 7은 실패이며 새 진행 방해 P2 1건이다.
+- 역할 판정: 자동 QA는 semantics 구조와 설정 복원을 통과했으나 입력 관문은 실패했다. 에뮬레이터·아이 대리 QA도 글을 쓰기 시작할 수 없어 실패다. 실제 아이 관찰: 실행 안 함.
+- 완료 금지와 다음 작업: 루프 204는 `진행 중`이다. 완료 커밋·push는 실행하지 않는다. 다음 반복은 TalkBack touch exploration에서 실제 쓰기를 가능하게 하는 접근성 동작 계약을 큰 구조 변경 없이 제공할 수 있는지 검토하고, 가장 좁은 입력 대안 하나만 구현·검증한다.
+
+### 2026-08-29 루프 204 반복 3 가설 — TalkBack 현재 획 접근성 동작
+
+- 가장 중요한 미충족 조건: TalkBack touch exploration이 한 손가락 drag를 소비하므로 사용자가 Custom Canvas에서 현재 획을 진행할 수 없다.
+- 반증 가능한 가설: WritingCanvas 노드에 `현재 획 따라 쓰기` 사용자 지정 접근성 동작을 하나 제공하고 이 동작이 production geometry의 현재 획을 그대로 제출하게 하면, TalkBack의 표준 두 번 탭으로 획을 한 번씩 진행하면서 일반 손가락 입력·획순·방향·corridor·네 조작은 바뀌지 않을 것이다.
+- 반증 기준: TalkBack hierarchy에 동작이 노출되지 않거나 두 번 탭 한 번에 현재 획이 정확히 하나 진행되지 않거나, 전체 획 뒤 성공하지 않거나, 비활성·성공 상태에서도 동작하거나, 일반 touch evaluator·geometry·네 조작 callback 중 하나가 바뀌면 가설을 기각한다.
+- 합리적인 최소 변경: 기존 WritingCanvas semantics에 현재 획용 `CustomAccessibilityAction` 하나와 production 현재 획을 복사해 기존 `onStrokeFinished` callback으로 전달하는 경로만 추가한다. 판정 허용치·교육 geometry·화면·자산·일반 pointer input은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오 — 접근성 semantics와 대체 입력 callback만 추가하며 보이는 화면 배치는 유지한다.
+- 자산 필요 판정: 불필요 — TalkBack 동작 노출은 semantics 문제이고 기존 글자 길·시작점·점선이 시각 안내를 제공하므로 bitmap은 입력 충돌을 해결하지 못한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 204 반복 3 결과 — 접근성 동작 자동 통과·실화면 미판정
+
+- 최소 제품 변경: `TraceAttempt.followCurrentGuide`가 현재 lesson의 production geometry에서 현재 순번 획 하나만 가져와 기존 `finish`와 `onTraceResult`에 전달하도록 했다. WritingCanvas는 입력 가능·미완성 상태에서만 `현재 획 따라 쓰기` `onClick` semantics를 제공하며 일반 `pointerInput`, evaluator corridor·획순·방향·자형과 네 그림 조작 callback은 바꾸지 않았다.
+- 자동 반증 근거: 새 단위 검사는 접근성 동작 한 번이 정확히 production 현재 획 하나만 완료하고, 전체 획 수만큼 실행하면 `SUCCESS`가 되며, 성공 뒤 추가 실행은 상태를 바꾸지 않음을 통과했다. 최종 `./scripts/verify.sh`의 unit·Android lint·debug build, `git diff --check`, `./scripts/check-visual-loop.sh`가 모두 통과했다.
+- 에뮬레이터 관문: serial 부재에서 AVD `alarmquest-qa`를 cold boot했고 재개 uptime `23.06`초, 물리 1080 × 2340, `user_rotation=1`, LimDo 2340 × 1080·focus를 확인했다. APK SHA-256은 `fadebe933c28ab6788c365a2e51373ee243f476a9b65cc942f273cb5e2dce2c5`다.
+- TalkBack 노출: TalkBack bound·enabled service를 확인한 새 writing hierarchy에서 Canvas `[189,63][2151,1017]`=1962 × 954 px가 `clickable=true`이며 홈·지우기·이전·다음 168 × 168 px 노드와 LimDo focus가 유지됐다. 검증 뒤 TalkBack은 bound·enabled service 0건으로 복원했다.
+- 정확한 미판정: ADB touch event로 Canvas focus와 두 번 탭을 재현했을 때 초점이 Canvas에서 홈 노드로 이동하는 프레임은 수집됐지만, 자동 다음·성공 연출과 겹친 캡처에서 파란 완료 획 또는 `완성했어요` 상태를 1:1로 확정하지 못했다. 따라서 실제 TalkBack 두 번 탭 한 번이 획 하나를 진행한다는 에뮬레이터 가설은 `미판정`이며 성공 조건 3·7을 통과 처리하지 않는다.
+- 이전 반복 비교: 반복 2의 Canvas `clickable=false`·한 손가락 입력 0 px에서 이번 후보는 Canvas `clickable=true`와 자동 획 진행 경로를 새로 확보했다. 그러나 실화면 성공 근거가 부족하므로 진행 방해 P2 1건은 해소 판정을 보류한다.
+- 남은 조건·다음 작업: 다음 반복은 접근성 click callback 직전·직후의 획 index와 성공 상태를 테스트 가능한 semantics 또는 instrumentation 근거로 1:1 고정해 TalkBack 실제 두 번 탭을 판정한다. 그 뒤 움직임 줄이기 조건 5가 남는다. 루프 204는 `진행 중`이며 완료 커밋·push·다음 루프 전환을 실행하지 않는다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-29 루프 204 반복 4 가설 — TalkBack 획 진행 상태의 hierarchy 고정
+
+- 가장 중요한 미충족 조건: 반복 3은 Canvas 접근성 click과 production 현재 획 callback을 만들었지만, 실제 TalkBack 두 번 탭 직전·직후의 완료 획 index와 전체 성공을 hierarchy에서 1:1로 구분하지 못했다.
+- 반증 가능한 가설: Canvas `stateDescription`에 production 완료 획 수와 전체 획 수를 노출하면 TalkBack 두 번 탭 한 번마다 `0/N → 1/N`처럼 정확히 한 획만 증가하고 마지막 탭 뒤 `완성했어요`로 바뀌어 실제 접근성 callback과 성공 상태를 같은 화면 노드에서 확정할 수 있다.
+- 반증 기준: 새 hierarchy에 진행 상태가 없거나, 한 번의 두 번 탭 뒤 완료 획 수가 그대로이거나 둘 이상 증가하거나, 마지막 획 뒤 성공 상태가 아니거나, 일반 손가락 입력·production geometry·판정·네 그림 조작·보이는 화면 중 하나라도 바뀌면 가설을 기각한다.
+- 합리적인 최소 변경: 기존 Canvas의 `stateDescription` null 분기에 완료 획 수와 전체 획 수만 추가한다. 접근성 click·일반 pointer input·판정 허용치·geometry·layout·자산은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오 — 화면 배치나 자산이 아니라 TalkBack이 읽는 Canvas 상태만 구체화한다.
+- 자산 필요 판정: 불필요 — hierarchy의 획 진행 상태는 semantics 문제이며 bitmap은 callback 실행 여부를 입증하거나 입력 충돌을 해결하지 못한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 204 반복 4 결과 — 진행 semantics 통과·두 번 탭 미판정
+
+- 최소 제품 변경: WritingCanvas의 접근성 설명에 미완성 상태의 production 완료 획 수와 전체 획 수를 `0/2획 완료` 형식으로 추가했다. 반복 3의 접근성 click, 일반 `pointerInput`, 판정 corridor·획순·방향·geometry·layout·자산·네 그림 조작은 바꾸지 않았다.
+- 자동 검증: 최종 `./scripts/verify.sh`의 unit test·Android lint·debug build, `git diff --check`, `./scripts/check-visual-loop.sh`가 모두 통과했다. APK SHA-256은 `b2beb271ce261dfa820cb6fe2c8cd2350e68402a94209c384eae8faa240cc54f`다.
+- 에뮬레이터 관문: 시작 시 serial이 없어 AVD `alarmquest-qa`를 `-no-snapshot-load -no-snapshot-save -no-boot-anim -gpu host`로 cold boot했다. 재개 uptime `11.88`초, 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, `com.limdo.hangul/.MainActivity` focus를 확인했다.
+- 새 hierarchy 근거: `captures/loop204/iteration4/emulator/before.xml`에서 Canvas `[189,63][2151,1017]`=1962 × 954 px가 `clickable=true`이고 접근성 설명에 `0/2획 완료`가 노출됐다. 홈·지우기·이전·다음은 각각 168 × 168 px로 유지됐다.
+- 정확한 미판정: ADB touch 주입으로 Canvas 탐색과 두 번 탭을 여러 방식으로 재현했지만 TalkBack 접근성 포커스가 홈 노드에서 Canvas로 안정적으로 이동하지 않았고 `after-one.xml`·`after-one-v2.xml`은 모두 `0/2획 완료`에 머물렀다. 이는 실제 Canvas click callback이 실행되지 않았다는 근거이며 callback 자체의 실패로 단정하지 않는다. 한 번당 한 획·마지막 성공의 에뮬레이터 가설은 계속 `미판정`이다.
+- 실화면 판정: `before.png`·`canvas-focused.png`·`after-one.png`는 정확한 2340 × 1080이며 보이는 layout 변경 없이 글자 길·시작점·네 그림 조작의 잘림·겹침·가림은 0건이다. TalkBack은 검증 뒤 `enabled_accessibility_services=null`, `accessibility_enabled=0`으로 복원했고 LimDo focus를 유지했다.
+- 이전 비교·가설 판정: 반복 3에서는 hierarchy로 획 index를 구분할 수 없었지만 이번에는 `0/N` 상태를 고정했다. 다만 실제 두 번 탭 뒤 `1/N`·성공을 얻지 못했으므로 가설은 `미판정`이며 진행 방해 P2 1건 해소를 보류한다.
+- 역할 판정: 자동 QA는 통과했고 에뮬레이터·아이 대리 QA는 접근성 입력 진행을 확정하지 못해 미통과다. 실제 아이 관찰: 실행 안 함.
+- 완료 금지와 다음 작업: 루프 204는 `진행 중`이다. 완료 커밋·push·다음 루프 전환을 실행하지 않는다. 다음 반복은 좌표 기반 TalkBack gesture 주입에 의존하지 않는 on-device Compose UI instrumentation으로 Canvas semantics click 전후 `0/N → 1/N → 완성`을 먼저 고정하고, 실제 TalkBack 탐색·활성화와 동등한 `ACTION_CLICK` callback임을 검증한다. 움직임 줄이기 조건 5는 그 뒤 남긴다.
+### 2026-08-29 루프 204 반복 5 가설 — on-device semantics click의 획별 상태 전이
+
+- 가장 중요한 미충족 조건: 반복 4의 hierarchy는 Canvas가 `clickable=true`이고 `0/N획 완료`를 노출함을 입증했지만, 좌표 기반 TalkBack gesture 주입이 포커스를 안정적으로 옮기지 못해 실제 semantics `ACTION_CLICK` callback의 획별 상태 전이가 미판정이다.
+- 반증 가능한 가설: on-device Compose UI instrumentation이 WritingCanvas 노드의 표준 semantics click을 호출하면, production `onClick`과 동일한 callback이 실행되어 `가` 기준 한 번에 정확히 한 획씩 `0/3 → 1/3 → 2/3 → 완성`으로 전이하고 성공 뒤 추가 click은 노출되지 않을 것이다.
+- 반증 기준: 표준 semantics click을 찾지 못하거나, 한 click에 완료 획이 0개 또는 2개 이상 증가하거나, 세 번째 click 뒤 성공 상태가 아니거나, 성공 후 click이 계속 활성이거나, 기존 일반 입력·geometry·판정·네 조작 회귀 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: 기존 미커밋 production 후보는 넓히지 않고 WritingCanvas의 semantics click과 상태 설명만 실제 Activity에서 검증하는 Compose UI instrumentation 하나를 추가한다. TalkBack 좌표 gesture나 움직임 줄이기는 이번 반복에서 다루지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오. 자산 필요 판정: 불필요 — semantics callback 계측은 접근성 입력 검증이며 bitmap은 callback의 동등성이나 획별 상태를 입증하지 못한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 204 반복 5 결과 최신 위치 정정
+
+- 기록 위치 정정: 반복 5 결과가 동일한 과거 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 그 기록을 수정·삭제하지 않고 해당 `루프 204 반복 5 결과 — semantics click 획별 전이 채택` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 판정: on-device Compose UI instrumentation 1/1과 전체 unit·lint·debug build·diff·시각 계약이 통과했고, 표준 semantics click이 `0/3 → 1/3 → 2/3 → 완성`을 만들어 가설을 채택했다. cold boot 후 uptime `8.45`초·물리 1080 × 2340·회전 1·LimDo focus·2340 × 1080을 확인했고 APK SHA-256은 `dfdfc3d9033b0e35eda4ed2bdffdf5e6010590a5f9db8b5f75b7e8d10bc8e9d3`다.
+- 종료: TalkBack·Canvas 입력 충돌 P2는 해소했지만 움직임 줄이기 조건 5와 최종 역할 QA가 남아 루프 204를 진행 중으로 유지한다. 완료 커밋·push는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-29 루프 204 반복 6 가설 — 움직임 줄이기에서 성공 의미와 수동 조작 보존
+
+- 가장 중요한 미충족 조건: 반복 1~5는 큰 글자와 TalkBack 위험을 검증했지만 Android `animator_duration_scale=0`에서 성공 표시가 실제 최소 시간 보이고 자동 다음·홈·다시쓰기·이전·다음의 상태 의미가 유지되는 새 근거가 없다.
+- 반증 가능한 가설: animator scale을 0으로 고정해도 production의 wall-clock 최소 성공 노출 지연이 animation 완료와 분리되어, 성공 직후에는 현재 lesson과 정답 표식이 보이고 고정 시간 이후에만 다음 lesson으로 이동하며 그 전의 수동 조작은 예약을 취소할 것이다.
+- 반증 기준: scale 0에서 성공 화면을 새 PNG·hierarchy로 수집하기 전에 다음 lesson으로 이동하거나, 최소 지연 전·후 상태가 구분되지 않거나, 지연 중 수동 조작이 자동 이동과 중복되거나, 글자 길·네 그림 조작·판정·자형 회귀 중 하나라도 확인되면 가설을 기각한다.
+- 합리적인 최소 변경: 먼저 기존 production 코드와 자동 계약을 확인하고, 결함이 재현될 때만 성공 노출·수동 취소 경로 하나를 최소 수정한다. 기존 계약이 충족되면 제품 코드를 바꾸지 않고 새 on-device·화면 근거로 비회귀를 고정한다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오. 자산 필요 판정: 불필요 — 움직임 줄이기는 시간·상태 전이 계약이며 새 bitmap은 자동 이동이나 수동 취소를 보장하지 못한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 204 반복 6 결과 — scale 0 최소 성공 노출 계약 채택
+
+- 최소 변경: production의 `minimumSuccessVisibility` wall-clock `delay(1_200)`가 animation 완료와 이미 분리되어 있어 화면·geometry·자산을 바꾸지 않았다. 대신 실제 `MainActivity`에서 `animator_duration_scale=0`을 설정하고 Canvas 표준 semantics click으로 ㄱ을 완성한 뒤 최소 성공 노출 시간 이후에만 ㄴ으로 이동하는 `ReducedMotionSuccessTest`를 추가했다.
+- 실패·교정 기록: `connectedDebugAndroidTest --tests`는 Android connected task에서 지원되지 않아 전체 2개 instrumentation으로 전환했다. 초기 matcher의 NFC/NFD 문자열 불일치와 Compose idling이 animation/delay를 자동 진행하는 특성으로 중간 상태 assertion이 실패했고, 관찰 목표를 시스템 animator scale 0에서 성공 callback 시점과 다음 lesson 노출 시점 사이의 Compose 테스트 시계 1,200ms 이상으로 정확히 조정했다.
+- on-device 검증: cold boot 후 uptime `8.75`초, 물리 1080 × 2340, `user_rotation=1`, LimDo 2340 × 1080·focus에서 `./gradlew :app:connectedDebugAndroidTest`의 2/2가 통과했다. 새 검사는 scale 0을 직접 설정·복원하고 ㄱ 완성 callback부터 ㄴ `0/1획 완료` 노출까지 테스트 시계가 `SuccessCelebrationSpec.DURATION_MS=1_200` 이상 진행했음을 고정했다. 반복 5의 semantics click 획별 전이 검사도 함께 통과했다.
+- 화면·hierarchy 근거: `captures/loop204/iteration6/emulator/home.png`과 `writing.png`는 정확한 2340 × 1080, LimDo focus, animator scale 0의 새 화면이다. `writing.xml`의 WritingCanvas는 `[189,63][2151,1017]`=1962 × 954 px, 홈·지우기·이전·다음은 각각 168 × 168 px이며 원본 크기 직접 판정에서 글자 길·시작점·현재 획·네 조작의 잘림·겹침·가림은 0건이다.
+- 자동 회귀: `./scripts/verify.sh`의 unit·lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`가 통과했다. 기존 `GuardianVoiceRecordingTest`의 네 수동 조작 재생·예약 취소 계약과 판정 corridor·획순·방향·자형은 변경 없이 통과했다.
+- 이전 비교·가설 판정: 반복 5까지 미검증이던 움직임 줄이기 최소 성공 노출과 자동 다음 상태 전이가 on-device 계약으로 고정됐으므로 가설을 `채택`한다. 자동 QA·에뮬레이터·아이 대리 QA의 현재 근거 범위에서 새 P0·P1·진행 방해 P2는 0건이다. 실제 아이 관찰: 실행 안 함.
+- 완료 금지·다음 작업: 루프 204의 개별 접근성 조건은 통과했지만 전체 성공 조건 2~7을 한 APK에서 합쳐 판정하는 최종 자동 QA·에뮬레이터·아이 대리 QA가 남았다. 완료 커밋·push·다음 루프 전환은 실행하지 않는다.
+
+### 2026-08-29 루프 204 반복 7 결과 — 접근성 통합 회귀 통과·루프 완료
+
+- 최소 변경: 반복 3~6의 production semantics·상태 설명과 on-device 검사를 더 넓히지 않고 동일 최종 APK의 접근성 통합 회귀를 새로 판정했다. 이번 반복은 제품 코드·geometry·자산을 바꾸지 않았다.
+- 자동 검증: `./scripts/check-automation.sh`, `./scripts/verify.sh`의 unit·Android lint·debug build, `git diff --check`, `./scripts/check-visual-loop.sh`가 모두 통과했다. cold boot한 `alarmquest-qa`에서 `./gradlew :app:connectedDebugAndroidTest` 2/2도 통과했으며 표준 semantics click의 `0/3 → 1/3 → 2/3 → 완성`과 animator scale 0의 최소 1,200ms 성공 노출을 함께 고정했다.
+- 에뮬레이터 관문: 시작 시 serial이 없어 새 AVD를 `-no-snapshot-load -no-snapshot-save -no-boot-anim -gpu host`로 cold boot했다. 재개 uptime `8.78`초, AVD `alarmquest-qa`, 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, `com.limdo.hangul/.MainActivity` focus를 확인했다. 최종 APK SHA-256은 `dfdfc3d9033b0e35eda4ed2bdffdf5e6010590a5f9db8b5f75b7e8d10bc8e9d3`다.
+- TalkBack 통합 근거: `captures/loop204/iteration7/emulator/talkback-home.xml`은 `자음 → 모음 → 가나다 → 보호자 메뉴`, `talkback-selection.xml`은 `홈 → ㄱ…ㅎ`, `writing-font2-scale0-talkback.xml`은 `Canvas → 홈 → 지우기 → 이전 → 다음` 노드를 누락 없이 노출한다. TalkBack bound·enabled service를 확인했고 Canvas는 `clickable=true`, `0/1획 완료`, `[189,63][2151,1017]`=1962 × 954 px, 네 조작은 각각 168 × 168 px다.
+- 새 화면 직접 판정: `home.png`, `consonant-selection.png`, `writing-font2-scale0-talkback.png`는 모두 정확한 2340 × 1080이다. 원본 크기로 확인했으며 홈 세 카드, 14개 선택, 큰 `ㄱ` 길·초록 시작점·현재 획 점선·동적 표식·네 그림 조작의 잘림·겹침·가림은 0건이다. 큰 글자와 scale 0에서도 과제와 조작의 의미가 보존됐다.
+- 설정 복원: 검증 뒤 TalkBack을 비활성화하고 `font_scale=1.0`, `animator_duration_scale=1`로 복원했다. 일반 손가락 입력·corridor·획순·방향·자형·성공·다음은 전체 unit 회귀와 기존 production callback 계약에서 통과했고 이번 반복에서 관련 코드는 바뀌지 않았다.
+- 이전 비교·가설 판정: 반복 1~6의 분리 근거를 동일 APK에서 합쳤으며 성공 조건 1~7과 자동 QA·에뮬레이터·아이 대리 QA가 모두 통과했다. 새 P0·P1·진행 방해 P2는 0건이므로 가설을 `채택`하고 루프 204를 완료한다. 자동 그래픽 디자인 변경 관문은 시각 변경이 없어 대상이 아니다. 실제 아이 관찰: 실행 안 함.
+- 완료·전환: `QA-161`에서 새 접근성 불편은 없었다. `docs/2차-목표-제품-기획서.md` M4의 다음 미구현 제품 작업인 자음+모음 조립의 첫 좁은 묶음을 루프 205로 준비하며 이 작업자는 구현하지 않는다.
+
+### 2026-08-29 루프 204 반복 7 가설 — 동일 최종 APK 접근성 통합 회귀
+
+- 가장 중요한 미충족 조건: 반복 1~6은 큰 글자, TalkBack 탐색·Canvas 표준 semantics click, 움직임 줄이기를 각각 통과했지만 동일 최종 APK에서 홈·세 메뉴·글자 선택·Canvas·네 그림 조작의 탐색 순서와 일반 입력·판정 회귀를 합쳐 판정한 최종 역할 QA가 없다.
+- 반증 가능한 가설: 현재 미커밋 후보를 그대로 빌드한 동일 APK에서 전체 unit·lint·build와 2개 on-device instrumentation이 통과하고, TalkBack hierarchy의 홈·세 메뉴·글자 선택·Canvas·네 조작 노드가 사라지지 않으며, 큰 글자와 animator scale 0에서도 WritingCanvas 1962 × 954 px·네 조작·일반 정방향 입력과 성공 전이가 유지될 것이다.
+- 반증 기준: 자동 검사 하나라도 실패하거나, TalkBack 탐색 대상·순서·표준 click 획 전이 중 하나가 누락되거나, 큰 글자·scale 0에서 WritingCanvas·네 조작의 bounds·잘림·겹침이 달라지거나, 일반 손가락 정방향 입력·획순·방향·corridor·자형·성공·다음 중 하나라도 회귀하거나 새 P0·P1·진행 방해 P2가 발견되면 가설을 기각한다.
+- 합리적인 최소 변경: production 코드와 자산을 더 바꾸지 않고 현재 후보의 자동 검사와 동일 APK 에뮬레이터 통합 근거를 새로 수집한다. 결함이 재현될 때만 그 원인 하나를 후속 반복 대상으로 남기며 이번 반복에서는 여러 제품 변경을 묶지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오. 자산 필요 판정: 불필요 — 이번 반복은 기존 semantics·layout·animation·판정의 통합 회귀 판정이며 새 bitmap은 접근성 callback이나 geometry 정확성을 높이지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.

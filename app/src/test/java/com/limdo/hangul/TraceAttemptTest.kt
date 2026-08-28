@@ -54,6 +54,26 @@ class TraceAttemptTest {
         assertEquals(3, completed.completedStrokes.size)
     }
 
+    @Test
+    fun accessibilityActionAdvancesExactlyOneProductionStroke() {
+        val advanced = TraceAttempt().followCurrentGuide(width, height, GaLesson)
+
+        assertNull(advanced.result)
+        assertEquals(1, advanced.completedStrokes.size)
+        assertEquals(guide.first(), advanced.completedStrokes.single().points)
+    }
+
+    @Test
+    fun accessibilityActionCompletesInProductionStrokeOrderAndStops() {
+        val completed = generateSequence(TraceAttempt()) {
+            it.followCurrentGuide(width, height, GaLesson)
+        }.drop(3).first()
+
+        assertEquals(GieokTraceResult.SUCCESS, completed.result)
+        assertEquals(guide, completed.completedStrokes.map(StrokePath::points))
+        assertEquals(completed, completed.followCurrentGuide(width, height, GaLesson))
+    }
+
     private fun finishAllStrokes(): TraceAttempt = guide.fold(TraceAttempt()) { attempt, points ->
         val drawing = points.drop(1).fold(
             attempt.start(points.first(), width, height, safeInset),

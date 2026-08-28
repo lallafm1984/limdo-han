@@ -46,5 +46,18 @@ internal data class TraceAttempt(
         }
     }
 
+    fun followCurrentGuide(
+        width: Float,
+        height: Float,
+        lesson: LessonSpec,
+    ): TraceAttempt {
+        if (result == GieokTraceResult.SUCCESS) return this
+        val guide = WritingCanvasGeometry.glyph(lesson, width, height)
+            .strokes
+            .getOrNull(completedStrokes.size)
+            ?: return this
+        return copy(stroke = StrokePath(guide)).finish(width, height, lesson)
+    }
+
     fun clear(): TraceAttempt = TraceAttempt()
 }
