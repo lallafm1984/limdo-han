@@ -918,14 +918,24 @@ class KoreanCurriculumTest {
         val lesson = KoreanCurriculum.lessons.single { it.id == LessonId.KA }
         val geometry = WritingCanvasGeometry.glyph(lesson, width, height)
         val firstStroke = geometry.strokes.first()
+        val middleHorizontal = geometry.strokes[1]
         val corner = firstStroke[1]
         val descent = firstStroke.drop(1)
+        val crossingSegment = descent.zipWithNext().single { (start, end) ->
+            middleHorizontal.last().y in start.y..end.y
+        }
+        val crossingFraction =
+            (middleHorizontal.last().y - crossingSegment.first.y) /
+                (crossingSegment.second.y - crossingSegment.first.y)
+        val curveXAtMiddleHorizontal = crossingSegment.first.x +
+            (crossingSegment.second.x - crossingSegment.first.x) * crossingFraction
 
         assertEquals(14, firstStroke.size)
         assertEquals(firstStroke.first().y, corner.y, 0.001f)
         assertTrue(firstStroke.last().x < corner.x)
         assertTrue(firstStroke.last().y > corner.y)
         assertTrue(descent.zipWithNext().all { (start, end) -> end.x <= start.x && end.y > start.y })
+        assertEquals(curveXAtMiddleHorizontal, middleHorizontal.last().x, 1f)
         assertEquals(
             GieokTraceResult.SUCCESS,
             LessonTraceEvaluator.evaluateStroke(lesson, width, height, 0, StrokePath(firstStroke)),
@@ -933,6 +943,20 @@ class KoreanCurriculumTest {
         assertNotEquals(
             GieokTraceResult.SUCCESS,
             LessonTraceEvaluator.evaluateStroke(lesson, width, height, 0, StrokePath(firstStroke.reversed())),
+        )
+        assertNotEquals(
+            GieokTraceResult.SUCCESS,
+            LessonTraceEvaluator.evaluateStroke(lesson, width, height, 0, StrokePath(middleHorizontal)),
+        )
+        assertNotEquals(
+            GieokTraceResult.SUCCESS,
+            LessonTraceEvaluator.evaluateStroke(
+                lesson,
+                width,
+                height,
+                0,
+                StrokePath(firstStroke.map { point -> point.copy(x = point.x + geometry.strokeWidth * 2f) }),
+            ),
         )
     }
 

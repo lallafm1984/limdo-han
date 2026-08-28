@@ -458,7 +458,7 @@ internal object WritingCanvasGeometry {
 
     private val kaTemplate = listOf(
         kaCurvedKieuk,
-        listOf(CanvasPoint(0.05f, 0.50f), CanvasPoint(0.49f, 0.50f)),
+        listOf(CanvasPoint(0.05f, 0.50f), CanvasPoint(0.404f, 0.50f)),
         listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )

@@ -1,16 +1,16 @@
 # 현재 시각 루프 증거
 
-루프: 190
+루프: 191
 상태: 완료
 
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop189/iteration1/before/ha-initial.png
-변경 전 hierarchy: captures/loop189/iteration1/before/ha-initial.xml
-변경 후 PNG: captures/loop189/iteration2/after/ha-initial.png
-변경 후 hierarchy: captures/loop189/iteration2/after/ha-initial.xml
+변경 전 PNG: captures/loop191/iteration1/before/ka-initial.png
+변경 전 hierarchy: captures/loop191/iteration1/before/ka-initial.xml
+변경 후 PNG: captures/loop191/iteration1/after/ka-initial.png
+변경 후 hierarchy: captures/loop191/iteration1/after/ka-initial.xml
 package: com.limdo.hangul
 focus: 통과
-APK SHA-256: b5d34fbcbabcba4f46fa8ed3ee0c71972666fcee086ba6adcd9f9d72fff42e8c
+APK SHA-256: 1e40046cac391c4e4215c004953e313ae84273055e8035615a03056474a6e5f2
 production 자산 경로: 새 bitmap 없음 — WritingCanvasGeometry.kt production Canvas geometry 사용
 production 소비 검사: 통과
 자산 자동 검사: 불필요
@@ -22,6 +22,12 @@ production 소비 검사: 통과
 진행 방해 P2: 0
 
 ## 판정 근거
+
+- `alarmquest-qa` 물리 1080 × 2340, `user_rotation=1`, 앱 2340 × 1080, `com.limdo.hangul/.MainActivity` focus에서 동일한 `카` 초기 상태를 변경 전·후로 비교했다.
+- 변경 전의 가운데 가로획 끝은 곡선 중심축 오른쪽에 독립된 막대처럼 보였다. 변경 후는 y=0.50의 곡선 교차점과 1 px 이내로 일치하여 두 획이 하나의 `ㅋ`로 자연스럽게 읽힌다.
+- production 4획을 정방향으로 입력해 `ka-after-stroke1.png`, `ka-after-middle-horizontal.png`, `ka-after-stroke3.png`, `ka-success.png`으로 순서 수락과 성공 전환을 확인했다. 표시·점선·동적 표식·입력 판정은 같은 geometry를 사용한다.
+- WritingCanvas는 1962 × 954 px, 네 조작은 각각 168 × 168 px이며 갈고리·S자·잘림·흐림·조작 가림은 0건이다. `가`·중성 `ㅏ`·대표 다른 글자는 전체 자동 검사로 회귀가 없음을 확인했다.
+- 자동 그래픽 디자인·자동 QA·아이 대리 QA는 모두 통과했고 새 P0·P1·진행 방해 P2는 0건이다. 실제 아이 관찰: 실행 안 함.
 
 - 실제 `SM_S931N`은 물리 1080 × 2340, `user_rotation=1`이며 모든 PNG는 앱 영역 2340 × 1080, 전면 focus는 `com.limdo.hangul/.MainActivity`였다.
 - `카`는 변경 전 수직 하강에서 변경 후 아래로 갈수록 왼쪽으로 완만하게 휘는 초성으로 바뀌었고, production 정방향 4획이 순서대로 수락되어 `captures/loop189/iteration2/after/ka-after-stroke1.png`부터 `ka-success.png`까지 이어졌다.
