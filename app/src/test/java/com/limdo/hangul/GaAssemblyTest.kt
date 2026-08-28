@@ -17,7 +17,7 @@ class GaAssemblyTest {
         assertTrue(afterGieok.place(GaAssemblyPiece.VOWEL).complete)
     }
 
-    @Test fun targetsKeepGaThroughGiAndNaAsDistinctProductionLessons() {
+    @Test fun targetsKeepGaThroughGiAndNaNeoAsDistinctProductionLessons() {
         assertTrue(GaAssemblyTarget.GA.lessonId == LessonId.GA)
         assertTrue(GaAssemblyTarget.GEO.lessonId == LessonId.GEO)
         assertTrue(GaAssemblyTarget.GYEO.lessonId == LessonId.GYEO)
@@ -28,7 +28,8 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.GEU.lessonId == LessonId.GEU)
         assertTrue(GaAssemblyTarget.GI.lessonId == LessonId.GI)
         assertTrue(GaAssemblyTarget.NA.lessonId == LessonId.NA)
-        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나"))
+        assertTrue(GaAssemblyTarget.NEO.lessonId == LessonId.NEO)
+        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너"))
         assertFalse(GaAssemblyTarget.GA.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GYO.isHorizontalVowel)
@@ -37,8 +38,23 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.GEU.isHorizontalVowel)
         assertFalse(GaAssemblyTarget.GI.isHorizontalVowel)
         assertFalse(GaAssemblyTarget.NA.isHorizontalVowel)
+        assertFalse(GaAssemblyTarget.NEO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NA.initialName == "니은")
         assertTrue(GaAssemblyTarget.NA.initialStrokeCount == 1)
+        assertTrue(GaAssemblyTarget.NEO.initialName == "니은")
+        assertTrue(GaAssemblyTarget.NEO.initialStrokeCount == 1)
+    }
+
+    @Test fun neoUsesTheProductionNieunAndLeftwardEoStrokes() {
+        val neo = KoreanCurriculum.lessons.single { it.id == LessonId.NEO }
+        val geometry = WritingCanvasGeometry.glyph(neo, 1962f, 954f)
+
+        assertTrue(neo.strokeCount == 3)
+        assertTrue(neo.strokeDirections.drop(1) == listOf(StrokeDirection.DOWN, StrokeDirection.LEFT))
+        assertTrue(geometry.strokes.take(GaAssemblyTarget.NEO.initialStrokeCount).size == 1)
+        assertTrue(geometry.strokes.drop(GaAssemblyTarget.NEO.initialStrokeCount).size == 2)
+        assertTrue(geometry.strokes.first().maxOf { it.x } < geometry.strokes.drop(1).flatten().maxOf { it.x })
+        assertTrue(geometry.strokes.last().first().x > geometry.strokes.last().last().x)
     }
 
     @Test fun naUsesOneInitialStrokeAndTwoAStrokesFromProductionGeometry() {

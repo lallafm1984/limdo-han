@@ -58,6 +58,8 @@ internal enum class SpokenCue(val utterance: String) {
     SUCCESS("잘했어! 가를 완성했어."),
     INITIAL_NA("아래쪽, 모서리에서 오른쪽으로 그려봐. 다음은 아래쪽으로 그려봐. 마지막은 오른쪽으로 그려봐."),
     SUCCESS_NA("잘했어! 나를 완성했어."),
+    INITIAL_NEO("아래쪽, 모서리에서 오른쪽으로 그려봐. 다음은 아래쪽으로 그려봐. 마지막은 왼쪽으로 그려봐."),
+    SUCCESS_NEO("잘했어! 너를 완성했어."),
     INITIAL_DA("오른쪽으로 그려봐. 다음은 아래쪽, 오른쪽. 다음은 아래쪽. 마지막은 오른쪽."),
     SUCCESS_DA("잘했어! 다를 완성했어."),
     INITIAL_GYA("기역 오른쪽 아래. 세로 아래. 위 선 오른쪽. 아래 선 오른쪽."),
