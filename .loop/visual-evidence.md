@@ -86,6 +86,18 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 왼쪽 `ㄱ`·오른쪽 단일 세로획, 완성 글자, 큰 체크와 기쁜 캐릭터, 네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
 
+## 루프 233 반복 1 최종 근거
+
+- 변경 전: `captures/loop232/iteration1/after/loop232-iteration1-target-selection.png`와 hierarchy. 변경 후: `captures/loop233/iteration1/after/`의 선택·시작·오순서·완성·쓰기·성공·다음 PNG와 각 hierarchy·focus.
+- 환경: 기존 serial이 없어 `alarmquest-qa`를 snapshot 없이 cold boot, uptime `9.87`초에서 시작해 최종 수집 `100.06`초, 물리 1080 × 2340, `user_rotation=1`, 모든 PNG 2340 × 1080, 모든 focus `com.limdo.hangul/.MainActivity`.
+- APK SHA-256: `973559e0283c53679b8f66069dcbf1259d266aa9ded75f7873464b2adf11480d`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 실측: 기존 조립 조각 341 × 368 px, 좌·우 칸 284 × 284 px, WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 네 조작 각 168 × 168 px를 유지했다.
+- 자산 필요 판정: 불필요 — production `RA`·`DEO` geometry와 기존 조립 token·정답·조작 atlas를 재사용했고 새 raster는 0건이다. 기존 atlas의 APK production 소비를 성공 PNG·semantics로 재확인했다.
+- 자동 그래픽 디자인 역할: 통과 — `라`의 오른쪽 짧은 획과 `러`의 왼쪽 짧은 획이 선택·조립·쓰기에서 분명하고, 조립 카드·완성 글자·쓰기 길·성공 overlay의 잘림·왜곡·halo·검은 배경은 0건이다.
+- 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`ReoAssemblyFlowTest` 1/1, 오순서 거부·정방향 5획·성공·다음·홈을 통과했다.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 `ㄹ·ㅓ` 조각, 좌·우 빈칸, 주황 재안내, 완성 카드, 큰 쓰기판, 정답 체크와 네 그림 조작의 semantics를 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+
 ## 루프 232 반복 1 최종 근거
 
 - 변경 전: `captures/loop231/iteration1/after/loop231-iteration1-target-selection.png`. 변경 후: `captures/loop232/iteration1/after/`의 `라` 선택·시작·오순서·완성·쓰기·성공·다음 PNG·hierarchy·focus.

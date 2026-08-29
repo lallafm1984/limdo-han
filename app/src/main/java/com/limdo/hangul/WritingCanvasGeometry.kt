@@ -546,6 +546,11 @@ internal object WritingCanvasGeometry {
         listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.94f, 0.50f)),
     )
 
+    private val reoTemplate = rieulTemplate(left = 0.05f, right = 0.48f) + listOf(
+        listOf(CanvasPoint(0.72f, 0.08f), CanvasPoint(0.72f, 0.92f)),
+        listOf(CanvasPoint(0.72f, 0.50f), CanvasPoint(0.52f, 0.50f)),
+    )
+
     private val maTemplate = listOf(
         listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.05f, 0.88f)),
         listOf(CanvasPoint(0.05f, 0.12f), CanvasPoint(0.48f, 0.12f), CanvasPoint(0.48f, 0.88f)),
@@ -1045,6 +1050,7 @@ internal object WritingCanvasGeometry {
         LessonId.GEU -> geuTemplate
         LessonId.GI -> giTemplate
         LessonId.RA -> raTemplate
+        LessonId.REO -> reoTemplate
         LessonId.MA -> maTemplate
         LessonId.BA -> baTemplate
         LessonId.SA -> saTemplate
