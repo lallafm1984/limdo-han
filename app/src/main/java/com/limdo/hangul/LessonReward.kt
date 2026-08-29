@@ -14,7 +14,7 @@ internal enum class LessonId {
     GIEOK, NIEUN, DIGEUT, RIEUL, MIEUM, BIEUP, SIOT, IEUNG, JIEUT, CHIEUT, KIEUK, TIEUT,
     PIEUP, HIEUH,
     A, AE, YA, EO, YEO, O, YO, U, YU, EU, I, GA, NA, DA, RA, MA, BA, SA, AH, JA, CHA, KA, TA,
-    PA, HA, GYA, GEO, GYEO, GO, GYO, GU, GYU, GEU, GI, NEO, NYEO, NO, NYO, NU, NYU, NEU, NI, GAK, GAN, GAT, GAL, GAM, GAP,
+    PA, HA, GYA, GEO, GYEO, GO, GYO, GU, GYU, GEU, GI, NEO, NYEO, NO, NYO, NU, NYU, NEU, NI, DEO, GAK, GAN, GAT, GAL, GAM, GAP,
 }
 
 internal enum class StrokeDirection { RIGHT, LEFT, UP, DOWN }
@@ -374,6 +374,20 @@ internal object KoreanCurriculum {
                 StrokeDirection.DOWN,
                 StrokeDirection.DOWN,
                 StrokeDirection.RIGHT,
+            ),
+        ),
+        LessonSpec(
+            id = LessonId.DEO,
+            stage = CurriculumStage.SYLLABLE_STRUCTURE,
+            glyph = "더",
+            strokeCount = 4,
+            initialCue = SpokenCue.INITIAL_DEO,
+            successCue = SpokenCue.SUCCESS_DEO,
+            strokeDirections = listOf(
+                StrokeDirection.RIGHT,
+                StrokeDirection.DOWN,
+                StrokeDirection.DOWN,
+                StrokeDirection.LEFT,
             ),
         ),
         LessonSpec(LessonId.GYA, CurriculumStage.OPEN_SYLLABLES, "갸", 4, SpokenCue.INITIAL_GYA, SpokenCue.SUCCESS_GYA,

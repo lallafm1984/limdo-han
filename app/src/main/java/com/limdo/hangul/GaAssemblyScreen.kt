@@ -167,6 +167,7 @@ private fun GaAssemblyTarget.vowelName(): String = when (this) {
     GaAssemblyTarget.NEU -> "으"
     GaAssemblyTarget.NI -> "이"
     GaAssemblyTarget.DA -> "아"
+    GaAssemblyTarget.DEO -> "어"
 }
 
 @Composable

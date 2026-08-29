@@ -1,0 +1,30 @@
+Printing with useUnmergedTree = 'true'
+Node #1 at (l=0.0, t=0.0, r=2340.0, b=1080.0)px
+ |-Node #2 at (l=0.0, t=0.0, r=2340.0, b=1080.0)px
+   IsTraversalGroup = 'true'
+    |-Node #139 at (l=189.0, t=63.0, r=2151.0, b=1017.0)px
+    | IsTraversalGroup = 'true'
+    |  |-Node #140 at (l=189.0, t=63.0, r=2151.0, b=1017.0)px
+    |    ContentDescription = '[큰 쓰기판. 초록 점에서 시작해 더를 4획으로 그려요. 0/4획 완료]'
+    |    StateDescription = '아직 그린 선이 없어요'
+    |    Actions = [OnClick]
+    |-Node #143 at (l=11.0, t=356.0, r=179.0, b=524.0)px
+    | Focused = 'false'
+    | ContentDescription = '[홈으로 돌아가기]'
+    | Actions = [OnClick, RequestFocus]
+    | MergeDescendants = 'true'
+    |-Node #145 at (l=11.0, t=556.0, r=179.0, b=724.0)px
+    | Focused = 'false'
+    | ContentDescription = '[현재 글자 다시 쓰기]'
+    | Actions = [OnClick, RequestFocus]
+    | MergeDescendants = 'true'
+    |-Node #148 at (l=2161.0, t=356.0, r=2329.0, b=524.0)px
+    | Focused = 'false'
+    | ContentDescription = '[이전 글자로 이동]'
+    | Actions = [OnClick, RequestFocus]
+    | MergeDescendants = 'true'
+    |-Node #150 at (l=2161.0, t=556.0, r=2329.0, b=724.0)px
+      Focused = 'false'
+      ContentDescription = '[다음 글자로 이동]'
+      Actions = [OnClick, RequestFocus]
+      MergeDescendants = 'true'
