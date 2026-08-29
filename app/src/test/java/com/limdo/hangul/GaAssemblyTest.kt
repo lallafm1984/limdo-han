@@ -39,7 +39,8 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.DA.lessonId == LessonId.DA)
         assertTrue(GaAssemblyTarget.DEO.lessonId == LessonId.DEO)
         assertTrue(GaAssemblyTarget.DYEO.lessonId == LessonId.DYEO)
-        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140", "노", "뇨", "누", "뉴", "느", "니", "다", "더", "뎌"))
+        assertTrue(GaAssemblyTarget.DO.lessonId == LessonId.DO)
+        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140", "노", "뇨", "누", "뉴", "느", "니", "다", "더", "뎌", "도"))
         assertFalse(GaAssemblyTarget.GA.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GYO.isHorizontalVowel)
@@ -59,6 +60,7 @@ class GaAssemblyTest {
         assertFalse(GaAssemblyTarget.DA.isHorizontalVowel)
         assertFalse(GaAssemblyTarget.DEO.isHorizontalVowel)
         assertFalse(GaAssemblyTarget.DYEO.isHorizontalVowel)
+        assertTrue(GaAssemblyTarget.DO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NA.initialName == "니은")
         assertTrue(GaAssemblyTarget.NA.initialStrokeCount == 1)
         assertTrue(GaAssemblyTarget.NEO.initialName == "니은")
@@ -83,6 +85,24 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.DEO.initialStrokeCount == 2)
         assertTrue(GaAssemblyTarget.DYEO.initialName == "디귿")
         assertTrue(GaAssemblyTarget.DYEO.initialStrokeCount == 2)
+        assertTrue(GaAssemblyTarget.DO.initialName == "디귿")
+        assertTrue(GaAssemblyTarget.DO.initialStrokeCount == 2)
+    }
+
+    @Test fun doUsesTheProductionDigeutAndUpwardOStrokeBelowIt() {
+        val doLesson = KoreanCurriculum.lessons.single { it.id == LessonId.DO }
+        val geometry = WritingCanvasGeometry.glyph(doLesson, 1962f, 954f)
+
+        assertTrue(doLesson.strokeCount == 4)
+        assertTrue(doLesson.strokeDirections == listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.RIGHT, StrokeDirection.UP))
+        assertTrue(geometry.strokes.take(GaAssemblyTarget.DO.initialStrokeCount).size == 2)
+        assertTrue(geometry.strokes.drop(GaAssemblyTarget.DO.initialStrokeCount).size == 2)
+        val initial = geometry.strokes.take(2).flatten()
+        val vowel = geometry.strokes.drop(2)
+        assertTrue(initial.maxOf { it.y } < vowel.flatten().maxOf { it.y })
+        assertTrue(vowel.first().first().y == vowel.first().last().y)
+        assertTrue(vowel.first().first().x < vowel.first().last().x)
+        assertTrue(vowel.last().first().y > vowel.last().last().y)
     }
 
     @Test fun dyeoUsesTheProductionDigeutAndTwoLeftwardYeoStrokesToItsRight() {

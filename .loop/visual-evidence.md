@@ -85,6 +85,18 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 자동 QA 역할: 통과 — `verify.sh`·diff·시각 계약·`GiAssemblyFlowTest` 1/1, 2획 성공·`RA` 다음·홈, WritingCanvas 1962 × 954 px와 네 168 × 168 px 조작을 통과했다.
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 왼쪽 `ㄱ`·오른쪽 단일 세로획, 완성 글자, 큰 체크와 기쁜 캐릭터, 네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+
+## 루프 226 반복 1 최종 근거
+
+- 변경 전: `captures/loop225/iteration1/after/target-selection.png`와 hierarchy. 변경 후: `captures/loop226/iteration1/after/`의 선택·시작·오순서·완성·쓰기·성공·다음 PNG와 각 hierarchy·focus.
+- 환경: serial이 없어 `alarmquest-qa`를 snapshot 없이 cold boot했고 uptime `9.77`초에서 시작해 최종 수집 `112.21`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, 일곱 상태의 `mCurrentFocus`·`mFocusedApp` 모두 `com.limdo.hangul/.MainActivity`.
+- APK SHA-256: `59df617d509357516e0504ea806e9fbeff6e1cc308389b7417c99f7a495774ec`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 실측: 선택 카드 22개는 8열×3행이며 `도` 카드 `[1502,661][1702,861]`=200 × 200 px, 조립 조각 341 × 368 px, 위·아래 칸 284 × 284 px, WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 네 조작 각 168 × 168 px다.
+- 자산 필요 판정: 불필요 — production `DO` geometry와 기존 조립 token·정답·조작 atlas를 재사용했고 새 raster는 0건이다. 기존 atlas의 APK production 소비는 성공 PNG·semantics로 재확인했다.
+- 자동 그래픽 디자인 역할: 통과 — 첫 7열×4행 후보에서 마지막 `도` 카드가 144 px 높이로 압축된 진행 방해 P2를 8열×3행으로 교정했다. 최종 화면에서 `뎌`의 오른쪽 세로 모음과 `도`의 아래 가로 모음, 조립·쓰기·성공의 `ㄷ·ㅗ`가 분명하고 잘림·겹침·왜곡·가림·halo·검은 배경은 0건이다.
+- 자동 QA 역할: 통과 — `verify.sh`의 159개 unit·lint·debug build, `git diff --check`, `DoAssemblyFlowTest` 1/1, 오순서 거부·정방향 4획·성공·다음·홈을 통과했다.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 `ㄷ·ㅗ` 조각, 위·아래 빈칸, 오순서 재강조, 완성 카드, 큰 쓰기판, 초록 시작점·점선, 정답 체크와 네 그림 조작을 순서대로 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
 ## 루프 223 반복 1 최종 근거
 
 - 변경 전: `captures/loop223/iteration1/before/target-selection.png`와 hierarchy. 변경 후: `captures/loop223/iteration1/after/`의 선택·시작·오순서·완성·쓰기·성공·다음 PNG와 각 hierarchy·focus.

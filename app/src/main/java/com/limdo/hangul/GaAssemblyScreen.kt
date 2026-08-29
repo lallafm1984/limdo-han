@@ -44,18 +44,18 @@ internal fun GaAssemblyScreen(onHome: () -> Unit, onWrite: (LessonId) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             HomeAction(onClick = onHome, modifier = Modifier.size(64.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                GaAssemblyTarget.entries.toList().chunked(7).forEach { choices ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                GaAssemblyTarget.entries.toList().chunked(8).forEach { choices ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         choices.forEach { choice ->
                             Surface(
                                 onClick = { target = choice; state = GaAssemblyState() },
                                 shape = RoundedCornerShape(36.dp),
                                 color = Color.White,
-                                modifier = Modifier.size(96.dp).semantics {
+                                modifier = Modifier.size(76.dp).semantics {
                                     contentDescription = "${choice.glyph} 조립 선택"
                                 },
-                            ) { GaGeometry(choice, piece = null, active = true, modifier = Modifier.padding(22.dp)) }
+                            ) { GaGeometry(choice, piece = null, active = true, modifier = Modifier.padding(16.dp)) }
                         }
                     }
                 }
@@ -169,6 +169,7 @@ private fun GaAssemblyTarget.vowelName(): String = when (this) {
     GaAssemblyTarget.DA -> "아"
     GaAssemblyTarget.DEO -> "어"
     GaAssemblyTarget.DYEO -> "여"
+    GaAssemblyTarget.DO -> "오"
 }
 
 @Composable
