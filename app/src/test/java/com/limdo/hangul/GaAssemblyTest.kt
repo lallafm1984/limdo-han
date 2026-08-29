@@ -42,8 +42,9 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.DO.lessonId == LessonId.DO)
         assertTrue(GaAssemblyTarget.DYO.lessonId == LessonId.DYO)
         assertTrue(GaAssemblyTarget.DU.lessonId == LessonId.DU)
-        assertTrue(GaAssemblyTarget.entries.last() == GaAssemblyTarget.DU)
-        assertTrue(GaAssemblyTarget.entries.size == 24)
+        assertTrue(GaAssemblyTarget.DYU.lessonId == LessonId.DYU)
+        assertTrue(GaAssemblyTarget.entries.last() == GaAssemblyTarget.DYU)
+        assertTrue(GaAssemblyTarget.entries.size == 25)
         /* 루프 226까지의 정확한 prefix oracle는 유지하고, 위의 새 마지막 target 계약으로 확장한다.
         assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140", "노", "뇨", "누", "뉴", "느", "니", "다", "더", "뎌", "도"))
         */
@@ -69,6 +70,7 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.DO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.DYO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.DU.isHorizontalVowel)
+        assertTrue(GaAssemblyTarget.DYU.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NA.initialName == "니은")
         assertTrue(GaAssemblyTarget.NA.initialStrokeCount == 1)
         assertTrue(GaAssemblyTarget.NEO.initialName == "니은")
@@ -98,6 +100,25 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.DYO.initialStrokeCount == 2)
         assertTrue(GaAssemblyTarget.DU.initialName == "디귿")
         assertTrue(GaAssemblyTarget.DU.initialStrokeCount == 2)
+        assertTrue(GaAssemblyTarget.DYU.initialStrokeCount == 2)
+        assertTrue(GaAssemblyTarget.DYU.initialName == "\uB514\uADFF")
+    }
+
+    @Test fun dyuUsesTheProductionDigeutAndTwoDownwardYuStrokesBelowIt() {
+        val dyu = KoreanCurriculum.lessons.single { it.id == LessonId.DYU }
+        val geometry = WritingCanvasGeometry.glyph(dyu, 1962f, 954f)
+
+        assertTrue(dyu.strokeCount == 5)
+        assertTrue(dyu.strokeDirections == listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.DOWN))
+        assertTrue(geometry.strokes.take(GaAssemblyTarget.DYU.initialStrokeCount).size == 2)
+        assertTrue(geometry.strokes.drop(GaAssemblyTarget.DYU.initialStrokeCount).size == 3)
+        val initial = geometry.strokes.take(2).flatten()
+        val vowel = geometry.strokes.drop(2)
+        assertTrue(initial.maxOf { it.y } < vowel.flatten().maxOf { it.y })
+        assertTrue(vowel.first().first().y == vowel.first().last().y)
+        assertTrue(vowel.first().first().x < vowel.first().last().x)
+        assertTrue(vowel.drop(1).all { it.first().y < it.last().y })
+        assertTrue(vowel[1].first().x < vowel[2].first().x)
     }
 
     @Test fun duUsesTheProductionDigeutAndDownwardUStrokeBelowIt() {

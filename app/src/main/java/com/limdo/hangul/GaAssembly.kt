@@ -30,6 +30,7 @@ internal enum class GaAssemblyTarget(
     DO(LessonId.DO, "도", initialName = "디귿", initialStrokeCount = 2),
     DYO(LessonId.DYO, "\uB434", initialName = "\uB514\uADE3", initialStrokeCount = 2),
     DU(LessonId.DU, "두", initialName = "디귿", initialStrokeCount = 2),
+    DYU(LessonId.DYU, "듀", initialName = "\uB514\uADFF", initialStrokeCount = 2),
 }
 
 internal val GaAssemblyTarget.isHorizontalVowel: Boolean
@@ -39,7 +40,7 @@ internal val GaAssemblyTarget.isHorizontalVowel: Boolean
         this == GaAssemblyTarget.NYO || this == GaAssemblyTarget.NU ||
         this == GaAssemblyTarget.NYU || this == GaAssemblyTarget.NEU ||
         this == GaAssemblyTarget.DO || this == GaAssemblyTarget.DYO ||
-        this == GaAssemblyTarget.DU
+        this == GaAssemblyTarget.DU || this == GaAssemblyTarget.DYU
 
 internal enum class GaAssemblyPiece { GIEOK, VOWEL }
 
