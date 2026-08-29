@@ -186,6 +186,7 @@ class KoreanCurriculumTest {
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.SYLLABLE_STRUCTURE,
+                CurriculumStage.SYLLABLE_STRUCTURE,
                 CurriculumStage.OPEN_SYLLABLES,
                 CurriculumStage.OPEN_SYLLABLES,
                 CurriculumStage.OPEN_SYLLABLES,
@@ -221,7 +222,8 @@ class KoreanCurriculumTest {
     fun firstCurriculumTeachesComponentsBeforeTheirCombinations() {
         val glyphs = KoreanCurriculum.lessons.map(LessonSpec::glyph)
         assertEquals("\uB434", glyphs[glyphs.indexOf("도") + 1])
-        assertEquals(66, glyphs.size)
+        assertEquals("두", glyphs[glyphs.indexOf("\uB434") + 1])
+        assertEquals(67, glyphs.size)
         /* 루프 226까지의 prefix oracle는 아래에 보존하고 위 확장 계약으로 새 항목을 고정한다.
         assertEquals(
             listOf("ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅏ", "ㅐ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "가", "나", "너", "\uB140", "노", "뇨", "누", "뉴", "느", "니", "다", "더", "뎌", "도", "갸", "거", "겨", "고", "교", "구", "규", "그", "기", "라", "마", "바", "사", "아", "자", "차", "카", "타", "파", "하", "각", "간", "갇", "갈", "감", "갑"),
@@ -244,11 +246,13 @@ class KoreanCurriculumTest {
         val dyeoLesson = KoreanCurriculum.lessons.single { it.id == LessonId.DYEO }
         val doLesson = KoreanCurriculum.lessons.single { it.id == LessonId.DO }
         val dyoLesson = KoreanCurriculum.lessons.single { it.id == LessonId.DYO }
+        val duLesson = KoreanCurriculum.lessons.single { it.id == LessonId.DU }
         assertTrue(KoreanCurriculum.lessons.indexOf(DaLesson) + 1 == KoreanCurriculum.lessons.indexOf(deoLesson))
         assertTrue(KoreanCurriculum.lessons.indexOf(deoLesson) + 1 == KoreanCurriculum.lessons.indexOf(dyeoLesson))
         assertTrue(KoreanCurriculum.lessons.indexOf(dyeoLesson) + 1 == KoreanCurriculum.lessons.indexOf(doLesson))
         assertTrue(KoreanCurriculum.lessons.indexOf(doLesson) + 1 == KoreanCurriculum.lessons.indexOf(dyoLesson))
-        assertTrue(KoreanCurriculum.lessons.indexOf(dyoLesson) + 1 == KoreanCurriculum.lessons.indexOf(GyaLesson))
+        assertTrue(KoreanCurriculum.lessons.indexOf(dyoLesson) + 1 == KoreanCurriculum.lessons.indexOf(duLesson))
+        assertTrue(KoreanCurriculum.lessons.indexOf(duLesson) + 1 == KoreanCurriculum.lessons.indexOf(GyaLesson))
         lessons.forEach { assertEquals(CurriculumStage.OPEN_SYLLABLES, it.stage) }
 
         val geometries = lessons.associate { it.id to WritingCanvasGeometry.glyph(it, width, height) }
