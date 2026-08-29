@@ -86,6 +86,17 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 왼쪽 `ㄱ`·오른쪽 단일 세로획, 완성 글자, 큰 체크와 기쁜 캐릭터, 네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
 
+## 루프 232 반복 1 최종 근거
+
+- 변경 전: `captures/loop231/iteration1/after/loop231-iteration1-target-selection.png`. 변경 후: `captures/loop232/iteration1/after/`의 `라` 선택·시작·오순서·완성·쓰기·성공·다음 PNG·hierarchy·focus.
+- 환경: `alarmquest-qa` cold boot, uptime `9.82`→`34.76`초, 물리 1080 × 2340, `user_rotation=1`, 모든 PNG 2340 × 1080, 7개 focus `com.limdo.hangul/.MainActivity`.
+- APK SHA-256: `e5e7326f88a3bd422e687e592badb384aded1a53006ddeccf699cae699182d9c`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 실측: 조립 조각 341 × 368 px, 좌·우 칸 284 × 284 px, WritingCanvas 1962 × 954 px, 네 조작 각 168 × 168 px.
+- 자산 필요 판정: 불필요 — production `RA` geometry와 기존 조립 token·정답·조작 atlas를 재사용했고 새 raster는 0건이다.
+- 자동 그래픽 디자인 역할: 통과 — `디`와 3층 `ㄹ`의 `라`가 선택·조립·쓰기·성공에서 구분되고 잘림·왜곡·가림은 0건이다.
+- 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`RaAssemblyFlowTest` 1/1, 오순서 거부·정방향 5획·성공·다음·홈을 통과했다.
+- 아이 대리 QA: 통과. 실제 아이 관찰: 실행 안 함. 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+
 ## 루프 226 반복 1 최종 근거
 
 - 변경 전: `captures/loop225/iteration1/after/target-selection.png`와 hierarchy. 변경 후: `captures/loop226/iteration1/after/`의 선택·시작·오순서·완성·쓰기·성공·다음 PNG와 각 hierarchy·focus.
