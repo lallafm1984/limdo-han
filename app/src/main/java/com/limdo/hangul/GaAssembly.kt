@@ -35,6 +35,7 @@ internal enum class GaAssemblyTarget(
     DI(LessonId.DI, "디", initialName = "디귿", initialStrokeCount = 2),
     RA(LessonId.RA, "라", initialName = "리을", initialStrokeCount = 3),
     REO(LessonId.REO, "러", initialName = "리을", initialStrokeCount = 3),
+    RYEO(LessonId.RYEO, "려", initialName = "리을", initialStrokeCount = 3),
 }
 
 internal val GaAssemblyTarget.isHorizontalVowel: Boolean

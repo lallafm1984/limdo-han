@@ -67,8 +67,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
@@ -76,7 +78,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeoutOrNull
 import java.text.SimpleDateFormat
@@ -88,6 +89,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>
     private lateinit var guardianLearningListStorage: GuardianLearningListStorage
     private lateinit var guardianLessonProgressStorage: GuardianLessonProgressStorage
+    private lateinit var guardianVoicePreferenceStorage: GuardianVoicePreferenceStorage
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,12 +98,14 @@ class MainActivity : ComponentActivity() {
         }
         guardianLearningListStorage = GuardianLearningListStorage(noBackupFilesDir)
         guardianLessonProgressStorage = GuardianLessonProgressStorage(noBackupFilesDir)
+        guardianVoicePreferenceStorage = GuardianVoicePreferenceStorage(noBackupFilesDir)
         hideSystemBars()
         setContent {
             LimDoApp(
                 guardianVoiceControllers,
                 guardianLearningListStorage,
                 guardianLessonProgressStorage,
+                guardianVoicePreferenceStorage,
             )
         }
     }
@@ -140,6 +144,7 @@ private fun LimDoApp(
     guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
     guardianLearningListStorage: GuardianLearningListStorage,
     guardianLessonProgressStorage: GuardianLessonProgressStorage,
+    guardianVoicePreferenceStorage: GuardianVoicePreferenceStorage,
 ) {
     MaterialTheme(colorScheme = LimDoColorScheme) {
         Surface(
@@ -150,6 +155,7 @@ private fun LimDoApp(
                 guardianVoiceControllers,
                 guardianLearningListStorage,
                 guardianLessonProgressStorage,
+                guardianVoicePreferenceStorage,
             )
         }
     }
@@ -160,6 +166,7 @@ private fun LearningShell(
     guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
     guardianLearningListStorage: GuardianLearningListStorage,
     guardianLessonProgressStorage: GuardianLessonProgressStorage,
+    guardianVoicePreferenceStorage: GuardianVoicePreferenceStorage,
 ) {
     var destination by remember { mutableStateOf<LearningDestination>(LearningDestination.Home) }
     var nextWritingSessionId by rememberSaveable { mutableIntStateOf(0) }
@@ -168,6 +175,9 @@ private fun LearningShell(
     }
     var guardianLearningCurrentIndex by remember {
         mutableIntStateOf(guardianLearningListStorage.loadCurrentIndex(guardianLearningList))
+    }
+    var useUserRecording by remember {
+        mutableStateOf(guardianVoicePreferenceStorage.loadUseUserRecording())
     }
 
     BackHandler(enabled = destination != LearningDestination.Home) {
@@ -231,6 +241,12 @@ private fun LearningShell(
             controller = requireNotNull(
                 guardianVoiceControllers[GuardianVoiceKey(current.lessonId)],
             ),
+            useUserRecording = useUserRecording,
+            onUseUserRecordingChange = { enabled ->
+                if (guardianVoicePreferenceStorage.saveUseUserRecording(enabled)) {
+                    useUserRecording = enabled
+                }
+            },
             onClose = {
                 guardianVoiceControllers.values.forEach(GuardianVoiceController::release)
                 destination = LearningDestination.GuardianLessons
@@ -269,6 +285,7 @@ private fun LearningShell(
                 menu = current.menu,
                 guardianVoiceControllers = guardianVoiceControllers,
                 guardianLessonProgressStorage = guardianLessonProgressStorage,
+                useUserRecording = useUserRecording,
                 onHome = { destination = LearningDestination.Home },
                 guardianLearningList = guardianLearningList,
                 guardianLearningCurrentIndex = guardianLearningCurrentIndex,
@@ -912,6 +929,8 @@ private fun GuardianProgressSymbol(
 private fun GuardianStartRecordingScreen(
     lesson: LessonSpec,
     controller: GuardianVoiceController,
+    useUserRecording: Boolean,
+    onUseUserRecordingChange: (Boolean) -> Unit,
     onClose: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -952,6 +971,11 @@ private fun GuardianStartRecordingScreen(
                 Text("보호자 녹음", fontSize = 31.sp, fontWeight = FontWeight.Bold)
                 Text(stateLabel, fontSize = 21.sp)
             }
+            Spacer(Modifier.weight(1f))
+            GuardianVoiceUseToggle(
+                enabled = useUserRecording,
+                onEnabledChange = onUseUserRecordingChange,
+            )
         }
         Surface(
             modifier = Modifier.fillMaxSize().border(3.dp, Color(0xFF3F725E), RoundedCornerShape(30.dp)),
@@ -1000,7 +1024,7 @@ private fun GuardianStartRecordingScreen(
                         }
                         GuardianVoiceState.RECORDING -> GuardianTextAction("정지", "녹음 정지하고 저장", Color(0xFFD95D4F)) { controller.stopRecording() }
                         GuardianVoiceState.READY -> {
-                            GuardianTextAction("듣기", "녹음 미리 듣기", Color(0xFF3F725E)) { controller.play() }
+                            GuardianTextAction("듣기", "녹음 미리 듣기", Color(0xFF3F725E)) { controller.playUserRecording() }
                             GuardianTextAction("다시 녹음", "기존 녹음을 보존하고 새로 녹음", Color(0xFFD9873A)) {
                                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) controller.startRecording()
                                 else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -1010,6 +1034,53 @@ private fun GuardianStartRecordingScreen(
                         GuardianVoiceState.PLAYING -> GuardianTextAction("듣기 정지", "미리 듣기 정지", Color(0xFF3F725E)) { controller.stopPlayback() }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GuardianVoiceUseToggle(
+    enabled: Boolean,
+    onEnabledChange: (Boolean) -> Unit,
+) {
+    Surface(
+        onClick = { onEnabledChange(!enabled) },
+        modifier = Modifier
+            .size(width = 266.dp, height = 74.dp)
+            .semantics(mergeDescendants = true) {
+                role = Role.Switch
+                contentDescription = "사용자 녹음 사용"
+                stateDescription = if (enabled) "켜짐" else "꺼짐"
+            },
+        color = if (enabled) Color(0xFFDFF2E7) else Color(0xFFE6E7E6),
+        shape = RoundedCornerShape(22.dp),
+        border = BorderStroke(2.dp, if (enabled) Color(0xFF3F725E) else Color(0xFF7C827F)),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("사용자 녹음", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(if (enabled) "사용 중" else "기본 음성 사용", fontSize = 14.sp)
+            }
+            Box(
+                modifier = Modifier
+                    .size(width = 58.dp, height = 34.dp)
+                    .background(
+                        if (enabled) Color(0xFF3F725E) else Color(0xFF9CA29F),
+                        RoundedCornerShape(17.dp),
+                    )
+                    .padding(4.dp),
+                contentAlignment = if (enabled) Alignment.CenterEnd else Alignment.CenterStart,
+            ) {
+                Box(
+                    Modifier
+                        .size(26.dp)
+                        .background(Color.White, RoundedCornerShape(13.dp)),
+                )
             }
         }
     }
@@ -1137,6 +1208,7 @@ private fun WritingLesson(
     menu: LearningMenu,
     guardianVoiceControllers: Map<GuardianVoiceKey, GuardianVoiceController>,
     guardianLessonProgressStorage: GuardianLessonProgressStorage,
+    useUserRecording: Boolean,
     onHome: () -> Unit,
     guardianLearningList: List<LessonId>,
     guardianLearningCurrentIndex: Int,
@@ -1164,13 +1236,13 @@ private fun WritingLesson(
     val retryVisuals = retryAnimationVisuals(retryProgress.value)
     val assistanceLevel = RetryAssistanceSpec.level(retryCount)
 
-    LaunchedEffect(currentLesson.id, guardianIndex) {
+    LaunchedEffect(currentLesson.id, guardianIndex, useUserRecording) {
         if (guardianLessonProgressStorage.tracks(currentLesson.id)) {
             guardianLessonProgressStorage.markPracticed(currentLesson.id)
         }
         receivedHelp = false
         retryCount = 0
-        currentVoiceController.play()
+        currentVoiceController.play(useUserRecording)
     }
 
     DisposableEffect(currentVoiceController) {
@@ -1214,11 +1286,6 @@ private fun WritingLesson(
                 animationSpec = tween(SuccessCelebrationSpec.DURATION_MS),
             )
             minimumSuccessVisibility.await()
-            val playbackFinished = CompletableDeferred<Unit>()
-            val playbackStarted = currentVoiceController.play {
-                playbackFinished.complete(Unit)
-            }
-            if (playbackStarted) playbackFinished.await()
             if (traceResult == GieokTraceResult.SUCCESS && currentLesson.id == successfulLessonId) {
                 if (followsGuardianList && guardianIndex == guardianLearningList.lastIndex) {
                     guardianListComplete = true

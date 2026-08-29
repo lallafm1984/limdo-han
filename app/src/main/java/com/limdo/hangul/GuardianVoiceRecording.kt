@@ -9,6 +9,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 internal enum class GuardianVoiceState { EMPTY, RECORDING, READY, PLAYING }
+internal enum class GuardianVoicePlaybackSource { USER_RECORDING, DEFAULT_ASSET, NONE }
 internal enum class GuardianVoiceEvent(val fileSuffix: String, val label: String) {
     START("start", "쓰기 전"),
     SUCCESS("success", "정답 후"),
@@ -26,6 +27,90 @@ internal object WritingVoiceCatalog {
     val keys: List<GuardianVoiceKey> = KoreanCurriculum.lessons
         .map { GuardianVoiceKey(it.id) }
         .distinct()
+}
+
+internal object DefaultGuardianVoiceCatalog {
+    fun resourceId(lessonId: LessonId): Int? = when (lessonId) {
+        LessonId.GIEOK -> R.raw.limdo_voice_gieok
+        LessonId.NIEUN -> R.raw.limdo_voice_nieun
+        LessonId.DIGEUT -> R.raw.limdo_voice_digeut
+        LessonId.RIEUL -> R.raw.limdo_voice_rieul
+        LessonId.MIEUM -> R.raw.limdo_voice_mieum
+        LessonId.BIEUP -> R.raw.limdo_voice_bieup
+        LessonId.SIOT -> R.raw.limdo_voice_siot
+        LessonId.IEUNG -> R.raw.limdo_voice_ieung
+        LessonId.JIEUT -> R.raw.limdo_voice_jieut
+        LessonId.CHIEUT -> R.raw.limdo_voice_chieut
+        LessonId.KIEUK -> R.raw.limdo_voice_kieuk
+        LessonId.TIEUT -> R.raw.limdo_voice_tieut
+        LessonId.PIEUP -> R.raw.limdo_voice_pieup
+        LessonId.HIEUH -> R.raw.limdo_voice_hieuh
+        LessonId.A -> R.raw.limdo_voice_a
+        LessonId.YA -> R.raw.limdo_voice_ya
+        LessonId.EO -> R.raw.limdo_voice_eo
+        LessonId.YEO -> R.raw.limdo_voice_yeo
+        LessonId.O -> R.raw.limdo_voice_o
+        LessonId.YO -> R.raw.limdo_voice_yo
+        LessonId.U -> R.raw.limdo_voice_u
+        LessonId.YU -> R.raw.limdo_voice_yu
+        LessonId.EU -> R.raw.limdo_voice_eu
+        LessonId.I -> R.raw.limdo_voice_i
+        LessonId.GA -> R.raw.limdo_voice_ga
+        LessonId.NA -> R.raw.limdo_voice_na
+        LessonId.DA -> R.raw.limdo_voice_da
+        LessonId.RA -> R.raw.limdo_voice_ra
+        LessonId.MA -> R.raw.limdo_voice_ma
+        LessonId.BA -> R.raw.limdo_voice_ba
+        LessonId.SA -> R.raw.limdo_voice_sa
+        LessonId.AH -> R.raw.limdo_voice_ah
+        LessonId.JA -> R.raw.limdo_voice_ja
+        LessonId.CHA -> R.raw.limdo_voice_cha
+        LessonId.KA -> R.raw.limdo_voice_ka
+        LessonId.TA -> R.raw.limdo_voice_ta
+        LessonId.PA -> R.raw.limdo_voice_pa
+        LessonId.HA -> R.raw.limdo_voice_ha
+        else -> null
+    }
+}
+
+internal fun resolveGuardianVoicePlaybackSource(
+    useUserRecording: Boolean,
+    hasValidUserRecording: Boolean,
+    hasDefaultAsset: Boolean,
+): GuardianVoicePlaybackSource = when {
+    useUserRecording && hasValidUserRecording -> GuardianVoicePlaybackSource.USER_RECORDING
+    hasDefaultAsset -> GuardianVoicePlaybackSource.DEFAULT_ASSET
+    else -> GuardianVoicePlaybackSource.NONE
+}
+
+internal class GuardianVoicePreferenceStorage(
+    private val noBackupFilesDir: File,
+) {
+    companion object {
+        const val DEFAULT_USE_USER_RECORDING = true
+        private const val FILE_NAME = "use_user_recording"
+    }
+
+    private val preferenceFile: File
+        get() = File(File(noBackupFilesDir, GuardianVoiceStorage.DIRECTORY), FILE_NAME)
+
+    fun loadUseUserRecording(): Boolean = when (preferenceFile.takeIf(File::isFile)?.readText()?.trim()) {
+        "true" -> true
+        "false" -> false
+        else -> DEFAULT_USE_USER_RECORDING
+    }
+
+    fun saveUseUserRecording(enabled: Boolean): Boolean = runCatching {
+        preferenceFile.parentFile?.mkdirs()
+        val temporaryFile = File(preferenceFile.parentFile, ".${preferenceFile.name}.saving")
+        temporaryFile.writeText(enabled.toString())
+        Files.move(
+            temporaryFile.toPath(),
+            preferenceFile.toPath(),
+            StandardCopyOption.ATOMIC_MOVE,
+            StandardCopyOption.REPLACE_EXISTING,
+        )
+    }.isSuccess
 }
 
 internal object GuardianVoiceStorage {
@@ -154,13 +239,48 @@ internal class GuardianVoiceController(
         notifyState()
     }
 
-    fun play(onFinished: () -> Unit = {}): Boolean {
+    fun play(
+        useUserRecording: Boolean,
+        onFinished: () -> Unit = {},
+    ): Boolean {
+        val defaultResourceId = DefaultGuardianVoiceCatalog.resourceId(lessonId)
+        val source = resolveGuardianVoicePlaybackSource(
+            useUserRecording = useUserRecording,
+            hasValidUserRecording = validFinalFile(),
+            hasDefaultAsset = defaultResourceId != null,
+        )
+        return playSource(source, defaultResourceId, onFinished)
+    }
+
+    fun playUserRecording(onFinished: () -> Unit = {}): Boolean = playSource(
+        source = if (validFinalFile()) GuardianVoicePlaybackSource.USER_RECORDING
+        else GuardianVoicePlaybackSource.NONE,
+        defaultResourceId = null,
+        onFinished = onFinished,
+    )
+
+    private fun playSource(
+        source: GuardianVoicePlaybackSource,
+        defaultResourceId: Int?,
+        onFinished: () -> Unit,
+    ): Boolean {
         stopRecording(save = false)
         stopPlayback()
-        if (!validFinalFile()) return false
+        if (source == GuardianVoicePlaybackSource.NONE) return false
         val nextPlayer = MediaPlayer()
         return runCatching {
-            nextPlayer.setDataSource(finalFile.absolutePath)
+            when (source) {
+                GuardianVoicePlaybackSource.USER_RECORDING -> {
+                    nextPlayer.setDataSource(finalFile.absolutePath)
+                }
+                GuardianVoicePlaybackSource.DEFAULT_ASSET -> {
+                    val resourceId = requireNotNull(defaultResourceId)
+                    context.resources.openRawResourceFd(resourceId).use { asset ->
+                        nextPlayer.setDataSource(asset.fileDescriptor, asset.startOffset, asset.length)
+                    }
+                }
+                GuardianVoicePlaybackSource.NONE -> error("재생할 음성이 없습니다.")
+            }
             nextPlayer.setOnCompletionListener {
                 stopPlayback()
                 onFinished()

@@ -47,8 +47,9 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.DI.lessonId == LessonId.DI)
         assertTrue(GaAssemblyTarget.RA.lessonId == LessonId.RA)
         assertTrue(GaAssemblyTarget.REO.lessonId == LessonId.REO)
-        assertTrue(GaAssemblyTarget.entries.last() == GaAssemblyTarget.REO)
-        assertTrue(GaAssemblyTarget.entries.size == 29)
+        assertTrue(GaAssemblyTarget.RYEO.lessonId == LessonId.RYEO)
+        assertTrue(GaAssemblyTarget.entries.last() == GaAssemblyTarget.RYEO)
+        assertTrue(GaAssemblyTarget.entries.size == 30)
         /* 루프 226까지의 정확한 prefix oracle는 유지하고, 위의 새 마지막 target 계약으로 확장한다.
         assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140", "노", "뇨", "누", "뉴", "느", "니", "다", "더", "뎌", "도"))
         */
@@ -79,6 +80,7 @@ class GaAssemblyTest {
         assertFalse(GaAssemblyTarget.DI.isHorizontalVowel)
         assertFalse(GaAssemblyTarget.RA.isHorizontalVowel)
         assertFalse(GaAssemblyTarget.REO.isHorizontalVowel)
+        assertFalse(GaAssemblyTarget.RYEO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NA.initialName == "니은")
         assertTrue(GaAssemblyTarget.NA.initialStrokeCount == 1)
         assertTrue(GaAssemblyTarget.NEO.initialName == "니은")
@@ -142,6 +144,21 @@ class GaAssemblyTest {
         val vowel = geometry.strokes.drop(3)
         assertTrue(initial.maxOf { it.x } < vowel.flatten().maxOf { it.x })
         assertTrue(vowel.last().first().x > vowel.last().last().x)
+    }
+
+    @Test fun ryeoUsesTheProductionRieulAndThreeStrokeYeoToItsRight() {
+        val ryeo = KoreanCurriculum.lessons.single { it.id == LessonId.RYEO }
+        val geometry = WritingCanvasGeometry.glyph(ryeo, 1962f, 954f)
+
+        assertTrue(ryeo.strokeCount == 6)
+        assertTrue(ryeo.strokeDirections == listOf(StrokeDirection.RIGHT, StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.DOWN, StrokeDirection.LEFT, StrokeDirection.LEFT))
+        assertTrue(GaAssemblyTarget.RYEO.initialName == "리을")
+        assertTrue(geometry.strokes.take(GaAssemblyTarget.RYEO.initialStrokeCount).size == 3)
+        assertTrue(geometry.strokes.drop(GaAssemblyTarget.RYEO.initialStrokeCount).size == 3)
+        val vowel = geometry.strokes.drop(3)
+        assertTrue(vowel[1].first().x > vowel[1].last().x)
+        assertTrue(vowel[2].first().x > vowel[2].last().x)
+        assertTrue(vowel[1].first().y < vowel[2].first().y)
     }
 
     @Test fun diUsesTheProductionDigeutAndSingleVerticalIToItsRight() {

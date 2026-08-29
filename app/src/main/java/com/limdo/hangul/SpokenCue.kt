@@ -114,6 +114,8 @@ internal enum class SpokenCue(val utterance: String) {
     SUCCESS_RA("잘했어! 라를 완성했어."),
     INITIAL_REO("오른쪽 아래. 가운데를 오른쪽. 왼쪽 아래와 바닥. 다음은 아래. 마지막은 왼쪽."),
     SUCCESS_REO("잘했어! 러를 완성했어."),
+    INITIAL_RYEO("오른쪽 아래. 가운데를 오른쪽. 왼쪽 아래와 바닥. 다음은 아래. 위 선은 왼쪽. 아래 선도 왼쪽."),
+    SUCCESS_RYEO("잘했어! 려를 완성했어."),
     INITIAL_MA("왼쪽 아래. 다음은 오른쪽 아래. 다음은 아래를 오른쪽. 다음은 아래. 마지막은 오른쪽."),
     SUCCESS_MA("잘했어! 마를 완성했어."),
     INITIAL_BA("왼쪽 아래. 오른쪽 아래. 가운데를 오른쪽. 아래를 오른쪽. 다음은 아래. 마지막은 오른쪽."),

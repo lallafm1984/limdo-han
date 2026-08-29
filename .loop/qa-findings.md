@@ -3069,3 +3069,52 @@
 - 판정: `가` 카드 뒤에 여러 조립 대상을 다시 고르게 하던 화면이 제거되고 즉시 큰 `가` 쓰기판·초록 시작점·점선 경로·네 그림 조작이 나타난다. 2340 × 1080에서 잘림·겹침·왜곡·조작 가림은 0건이다.
 - 자동 QA: 격리 unit·lint·debug build와 `GanadaDirectWritingFlowTest` 1/1, `가를 3획으로` 존재·`가 조립 선택` 부재, WritingCanvas 1962 × 954 px, LimDo focus를 통과했다. 실제 아이 관찰: 실행 안 함.
 - 다음 제품 작업: 루프 234의 조립 후보는 최신 사용자 지시와 충돌하므로 자동 전환하지 않는다. 감독자는 후속 제품 방향을 다시 정하기 전까지 중지 상태를 유지한다.
+
+## QA-193 — 루프 236 네 자음 기본 음성·사용자 녹음 온오프 중간 아이 대리 QA
+
+- 상태: 화면·제품 기능 통과, 사용자 청취 판정 대기. 제품 새 P0·P1·진행 방해 P2는 0건이고 검증 절차 데이터 보존 사고 1건을 별도로 기록했다.
+- 근거: `captures/loop236/iteration1/after/`의 켜짐·꺼짐·재실행 2340 × 1080 PNG·hierarchy·LimDo focus, APK SHA-256 `e2553e8fdd4dfd590fc00180cbcfdf71ea43d3577d816121b83f8cc240a5eb05`, 에뮬레이터·SM-S931N `DefaultGuardianVoicePlaybackTest` 1/1.
+- 화면 판정: 보호자용 토글은 698 × 194 px이고 목록·제목과 분리된다. 초록/회색뿐 아니라 knob 위치와 `사용 중`/`기본 음성 사용` 문구가 함께 바뀌어 색 하나에만 의존하지 않는다. 잘림·겹침·불분명한 비활성 상태는 없다.
+- 아이 대리 판정: 설정은 보호자 화면에만 있고 아이 쓰기판의 면적·조작을 바꾸지 않는다. 네 자음 lesson은 녹음이 없어도 짧은 이름 음성을 들을 수 있다. 실제 아이 관찰: 실행 안 함.
+- 남은 위험: Yuna 후보의 자연스러움·정확한 발음은 사용자가 SM-S931N에서 직접 듣고 판정해야 한다. 부자연스럽다면 음성 자산만 재생성하고 현재 기능·UI를 유지한다.
+- 실기기 검증 사고: connected test 정리 단계가 대상 앱을 제거해 기존 보호자 녹음이 소실됐다. 제품 온오프 로직의 삭제는 아니지만 검증 절차의 데이터 보존 실패다. 동일 APK는 재설치했고, 실기기 connected test 금지와 사전·사후 `no_backup` 감사를 체크리스트에 추가했다. 기존 녹음은 복구본이 없어 다시 녹음해야 한다.
+
+## QA-194 — 루프 236 무료 신경망 네 자음 음성 교체 중간 QA
+
+- 상태: 자동 생성·발음·형식·APK 포함·에뮬레이터 재생 통과, SM-S931N 무선 설치와 사용자 청취 판정 대기다.
+- 근거: production M4A 네 파일의 서로 다른 SHA-256·0.608~0.692초 AAC, 최종 AAC 연결본의 큰 한국어 음성인식 결과 `기역·니은·디귿·리을`, APK SHA-256 `ad66ab9b9d812760c33e765ba7d7f96cb527c9b89ff09e5ec8b0f2ab3cb735a5`, 에뮬레이터 전용 `DefaultGuardianVoicePlaybackTest` 1/1이다.
+- 환경: 에뮬레이터 uptime `25449.82`초를 발견해 종료·cold boot했고 새 uptime `9.45`초, 물리 1080 × 2340·`user_rotation=1`·앱 2340 × 1080을 다시 확인했다. 음성 자산만 바뀌어 반복 1의 토글 화면 geometry에는 변화가 없다.
+- 판정: 네 lesson 매핑·재생 완료·수동 정지는 통과했다. 음성의 사람다운 자연스러움은 자동 음성인식으로 대신할 수 없으므로 사용자 청취 전까지 완료하지 않는다. 실제 아이 관찰: 실행 안 함.
+- 실기기 경계: SM-S931N은 `adb devices -l`과 `adb mdns services`에 나타나지 않아 이번 APK를 설치하지 못했다. 실기기 connected test는 금지 규칙에 따라 실행하지 않았다.
+
+### QA-194 무선 설치 보강
+
+- 상태: SM-S931N 무선 덮어쓰기·실행·버전·포커스 통과, 사용자 청취 판정 대기다.
+- 근거: `install -r --no-streaming` `Success`, 설치 전후 내부 파일 11개, 빌드·실기기 APK 동일 SHA-256 `ad66ab9b9d812760c33e765ba7d7f96cb527c9b89ff09e5ec8b0f2ab3cb735a5`, cold launch 375 ms, LimDo 전면 focus, keyguard=false, 치명 오류 0건이다.
+- 실화면: 물리 1080 × 2340, PNG 2340 × 1080이며 현재 쓰기판·네 그림 조작의 잘림·겹침·시스템 바 노출은 없다. 실제 아이 관찰: 실행 안 함.
+- 남은 위험: 설치와 자동 발음 검사는 사람 귀의 자연스러움 판정을 대신하지 않는다. 사용자의 직접 청취 전에는 루프를 완료하지 않는다.
+
+## QA-195 — 루프 236 여자아이 네 자음 음성 재적용 중간 QA
+
+- 상태: 여자아이 후보 생성·형식·발음·APK 포함·에뮬레이터 재생·SM-S931N 무선 설치 통과, 사용자 청취 판정 대기다.
+- 음성 근거: 한국어 여성 `Standard-A` pitch +20·speed +4, 네 production M4A 0.550~0.711초, 중앙 음높이 275~293 Hz, 서로 다른 SHA-256이다. 최종 AAC 연결본의 큰 한국어 음성인식 결과는 `기역·니은·디귿·리을`이다.
+- 자동·에뮬레이터: `verify.sh`·diff·시각 루프 검사와 uptime 1904.94초의 에뮬레이터 전용 `DefaultGuardianVoicePlaybackTest` 1/1이 통과했다. 음성 자산만 교체해 보호자 토글·쓰기 화면 geometry는 변하지 않았다.
+- 실기기: APK SHA-256 `ca580e742b4964fbfd9a186d50bf705aa321ebbc7385c5eacfafe01d2c3b22ce`를 SM-S931N에 덮어 설치했다. 내부 파일 11개와 firstInstallTime 보존, 빌드·실기기 APK 해시 일치, cold launch 438 ms, versionCode 1·versionName 0.1.0, 치명 오류 0건이다. connected test는 실행하지 않았다.
+- 남은 위험: 기기 잠금으로 `mCurrentFocus=NotificationShade`이고 `mFocusedApp`만 LimDo다. 사용자가 잠금 해제 뒤 네 음성을 직접 듣고 승인하기 전에는 완료하지 않는다. 실제 아이 관찰: 실행 안 함.
+
+## QA-196 — 루프 236 여자아이 기본 음성 38 lesson 확대·1회 재생 중간 QA
+
+- 상태: 38자산 생성·매핑·형식·무음·중복·APK 포함·에뮬레이터 실제 재생·성공 자동 다음·SM-S931N 데이터 보존 설치 통과, 사용자 청취 판정 대기다.
+- 음성 근거: 한국어 여성 `Standard-A` pitch +20·speed +4, 자음 14개·모음 10개·글자 14개의 production M4A 38개, 길이 0.403~0.719초, RMS 0.095~0.255, 서로 다른 SHA-256 38개다. 자연 무음 구간 수와 입력 순서가 각 묶음의 lesson 수와 일치한다.
+- 동작 판정: 쓰기 lesson 진입 때 선택된 음성을 한 번만 호출하고, 정답 뒤에는 음성을 반복하지 않는다. 성공 체크는 정해진 최소 시간 보인 뒤 자동으로 다음 lesson으로 이동하며 `ReducedMotionSuccessTest`로 애니메이션 배율 0에서도 확인했다.
+- 에뮬레이터·화면: uptime `3849.60`초, `DefaultGuardianVoicePlaybackTest`+`ReducedMotionSuccessTest` 2/2, 최종 APK 재설치·LimDo focus·2340 × 1080 화면을 확인했다. 이번 반복은 음성·재생 시점 변경이라 보호자 토글과 쓰기 geometry는 변하지 않았고 최종 홈 화면의 잘림·겹침은 0건이다.
+- 실기기: APK SHA-256 `9def859fd0ba1581717e405262a9e672a7330d2a2f0b0da3a8a90aeee408d0e7`를 SM-S931N에 덮어 설치했다. 내부 파일 2개·firstInstallTime 보존, 설치 APK 해시 일치, cold launch 316 ms, 치명 오류 0건이다. connected test는 실행하지 않았다.
+- 남은 위험: 기기가 잠겨 NotificationShade가 현재 focus다. 사람 귀의 38개 자연스러움·발음은 사용자가 잠금 해제 후 직접 판정해야 한다. 승인 전까지 완료·커밋·push하지 않는다. 실제 아이 관찰: 실행 안 함.
+## QA-197 — 루프 236 38 lesson 기본 음성·사용자 녹음 온오프 최종 아이 대리 QA
+
+- 상태: 통과. 새 P0·P1·진행 방해 P2는 0건이다.
+- 근거: `captures/loop236/iteration5/after/home-stable.png`·`guardian-toggle.png`와 각 hierarchy·LimDo focus, 에뮬레이터 `DefaultGuardianVoicePlaybackTest`·`ReducedMotionSuccessTest` 2/2, APK SHA-256 `9def859fd0ba1581717e405262a9e672a7330d2a2f0b0da3a8a90aeee408d0e7`, SM-S931N 데이터 보존 덮어쓰기·동일 APK·LimDo focus다.
+- 판정: 아이 쓰기 진입에서는 보호자 녹음 유무와 설정에 맞는 짧은 음성을 한 번 듣고 입력을 계속할 수 있으며 정답 뒤 같은 음성이 반복돼 자동 다음을 늦추지 않는다. 설정은 보호자 전용 화면에 있고 698 × 194 px의 큰 토글은 knob 위치·형태·문구로 켜짐을 구분하며 아이 쓰기판과 네 조작 geometry를 바꾸지 않는다.
+- 사용자 청취: 사용자가 SM-S931N 설치본 38개 여자아이 느낌 기본 음성의 자연스러움과 발음을 승인했다. 이는 실제 아이 관찰과 구분한다.
+- 자동 QA: 전체 unit·lint·debug build·diff·시각/자동화 계약, 38파일 매핑·재생·성공 전환, 2340 × 1080 화면, 실기기 보존 설치가 통과했다. 실제 아이 관찰: 실행 안 함.
+- 다음 제품 작업: 새 음성 불편은 없다. 최신 사용자 지시의 프리미엄 디자인 D0를 루프 237로 준비한다.

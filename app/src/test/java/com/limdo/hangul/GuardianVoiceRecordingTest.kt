@@ -9,6 +9,65 @@ import org.junit.Test
 
 class GuardianVoiceRecordingTest {
     @Test
+    fun allGuardianLessonsHaveDistinctBundledDefaultVoices() {
+        val lessonIds = GuardianLessonCatalog.lessons.map { it.id }
+        val resources = lessonIds.mapNotNull(DefaultGuardianVoiceCatalog::resourceId)
+
+        assertEquals(38, lessonIds.size)
+        assertEquals(38, resources.size)
+        assertEquals(38, resources.toSet().size)
+        assertEquals(null, DefaultGuardianVoiceCatalog.resourceId(LessonId.AE))
+        lessonIds.map { lessonId -> "limdo_voice_${lessonId.name.lowercase()}.m4a" }.forEach { fileName ->
+            val voiceFile = File(rootProject(), "app/src/main/res/raw/$fileName")
+            assertTrue("missing $fileName", voiceFile.isFile)
+            assertTrue("invalid M4A $fileName", GuardianVoiceStorage.isSupportedM4a(voiceFile))
+            assertTrue("empty audio $fileName", voiceFile.length() > 1_000L)
+        }
+    }
+
+    @Test
+    fun playbackPriorityHonorsTheToggleAndFallsBackToBundledAudio() {
+        assertEquals(
+            GuardianVoicePlaybackSource.USER_RECORDING,
+            resolveGuardianVoicePlaybackSource(true, true, true),
+        )
+        assertEquals(
+            GuardianVoicePlaybackSource.DEFAULT_ASSET,
+            resolveGuardianVoicePlaybackSource(false, true, true),
+        )
+        assertEquals(
+            GuardianVoicePlaybackSource.DEFAULT_ASSET,
+            resolveGuardianVoicePlaybackSource(true, false, true),
+        )
+        assertEquals(
+            GuardianVoicePlaybackSource.USER_RECORDING,
+            resolveGuardianVoicePlaybackSource(true, true, false),
+        )
+        assertEquals(
+            GuardianVoicePlaybackSource.NONE,
+            resolveGuardianVoicePlaybackSource(false, true, false),
+        )
+    }
+
+    @Test
+    fun userRecordingSettingDefaultsOnPersistsAndNeverDeletesRecording() {
+        val root = Files.createTempDirectory("limdo-guardian-voice-setting").toFile()
+        val storage = GuardianVoicePreferenceStorage(root)
+        val recording = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK)
+        recording.parentFile!!.mkdirs()
+        writeM4a(recording, 9)
+        val originalBytes = recording.readBytes()
+
+        assertTrue(storage.loadUseUserRecording())
+        assertTrue(storage.saveUseUserRecording(false))
+        assertFalse(GuardianVoicePreferenceStorage(root).loadUseUserRecording())
+        assertTrue(originalBytes.contentEquals(recording.readBytes()))
+        assertTrue(storage.saveUseUserRecording(true))
+        assertTrue(GuardianVoicePreferenceStorage(root).loadUseUserRecording())
+        assertTrue(originalBytes.contentEquals(recording.readBytes()))
+    }
+
+    @Test
     fun onlyIsoBmffM4aHeaderIsAcceptedAsACompletedRecording() {
         val root = Files.createTempDirectory("limdo-guardian-voice-validation").toFile()
         val recording = GuardianVoiceStorage.finalFile(root, LessonId.GIEOK)
@@ -194,23 +253,24 @@ class GuardianVoiceRecordingTest {
     }
 
     @Test
-    fun writingFlowUsesTheSameLessonRecordingOnEntryAndAfterSuccess() {
+    fun writingFlowPlaysTheLessonVoiceOnlyOnceOnEntry() {
         val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/MainActivity.kt").readText()
 
         assertTrue(source.contains("guardianVoiceControllers[GuardianVoiceKey(currentLesson.id)]"))
-        assertTrue(source.contains("LaunchedEffect(currentLesson.id, guardianIndex) {"))
+        assertTrue(source.contains("LaunchedEffect(currentLesson.id, guardianIndex, useUserRecording) {"))
         assertTrue(source.contains("guardianLessonProgressStorage.markPracticed(currentLesson.id)"))
-        assertTrue(source.contains("currentVoiceController.play()"))
+        assertTrue(source.contains("currentVoiceController.play(useUserRecording)"))
         assertTrue(source.contains("if (traceResult == GieokTraceResult.SUCCESS)"))
-        assertEquals(1, Regex("currentVoiceController\\.play\\(\\)").findAll(source).count())
-        assertEquals(1, Regex("currentVoiceController\\.play \\{").findAll(source).count())
+        assertEquals(1, Regex("currentVoiceController\\.play\\(useUserRecording\\)").findAll(source).count())
+        val successFlow = source.substringAfter("if (traceResult == GieokTraceResult.SUCCESS) {")
+            .substringBefore("if (guardianListComplete)")
+        assertFalse(successFlow.contains("currentVoiceController.play"))
         assertTrue(source.contains("onDispose { currentVoiceController.stopPlayback() }"))
         assertEquals(5, Regex("currentVoiceController\\.stopPlayback\\(\\)").findAll(source).count())
-        assertTrue(source.contains("val playbackFinished = CompletableDeferred<Unit>()"))
         assertTrue(source.contains("val minimumSuccessVisibility = async"))
         assertTrue(source.contains("delay(SuccessCelebrationSpec.DURATION_MS.toLong())"))
         assertTrue(source.contains("minimumSuccessVisibility.await()"))
-        assertTrue(source.contains("if (playbackStarted) playbackFinished.await()"))
+        assertTrue(source.contains("animationSpec = tween(SuccessCelebrationSpec.DURATION_MS)"))
         assertTrue(source.contains("currentLesson.id == successfulLessonId"))
         assertTrue(source.contains("LearningNavigation.nextLesson(menu, currentLesson)"))
     }
@@ -218,7 +278,7 @@ class GuardianVoiceRecordingTest {
     @Test
     fun completedAndFailedSuccessPlaybackBothReleaseTheFlowWithoutDeletingRecording() {
         val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/GuardianVoiceRecording.kt").readText()
-        val playBody = source.substringAfter("fun play(onFinished: () -> Unit = {}): Boolean")
+        val playBody = source.substringAfter("private fun playSource(")
             .substringBefore("fun stopPlayback()")
 
         assertEquals(2, Regex("onFinished\\(\\)").findAll(playBody).count())
@@ -230,7 +290,7 @@ class GuardianVoiceRecordingTest {
     @Test
     fun playbackFailureNeverDeletesTheCompletedRecording() {
         val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/GuardianVoiceRecording.kt").readText()
-        val playBody = source.substringAfter("fun play(): Boolean").substringBefore("fun stopPlayback()")
+        val playBody = source.substringAfter("private fun playSource(").substringBefore("fun stopPlayback()")
         val validationBody = source.substringAfter("private fun validFinalFile()").substringBefore("\n    }")
 
         assertFalse(playBody.contains("finalFile.delete()"))
@@ -255,6 +315,18 @@ class GuardianVoiceRecordingTest {
         assertTrue(source.contains("lineHeight = 21.sp"))
         assertTrue(source.contains("maxLines = 3"))
         assertTrue(source.contains("GuardianVoiceState.EMPTY -> GuardianTextAction(\"녹음\""))
+    }
+
+    @Test
+    fun guardianScreenExposesPersistentUserRecordingToggleAndPreviewStaysUserSpecific() {
+        val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/MainActivity.kt").readText()
+
+        assertTrue(source.contains("GuardianVoiceUseToggle("))
+        assertTrue(source.contains("contentDescription = \"사용자 녹음 사용\""))
+        assertTrue(source.contains("stateDescription = if (enabled) \"켜짐\" else \"꺼짐\""))
+        assertTrue(source.contains("guardianVoicePreferenceStorage.saveUseUserRecording(enabled)"))
+        assertTrue(source.contains("controller.playUserRecording()"))
+        assertFalse(source.contains("onUseUserRecordingChange = { enabled ->\n                controller.delete()"))
     }
 
     @Test

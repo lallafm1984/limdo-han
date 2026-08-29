@@ -1,24 +1,53 @@
 # 현재 시각 루프 증거
 
-루프: 235
-상태: 완료 — `가나다 → 가` production 쓰기판 직접 진입 복원·무선 설치 통과
+루프: 236
+상태: 진행 중 — 여자아이 38 lesson 음성·쓰기 진입 1회 재생·에뮬레이터·무선 설치 통과, 사용자 청취 대기
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop234/iteration1/after/target-selection.png
-변경 전 hierarchy: captures/loop234/iteration1/after/target-selection-hierarchy.txt
-변경 후 PNG: captures/loop235/iteration1/after/ga-direct-writing.png
-변경 후 hierarchy: captures/loop235/iteration1/after/ga-direct-writing-hierarchy.txt
+변경 전 PNG: captures/loop194/iteration1/after/guardian-single-recording.png
+변경 전 hierarchy: captures/loop194/iteration1/after/guardian-single-recording.xml
+변경 후 PNG: captures/loop236/iteration1/after/gieok-toggle-on.png
+변경 후 hierarchy: captures/loop236/iteration1/after/gieok-toggle-on-hierarchy.xml
 package: com.limdo.hangul
 focus: 통과
-APK SHA-256: e4924c142a181b8cc58747e0d2bb7e3b6eac7b4d205851e15ed94acf360f2f14
+APK SHA-256: 9def859fd0ba1581717e405262a9e672a7330d2a2f0b0da3a8a90aeee408d0e7
 Git commit: 현재 HEAD 기준 미커밋 작업 트리
-자산 필요 판정: 불필요 — 기존 `가` production geometry와 네 조작 atlas 재사용
-자산 자동 검사: 불필요 — 새 raster 0건
+자산 필요 판정: 필요 — runtime 합성 없이 보호자 38 lesson을 들려주는 production M4A 38파일
+production 자산 경로: app/src/main/res/raw/limdo_voice_*.m4a
+production 소비 검사: 통과
+자산 자동 검사: 통과
 자동 그래픽 디자인 역할: 통과
 자동 QA 역할: 통과
 아이 대리 QA: 통과
 새 P0: 0
 새 P1: 0
 진행 방해 P2: 0
+
+## 루프 236 반복 1 중간 근거
+
+- 환경: `alarmquest-qa` snapshot 없는 cold boot uptime `9.76`초에서 시작해 최종 화면 확인 `228.23`초, 물리 1080 × 2340, `user_rotation=1`, PNG 2340 × 1080, LimDo focus를 확인했다.
+- 화면: `사용자 녹음 사용` touch bounds는 `[1568,80][2266,274]`=698 × 194 px이다. 켜짐은 초록 track·`사용 중`, 꺼짐은 회색 track·`기본 음성 사용`으로 구분되고 목록 버튼·제목·본문과 잘림·겹침이 없다. 강제 종료·재실행 뒤 꺼짐이 유지됐다.
+- 음성: 네 M4A는 AAC mono 22,050 Hz, duration 0.374~0.420초이며 SHA-256이 모두 다르다. PCM16 decode peak는 `기역 16716·니은 15627·디귿 18041·리을 15969`로 무음이 아니며 APK `res/raw`에 네 파일이 포함됐다.
+- 실제 재생: `DefaultGuardianVoicePlaybackTest` 1/1이 에뮬레이터와 SM-S931N 양쪽에서 네 자음의 재생 시작·완료 callback·수동 정지를 통과했다. 실기기의 기존 사용자 녹음은 재생 뒤 `READY`로 복귀해 보존됐다.
+- 아이 대리 QA: 보호자 설정은 아이 쓰기판을 줄이거나 가리지 않고, 쓰기에서는 선택된 출처의 짧은 자음 이름만 들려준다. 실제 아이 관찰: 실행 안 함.
+- 남은 관문: 로컬 Yuna 후보의 자연스러움·발음은 자동 판정으로 과장하지 않고 사용자의 실기기 청취 판정을 기다린다.
+- 실기기 데이터 사고: SM-S931N의 connected test 정리 단계가 `com.limdo.hangul`을 제거했고 기존 `noBackupFilesDir` 녹음은 복구본을 찾지 못했다. 동일 SHA-256 APK를 즉시 재설치했으나 `firstInstallTime=2026-08-29 15:27:42`로 초기화가 확인된다. 이후 실기기 connected test 금지 규칙을 `QA_CHECKLIST.md`와 `docs/루프-엔지니어링-적용.md`에 고정했다.
+
+## 루프 236 반복 2 중간 근거
+
+- 음성 교체: 사용자가 기각한 Yuna 네 파일을 TTSFree 한국어 신경망 `InJoon`으로 직접 생성한 고정 자산으로 교체했다. 특정 인물·캐릭터 음성을 복제하지 않았고 앱의 runtime TTS·네트워크 호출은 추가하지 않았다.
+- 최종 자산: `기역` 0.608초·SHA-256 `de26c1b8...5657e3`, `니은` 0.681초·`98c6b848...cbdadc`, `디귿` 0.629초·`85670bb9...5776a2`, `리을` 0.692초·`217500b3...1da54b`로 네 파일이 모두 다르다. 최종 AAC를 이어 붙여 큰 한국어 음성인식 모델로 다시 읽은 결과는 `기역·니은·디귿·리을`이다.
+- 자동 검증: `./scripts/verify.sh`·`git diff --check`·`scripts/check-visual-loop.sh` 통과, APK `res/raw` 네 파일 포함과 APK SHA-256 `ad66ab9b9d812760c33e765ba7d7f96cb527c9b89ff09e5ec8b0f2ab3cb735a5`를 확인했다. 에뮬레이터 전용 `DefaultGuardianVoicePlaybackTest` 1/1에서 네 재생 완료·수동 정지가 통과했다.
+- 에뮬레이터: 기존 uptime `25449.82`초가 7,200초 한도를 넘어 완전 종료 후 snapshot 없는 cold boot를 수행했다. 새 uptime `9.45`초, 물리 1080 × 2340, `user_rotation=1`, 앱 화면 2340 × 1080을 확인했다. 음성만 교체해 반복 1의 보호자 토글 layout은 변하지 않았다.
+- 무선 전달: ADB 서버를 재시작하고 `adb devices -l`·`adb mdns services`·이전 주소 재연결을 확인했지만 SM-S931N이 검색되지 않았다. 이번 APK를 실기기에 설치했다고 표현하지 않으며, 실기기 connected test는 실행하지 않는다.
+- 남은 관문: 사용자가 SM-S931N에서 네 후보를 직접 듣고 자연스러움·발음을 승인해야 한다. 실제 아이 관찰: 실행 안 함.
+
+## 루프 236 반복 2 무선 설치 보강 근거
+
+- SM-S931N에 `install -r --no-streaming`이 `Success`였고, 설치 전후 `no_backup` 파일 수는 11개로 유지됐다. 실기기 계측은 실행하지 않았다.
+- 빌드 APK와 실기기 `base.apk` SHA-256은 모두 `ad66ab9b9d812760c33e765ba7d7f96cb527c9b89ff09e5ec8b0f2ab3cb735a5`로 일치한다.
+- versionCode 1·versionName 0.1.0, cold launch 375 ms, `mCurrentFocus`·`mFocusedApp` LimDo, keyguard=false, 치명 오류 0건이다.
+- `/tmp/limdo-loop236-ttsfree-device.png`은 정확한 2340 × 1080이며 hierarchy의 LimDo package node는 12개다. 화면 잘림·시스템 바 노출·다른 앱 가림은 보이지 않는다.
+- 남은 관문은 사용자의 네 음성 자연스러움·발음 직접 청취뿐이다. 실제 아이 관찰: 실행 안 함.
 
 ## 루프 212 반복 1 중간 근거
 
@@ -307,4 +336,15 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 자동 그래픽 디자인 역할: 통과 — 직접 진입한 화면에서 큰 `가`와 초록 시작점·점선 경로·네 조작의 잘림·겹침·가림·왜곡은 0건이다.
 - 자동 QA 역할: 통과 — 격리 unit·lint·debug build와 `GanadaDirectWritingFlowTest` 1/1, `가 조립 선택` 0건, 설치 APK 동일 해시를 확인했다.
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 `가` 카드 뒤에 곧바로 큰 따라 쓰기 길이 나타나며 추가 조립 선택 없이 시작 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+## 루프 236 반복 5 최종 근거
+
+- 변경 전: 루프 236 이전 보호자 녹음 화면 근거와 `captures/loop236/iteration1/before/`. 변경 후: `captures/loop236/iteration5/after/home-stable.png`·`guardian-toggle.png`와 각 hierarchy.
+- 환경: `alarmquest-qa` uptime `1053.64`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` `com.limdo.hangul/.MainActivity`.
+- APK SHA-256: `9def859fd0ba1581717e405262a9e672a7330d2a2f0b0da3a8a90aeee408d0e7`. Git commit: 현재 완료 체크포인트 생성 전 작업 트리.
+- 자산: production M4A/AAC 38개, 서로 다른 SHA-256 38개, 길이 0.403~0.719초, RMS 0.095~0.255, APK raw 포함 38개. runtime TTS·네트워크 호출 0건이며 각 보호자 lesson에 매핑된다.
+- 실측·시각 판정: 보호자 토글 `[1568,80][2266,274]`=698 × 194 px. 켜짐은 초록 surface뿐 아니라 오른쪽 knob·`사용 중` 문구로 구분되고, 목록·녹음 행동과 잘림·겹침·가림은 0건이다. 홈 세 카드도 안정 프레임에서 모두 보이며 2340 × 1080 경계를 벗어나지 않는다.
+- 자동 그래픽 디자인 역할: 통과 — 기존 보호자 token과 일치하고 토글 상태 위계·대비·모서리·그림자가 명료하다.
+- 자동 QA 역할: 통과 — `verify.sh`·diff·시각/자동화 계약과 에뮬레이터 계측 2/2, SM-S931N 데이터 보존 덮어쓰기·동일 APK·LimDo focus가 통과했다.
+- 아이 대리 QA: 통과 — 설정은 보호자 화면에 격리되고 쓰기 진입 1회 음성·정답 후 무반복 흐름이 아이의 입력과 다음 전환을 방해하지 않는다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.

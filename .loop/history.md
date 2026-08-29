@@ -584,6 +584,16 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예(반복 1 변경의 최종 경계 판정이며 이번 반복의 신규 시각 변경은 없음). 자산 필요 판정: 불필요 — 기존 production 점선·시작점·동적 시범 geometry 상태 경계 검증이며 bitmap은 lifecycle 정확성을 높이지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
 
+### 2026-08-29 루프 236 반복 1 기술 검증 결과 — 네 자음 후보 반영·사용자 청취 판정 대기
+
+- 최소 제품 변경: Yuna로 생성한 `기역·니은·디귿·리을` M4A 네 파일을 `res/raw`에 넣고 정확히 `GIEOK·NIEUN·DIGEUT·RIEUL`에 매핑했다. `사용자 녹음 사용` 영속 온오프를 보호자 녹음 화면에 추가했으며 기본값은 켜짐이다.
+- 재생 계약: 켜짐+유효 사용자 녹음은 사용자 파일, 꺼짐 또는 사용자 파일 없음은 해당 기본 음성, 둘 다 없으면 기존 무음 흐름을 사용한다. 온오프는 녹음 파일을 삭제하지 않고 녹음 화면의 `듣기`는 설정과 무관하게 사용자 파일만 미리 듣는다.
+- 자동 검증: `GuardianVoiceRecordingTest` 20/20, 전체 `./scripts/verify.sh`의 단위 테스트·Android lint·debug build가 통과했다. 네 파일은 AAC mono 22,050 Hz·0.374~0.420초이고 서로 다른 SHA-256이며 APK `res/raw` 포함을 확인했다.
+- 에뮬레이터 시각 QA: `alarmquest-qa`를 snapshot 없이 cold boot해 uptime `9.76`초, 물리 1080 × 2340·`user_rotation=1`에서 시작했다. 켜짐·꺼짐·강제 종료 뒤 꺼짐 유지 화면은 모두 2340 × 1080이며 토글 698 × 194 px, LimDo focus, 잘림·겹침 0건이다.
+- 실제 재생·무선 설치: `DefaultGuardianVoicePlaybackTest` 1/1이 에뮬레이터와 SM-S931N에서 네 음성의 시작·완료·수동 정지를 통과했다. APK SHA-256 `e2553e8fdd4dfd590fc00180cbcfdf71ea43d3577d816121b83f8cc240a5eb05`를 SM-S931N에 무선 덮어쓰기 설치했고 package `com.limdo.hangul`, versionCode 1, versionName 0.1.0을 확인했다.
+- 가설 중간 판정: 기능·파일·화면·보존 계약은 채택한다. 자동 그래픽 디자인·자동 QA·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건이다. 실제 아이 관찰: 실행 안 함.
+- 완료 보류: 자연스러움은 자동 재생 성공으로 대신할 수 없다. 사용자가 SM-S931N에서 네 후보를 듣고 발음·억양이 자연스럽다고 판정하기 전에는 루프를 완료·커밋·push하지 않는다.
+
 ### 2026-08-29 루프 235 반복 1 결과 — 기존 `가` 쓰기 직접 진입·무선 설치 통과
 
 - 최소 제품 변경: `MainActivity`에서 `GANADA + GA`만 `GaAssembly`로 보내던 예외 분기를 제거하고 모든 가나다 lesson이 공통 `LearningDestination.Writing` 경로를 사용하게 복원했다. `GanadaDirectWritingFlowTest`로 `가 쓰기 시작` 직후 `가를 3획으로`가 존재하고 `가 조립 선택`이 없음을 고정했다.
@@ -8812,3 +8822,89 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 
 - 반복 1 결과 전체가 동일한 과거 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 235 반복 1 결과 — 기존 가 쓰기 직접 진입·무선 설치 통과` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
 - 최종 판정: 격리 unit·lint·debug build·`GanadaDirectWritingFlowTest` 1/1과 2340 × 1080 직접 쓰기 화면, SM-S931N 무선 덮어쓰기·실행·설치 APK 동일 SHA-256을 통과했다. 자동 그래픽 디자인·자동 QA·에뮬레이터·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건이다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-29 루프 236 반복 1 가설 — 네 자음 기본 이름 음성과 사용자 녹음 선택
+
+- 가장 중요한 미충족 조건: 사용자 녹음이 없는 lesson은 무음이고, 보호자가 녹음 파일을 보존한 채 아이 화면에서 사용할지 끌 수 없다.
+- 반증 가능한 가설: `기역·니은·디귿·리을` 네 M4A 자산과 `사용자 녹음 사용` 영속 설정을 추가하고 재생 출처를 `켜짐+유효 녹음 → 사용자`, 그 외 `→ 기본 음성`, 없으면 무음으로 결정하면 기존 로컬 녹음 lifecycle을 보존하면서 기본 안내를 제공할 수 있다.
+- 반증 기준: 네 음성의 발음·lesson 매핑·파일 형식이 틀리거나, 꺼짐에서 사용자 파일을 재생·삭제하거나, 켜짐에서 사용자 파일보다 기본 음성을 우선하거나, 설정이 재실행 뒤 사라지거나, UI·재생·자동 다음·수동 취소·기존 검증 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: 네 자음 자산·재생 출처 resolver·한 개 영속 설정·보호자 화면 한 개 온·오프만 추가한다. 나머지 음성은 생성하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 필요 — runtime 합성 없이 네 lesson을 들려주려면 APK에 포함되는 새 M4A 파일 네 개가 필요하다.
+- 음성 생성 경계: 외부 API 키가 없어 macOS 한국어 Yuna로 테스트 자산을 생성한다. 실기기에서 기계적이거나 발음이 부자연스러우면 완료하지 않는다. OpenAI Docs에 따라 API 모델을 임의의 다른 이름으로 대체하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 236 반복 1 기술 검증 결과 최신 위치 정정
+
+- 전체 기술 결과가 과거 동일 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 236 반복 1 기술 검증 결과 — 네 자음 후보 반영·사용자 청취 판정 대기` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 기술 판정: 네 M4A 형식·매핑·APK 포함, PCM16 peak `15627~18041` 무음 아님, 온오프 영속·재생 우선순위·녹음 보존, 2340 × 1080 켜짐·꺼짐·재실행 UI, 에뮬레이터와 SM-S931N 네 음성 완료·수동 정지는 통과했다. APK SHA-256은 `e2553e8fdd4dfd590fc00180cbcfdf71ea43d3577d816121b83f8cc240a5eb05`이다.
+- 완료 보류: 사용자의 실기기 자연스러움·발음 청취 판정 전에는 루프를 완료·커밋·push하지 않는다. 실제 아이 관찰: 실행 안 함.
+- 문서 재검증: 상태 설명을 `상태:` 토큰에 붙인 첫 실행은 자동화 계약에서 실패했다. 설명을 `현재 판정`에 유지하고 토큰을 정확한 `진행 중`으로 교정한 최종 `./scripts/verify.sh`·`git diff --check`·`scripts/check-visual-loop.sh`는 모두 통과했다.
+- 실기기 데이터 사고: SM-S931N에서 네 음성 계측은 통과했지만 Gradle connected test 정리 단계가 대상 앱을 제거했다. 재설치 전 package가 없고 재설치 뒤 `firstInstallTime=2026-08-29 15:27:42`, `no_backup` 파일 0건이어서 기존 보호자 녹음은 소실됐으며 저장소·captures에서 복구 가능한 M4A를 찾지 못했다. APK는 같은 SHA-256으로 즉시 재설치했으며 실기기 계측 금지·에뮬레이터 전용 규칙을 문서화했다.
+
+### 2026-08-29 루프 236 반복 2 결과 — 무료 신경망 네 자음 음성 직접 생성·에뮬레이터 재생 통과
+
+- 가장 중요한 미충족 조건: 반복 1의 macOS Yuna 후보는 사용자가 지나치게 인위적이라고 기각했으므로 네 자음 기본 음성을 자연스러운 무료 생성 음성으로 교체해야 한다.
+- 후보 조사·판정: 로컬 `ppaso-tts-v1`은 제작자가 자연스러움을 희생한 모델이라고 명시해 제외했다. 로컬 Qwen3-TTS·VoxCPM2와 다른 macOS 한국어 음성은 짧은 자음 이름, 특히 `디귿`의 발음이 안정적이지 않아 production 후보에서 제외했다. TTSFree의 무료 이용 조건과 한국어 신경망 음성을 확인한 뒤 `InJoon`으로 네 문구를 각각 직접 생성했다.
+- 생성 무결성: browser session의 각 `Download Mp3` 이벤트로 받은 서로 다른 원본만 사용했다. public URL을 직접 호출해 최신 결과가 중복되던 파일은 폐기했다. 긴 무음 제거·80 ms lead·180 ms tail·peak -2 dB 정규화 뒤 AAC/M4A로 변환했다.
+- production 자산: `기역` 0.608초·SHA-256 `de26c1b8fd1d5745a2ae33005472197586abe1347f2b32603d8d7365185657e3`, `니은` 0.681초·`98c6b848a8347afd5a233e2f85c536143241aef4cdaed8ec8da7f1c562cbdadc`, `디귿` 0.629초·`85670bb91f5ced1bb521af46bce55eb394da10e95804f7cc73701750aa5776a2`, `리을` 0.692초·`217500b32b6b96a6f9a6b258603ce00f597ff9a500b00075db49b9b4311da54b`다. 네 SHA-256은 모두 다르다.
+- 발음 검증: Whisper large-v3-turbo가 원본 연결본을 `기역 니은 디귿 리을`로 읽었고, 후처리·AAC 변환 뒤 연결본도 `기역, 니은, 디귿, 리을`로 읽었다. 자동 인식은 자연스러움의 사용자 청취 판정을 대신하지 않는다.
+- 자동 검증: `./scripts/verify.sh`의 단위 테스트·Android lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`가 통과했다. APK에는 네 raw M4A가 모두 들어 있고 새 APK SHA-256은 `ad66ab9b9d812760c33e765ba7d7f96cb527c9b89ff09e5ec8b0f2ab3cb735a5`다.
+- 에뮬레이터: QA 시작 전 uptime `25449.82`초가 7,200초 한도를 넘어 `emu kill`로 완전 종료하고 `alarmquest-qa`를 snapshot 없이 cold boot했다. 새 uptime `9.45`초, 물리 1080 × 2340·`user_rotation=1`·앱 2340 × 1080을 확인했다. 에뮬레이터에서만 실행한 `DefaultGuardianVoicePlaybackTest` 1/1이 네 음성의 재생 완료·수동 정지를 통과했다.
+- 실기기 경계: ADB 서버 재시작 뒤에도 `adb devices -l`에는 에뮬레이터만 있고 `adb mdns services`에는 실제 기기 서비스가 없었다. 이전 `192.168.0.20`도 네트워크에 응답하지 않아 이번 APK의 SM-S931N 설치·실행·청취는 수행하지 못했다. 실기기 connected test는 금지 규칙에 따라 실행하지 않았다.
+- 가설 판정: 기술 가설은 채택한다. 무료 생성·서로 다른 파일·발음·APK 포함·에뮬레이터 재생은 통과했지만 성공 조건 8과 사용자의 자연스러움 청취 승인이 남아 루프 상태는 `진행 중`이다. 완료 커밋·push는 실행하지 않는다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-29 루프 236 반복 2 에뮬레이터 최종 실행 보강
+
+- 에뮬레이터 계측 종료 뒤 target package가 제거된 것을 확인해 최신 APK를 에뮬레이터에만 다시 설치했다. 설치 `Success`, `MainActivity` cold launch 2523 ms, `topResumedActivity=com.limdo.hangul/.MainActivity`, versionCode 1·versionName 0.1.0, 치명 오류 0건이다.
+- 같은 시점에도 `adb devices -l`에는 에뮬레이터만 있고 `adb mdns services`는 비어 있어 SM-S931N 설치는 수행하지 않았다. 완료 보류 판정은 유지한다.
+
+### 2026-08-29 루프 236 반복 2 무선 설치 재시도
+
+- `adb devices -l`에서 SM-S931N과 mDNS endpoint `192.168.0.183:40351`을 새로 발견했지만, 연결을 여는 중 실제 기기가 목록과 mDNS에서 사라졌다. ADB 서버 재시작·15초 Bonjour 검색·IP ping·TCP 40351 확인 뒤에도 응답이 복구되지 않았다.
+- 최신 APK SHA-256은 계속 `ad66ab9b9d812760c33e765ba7d7f96cb527c9b89ff09e5ec8b0f2ab3cb735a5`다. 실제 `adb install -r`은 시작하지 못했으므로 이번 재시도를 설치 완료로 표현하지 않는다. 실기기 데이터는 변경하지 않았다.
+
+### 2026-08-29 루프 236 반복 2 무선 설치 완료
+
+- 재검색된 mDNS serial에서 `SM-S931N`을 확인했다. 설치 전 package는 versionCode 1·versionName 0.1.0이고 앱 내부 `no_backup` 파일은 11개였다.
+- 최신 debug APK SHA-256 `ad66ab9b9d812760c33e765ba7d7f96cb527c9b89ff09e5ec8b0f2ab3cb735a5`를 `adb install -r --no-streaming`으로 덮어 설치해 `Success`를 확인했다. 설치 후에도 `firstInstallTime=2026-08-29 15:27:42`와 내부 파일 11개가 유지돼 삭제 설치가 아님을 확인했다.
+- cold launch는 375 ms이고 versionCode 1·versionName 0.1.0, `topResumedActivity`·`mCurrentFocus`·`mFocusedApp` 모두 `com.limdo.hangul/.MainActivity`, keyguard=false, 치명 오류 0건이다. 물리 화면은 1080 × 2340, 실기기 PNG는 정확한 2340 × 1080이다.
+- 휴대폰에서 다시 읽어 온 `base.apk`의 SHA-256이 빌드 APK와 정확히 일치했다. 실기기 connected test는 실행하지 않았으며 사용자 데이터는 보존했다.
+- 성공 조건 8의 설치·실행·버전·포커스는 통과했다. 네 음성의 자연스러움·발음은 사용자의 직접 청취 승인 전까지 완료하지 않고 커밋·push하지 않는다.
+
+### 2026-08-29 루프 236 반복 3 결과 — 여자아이 네 자음 음성 재적용·무선 설치 통과
+
+- 가장 중요한 미충족 조건: 사용자가 반복 2의 남성 `InJoon` 후보 대신 여자아이 목소리로 다시 적용하라고 요청했다.
+- 후보 선별: 특정 실제 아동·캐릭터를 복제하지 않는 독립 음색만 사용했다. TTSFree `SunHi`는 `니은`이 문맥에서도 `미은`으로 인식돼 기각했고, 로컬 Qwen VoiceDesign 여자아이 후보는 높은 음색을 만들었지만 단어 반복·`디귿` 발음 실패로 기각했다. TTSFree 한국어 여성 `Standard-A` pitch +20·speed +4는 전체 문구가 `ㄱ·ㄴ·ㄷ·ㄹ`로 인식되고 중앙 음높이 약 288 Hz여서 최종 후보로 골랐다.
+- production 자산: 한 음색으로 `기역. 니은. 디귿. 리을.`을 생성하고 자연 무음 경계에서 분리해 60 ms lead·120 ms tail·peak -2 dB로 정리했다. `기역` 0.550초·275.4 Hz·SHA-256 `95e8d226229fcf4b1286c3951042e256d95bb9ae8f1a9138b45034c73055ff5b`, `니은` 0.711초·291.8 Hz·`51b57374f6a815a23e8af3e3b0f64db55745a6b156c7936921e5988379ee9d8c`, `디귿` 0.584초·277.0 Hz·`938b6b92b61ab201a7579c99b162a9a14bb564d0638a7dfc136951562312354d`, `리을` 0.694초·293.4 Hz·`40de767dcb772f2ef17c6fb34b24e56422459146bbcad200cc3a68da8d0438b1`다.
+- 발음 검증: 최종 AAC 네 파일을 디코딩해 다시 연결한 Whisper large-v3-turbo 결과는 정확히 `기역, 니은, 디귿, 리을`이다. 자동 인식은 사람 귀의 자연스러움 판정을 대신하지 않는다.
+- 자동·에뮬레이터: `./scripts/verify.sh`의 단위 테스트·Android lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`가 통과했다. 에뮬레이터 uptime `1904.94`초는 7,200초 미만이고 물리 1080 × 2340·`user_rotation=1`이다. 에뮬레이터 전용 `DefaultGuardianVoicePlaybackTest` 1/1이 네 음성 완료·수동 정지를 통과했다.
+- 무선 설치: 새 APK SHA-256은 `ca580e742b4964fbfd9a186d50bf705aa321ebbc7385c5eacfafe01d2c3b22ce`다. SM-S931N에 `install -r --no-streaming`이 `Success`였고 설치 전후 내부 파일 11개·firstInstallTime을 보존했다. 휴대폰에서 다시 읽은 `base.apk` 해시가 빌드 APK와 일치했고 cold launch 438 ms·versionCode 1·versionName 0.1.0·치명 오류 0건이다. 실기기 connected test는 실행하지 않았다.
+- 남은 관문: 기기 잠금으로 `mFocusedApp`은 LimDo지만 `mCurrentFocus=NotificationShade`다. 사용자가 잠금 해제 후 여자아이 후보 네 음성을 직접 듣고 자연스러움·발음을 승인하기 전까지 루프는 `진행 중`이며 완료 커밋·push하지 않는다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-29 루프 236 반복 4 결과 — 여자아이 음성 38 lesson 확대·쓰기 시작 1회 재생·무선 설치 통과
+
+- 최신 사용자 지시: 승인 후보와 같은 여자아이 느낌의 음색을 자음 14개·기본 모음 10개·`가~하` 14글자 전체에 적용하고, 쓰기 시작 때 한 번만 들리도록 범위를 확대했다.
+- production 자산: TTSFree 한국어 여성 `Standard-A` pitch +20·speed +4로 자음·모음·글자 세 원본을 생성했다. 자연 무음 구간은 내부 짧은 음절 간격만 병합해 정확히 14·10·14개가 됐고, 80 ms lead·140 ms tail·peak -2 dB·44.1 kHz AAC/M4A로 만들었다. 38파일은 0.403~0.719초, RMS 0.095~0.255, 서로 다른 SHA-256 38개로 무음·중복 0건이다.
+- 제품 변경: `DefaultGuardianVoiceCatalog`를 보호자 38 lesson에 정확히 매핑했다. 쓰기 화면의 음성 호출은 lesson 진입 `LaunchedEffect` 한 곳만 남기고 정답 후 재생·완료 대기를 제거했다. 성공 체크 연출의 `SuccessCelebrationSpec.DURATION_MS` 최소 지연과 자동 다음 lesson 이동은 유지했다. 사용자 녹음 온·오프 우선순위와 fallback은 그대로다.
+- 자동 검증: 최종 `./scripts/verify.sh`의 전체 단위 테스트·Android lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`, `scripts/check-automation.sh`가 통과했다. APK `res/raw` 포함 수는 38개이고 SHA-256은 `9def859fd0ba1581717e405262a9e672a7330d2a2f0b0da3a8a90aeee408d0e7`이다.
+- 에뮬레이터: 시각·입력 QA 전 uptime `3849.60`초로 7,200초 미만, 물리 1080 × 2340·`user_rotation=1`이었다. `DefaultGuardianVoicePlaybackTest`와 `ReducedMotionSuccessTest` 2/2가 38파일 재생 완료·재시작 뒤 수동 정지와 성공 최소 지연 후 자동 다음을 통과했다. 최종 APK 재설치·cold launch 뒤 LimDo focus, PNG 2340 × 1080, 홈 화면 잘림·겹침 0건을 직접 확인했다.
+- 무선 설치: SM-S931N에 `install -r --no-streaming`이 `Success`였고 설치 전후 `no_backup` 파일 2개·`firstInstallTime=2026-08-29 15:27:42`를 보존했다. 빌드·실기기 `base.apk` 해시가 일치하고 cold launch 316 ms·versionCode 1·versionName 0.1.0·치명 오류 0건이다. 실기기 connected test는 실행하지 않았다.
+- 남은 관문: 기기 잠금 때문에 `mCurrentFocus=NotificationShade`이고 `mFocusedApp`만 LimDo다. 사용자가 잠금 해제 뒤 38개 음색·발음을 직접 듣고 승인하기 전에는 루프를 완료하거나 커밋·push하지 않는다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 236 반복 5 가설 — 사용자 청취 승인 뒤 완료 근거 재확인
+
+- 가장 중요한 미충족 조건: 반복 4까지 자동·에뮬레이터·SM-S931N 설치 근거는 통과했지만, 사람 귀로 38개 여자아이 기본 음성의 자연스러움과 발음을 승인하는 관문이 남아 완료하지 못했다. 최신 사용자 지시에서 SM-S931N 설치본 38개 음성의 자연스러움과 발음 승인이 명시됐다.
+- 반증 가능한 가설: 승인된 production 자산과 재생 로직을 변경하지 않은 현재 작업 트리에서 자동 검사, 38개 자산·매핑 검사, 정확한 2340 × 1080 에뮬레이터 재생·화면 관문, SM-S931N 데이터 보존 덮어쓰기·focus·APK 동일성을 새로 확인하면 루프 236의 모든 성공 조건을 충족해 완료할 수 있다.
+- 반증 기준: 38개 M4A 중 중복·무음·형식·매핑 오류, runtime TTS·네트워크 호출, 사용자 녹음 설정 지속·우선순위 오류, 쓰기 진입 재생 중복 또는 정답 후 음성 반복, 자동 검사 실패, 보호자 토글 화면의 잘림·겹침, 에뮬레이터 2340 × 1080·LimDo focus 실패, 실기기 데이터 보존·설치 APK 동일성·LimDo focus 실패 중 하나라도 발생하면 가설을 기각하고 완료·커밋·push하지 않는다.
+- 합리적인 최소 변경: 승인된 음성 자산·매핑·재생 로직은 수정하지 않는다. 새 검증과 완료 상태·다음 D0 루프 준비만 기록한다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 보호자 토글 UI가 이 루프의 production 변경이므로 동일 상태의 새 화면 근거를 다시 확인한다. 자산 필요 판정: 필요 — 승인된 서로 다른 로컬 M4A 38개가 runtime 합성 없는 기본 음성 기능의 필수 production 자산이며 새로 생성하지 않고 그대로 검증한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA 및 사용자 청취 승인과 구분한다.
+
+### 2026-08-30 루프 236 반복 5 결과 — 청취 승인·새 전체 근거 통과·루프 완료
+
+- 사용자 관문: 최신 `.loop/user-directives.md`에서 사용자가 SM-S931N 설치본의 자음 14개·기본 모음 10개·`가~하` 14글자 총 38개 여자아이 느낌 기본 음성의 자연스러움과 발음을 승인했다.
+- 자동 검증: `./scripts/verify.sh`의 전체 단위 테스트·Android lint·debug build, `git diff --check`, `./scripts/check-visual-loop.sh`, `./scripts/check-automation.sh`가 모두 통과했다. production raw 파일은 정확히 38개이고 runtime `TextToSpeech`·인터넷 권한·앱 네트워크 호출은 0건이다.
+- 에뮬레이터: QA 시작 uptime `1053.64`초로 7,200초 미만, 물리 1080 × 2340, `user_rotation=1`이었다. 에뮬레이터 전용 `DefaultGuardianVoicePlaybackTest`·`ReducedMotionSuccessTest` 2/2가 38 lesson 실제 재생 완료·수동 취소·정답 뒤 음성 반복 없음·최소 성공 지연 뒤 자동 다음을 통과했다.
+- 새 화면 근거: APK SHA-256 `9def859fd0ba1581717e405262a9e672a7330d2a2f0b0da3a8a90aeee408d0e7`을 재설치하고 `captures/loop236/iteration5/after/home-stable.png`와 `guardian-toggle.png`, 각 hierarchy를 새로 수집했다. 모두 2340 × 1080이고 `mCurrentFocus`·`mFocusedApp`은 LimDo다. 토글 bounds `[1568,80][2266,274]`=698 × 194 px이며 켜짐은 knob 위치·형태·`사용 중` 문구로 함께 구분되고 목록·녹음 버튼과 잘림·겹침은 0건이다.
+- SM-S931N: 실기기 connected test 없이 `install -r --no-streaming`이 `Success`였다. 설치 전후 `no_backup` 파일 2개와 `firstInstallTime=2026-08-29 15:27:42`가 보존됐고, versionCode 1·versionName 0.1.0, cold launch 364 ms, `mCurrentFocus`·`mFocusedApp` LimDo, 설치 APK SHA-256이 빌드 APK와 일치했다.
+- 이전 반복 비교·가설 판정: 반복 4의 유일한 미충족 조건인 사용자 청취 승인이 충족됐고 동일 자산·로직의 새 자동·에뮬레이터·화면·실기기 관문에도 반증 기준이 발생하지 않아 가설을 `채택`한다. 자동 그래픽 디자인 역할·자동 QA 역할·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건이다. 실제 아이 관찰: 실행 안 함.
+- 완료·전환: 루프 236의 모든 성공 조건을 통과했다. 최신 사용자 지시의 프리미엄 디자인 에픽 D0를 루프 237로 준비했으며 이 작업자는 구현하지 않는다. 루프 237은 도달 전 씬 inventory·보호자 녹음 삭제 안전·성능 baseline·art bible·full-screen mock 정확히 3안 뒤 사용자 선택 대기를 종료 경계로 삼는다.

@@ -1,27 +1,32 @@
-# 루프 목표 235 — `가나다 → 가 → production 쓰기판` 직접 진입 복원
+# 루프 목표 237 — 프리미엄 디자인 D0 전 씬 inventory·삭제 안전·아트 방향 3안
 
 ## 작업 가치 관문
 
 분류: 사용자 지시
-사용자 가치: `가나다`에서 `가`를 고르면 전처럼 가 쓰기를 바로 시작하고, 원하지 않는 조립 선택을 한 번 더 거치지 않는다.
-새로운 근거: 실기기 확인 후 사용자가 `가나다`가 이전 쓰기가 아닌 선택 흐름으로 바뀌었다고 직접 지적했다. Git 이력에서 루프 205의 `GANADA + GA` 예외 분기가 원인으로 확인됐다.
-중복 방지: `가`의 기본 진입 분기와 회귀 검사만 수정하며 조립 코드 전체 제거나 다른 lesson 확장을 섞지 않는다.
+사용자 가치: 전면 리디자인 전에 실제로 도달 가능한 전 씬과 데이터 삭제 위험을 확정하고, 일관된 프리미엄 시각 방향 세 가지 중 하나를 안전하게 선택할 수 있다.
+새로운 근거: 2026-08-30 최신 사용자 지시는 기능만 동작하는 현재 화면의 상품성 부족을 지적하고 전 씬 프리미엄 UI·UX를 요청했으며, 보호자 녹음 삭제가 확인·실행 취소 없이 즉시 실행되는 별도 데이터 안전 결함이 production 감사에서 확인됐다.
+중복 방지: 이번 루프는 D0의 도달 씬 inventory, 녹음 삭제 확인 또는 즉시 실행 취소, 성능 baseline, 공통 art bible과 full-screen mock 정확히 3안까지만 다룬다. 사용자가 한 방향을 선택하기 전 production 전면 리디자인이나 D1 이후 화면군 구현은 시작하지 않는다.
 
 ## 목표
 
-홈 `가나다` → 기존 14글자 화면 → `가`를 누르면 조립 선택 없이 production `가` 쓰기판으로 직접 진입한다.
+`docs/전-씬-프리미엄-디자인-루프-작업지시.md`의 D0를 수행한다. 같은 새 APK에서 도달 가능한 씬·중요 상태를 inventory로 확정하고, 보호자 녹음 삭제에 확인 또는 즉시 실행 취소를 추가하며, 성능·자산 기준과 공통 art bible을 고정한다. 현재 production 화면을 기준으로 full-screen mock 방향을 정확히 세 가지 준비한 뒤 사용자 선택을 기다린다.
+모든 화면 근거는 정확한 2340 × 1080에서 수집한다.
+
+시각 변경: 예
+자산 필요 판정: 필요 — 현재 production 기준 화면을 바탕으로 서로 구분되는 full-screen mock 세 방향을 제시하려면 슬롯과 안전 영역을 측정한 전용 bitmap 시안이 필요하며, `imagegen`의 Codex 내장 생성기로 만들고 production 적용은 사용자 선택 뒤로 미룬다.
 
 ## 성공 조건
 
-1. `./scripts/verify.sh`, `git diff --check`, `scripts/check-visual-loop.sh`가 통과한다.
-2. `GANADA + GA`를 `LearningDestination.GaAssembly`로 보내는 예외 분기가 production 진입 코드에 0건이다.
-3. 자동 UI 검사에서 `가 쓰기 시작` 탭 직후 `가를 3획으로` 쓰기판이 나타나고 `가 조립 선택`은 나타나지 않는다.
-4. 자음·모음·나머지 13글자, 보호자 목록, 녹음·자동 다음·네 조작의 기존 검사가 통과한다.
-5. `alarmquest-qa` 물리 1080 × 2340·`user_rotation=1`·LimDo 2340 × 1080 상태에서 실제 탭·PNG·hierarchy·focus를 확인한다.
-6. 쓰기판이 1962 × 954 px이고, 글자 geometry·시작점·네 조작의 잘림·겹침·가림이 0건이다.
-7. `SM-S931N`에 최종 debug APK를 무선 덮어쓰기 설치하고 실행·버전·포커스를 확인한다.
+1. D0 범위의 자동 검사와 `./scripts/verify.sh`, `git diff --check`, `scripts/check-visual-loop.sh`, `scripts/check-automation.sh`가 통과한다.
+2. 새 APK에서 홈부터 실제 입력으로 도달 가능한 모든 씬·중요 상태의 inventory를 PNG·hierarchy·focus·진입 동작과 연결하고 `GaAssembly`는 도달 불가로 분리한다.
+3. 보호자 녹음 삭제는 대상 글자와 결과를 미리 보여 주는 확인 또는 즉시 실행 취소를 제공하며 취소 시 원본 파일을 보존한다.
+4. 공통 palette·재질·광원·corner·elevation·spacing·typography·icon·background density·motion token을 art bible과 재사용 가능한 코드 기준으로 고정한다.
+5. 현재 APK 크기, raster 압축·decode 크기, 대표 흐름 framestats·PSS 기준값을 기록한다.
+6. 현재 production 기준 화면을 사용해 full-screen mock 방향을 정확히 세 가지 만들고, 각 방향을 자동 아트 디렉션·UI/UX·접근성 역할로 비교한다.
+7. WritingCanvas 1962 × 954 px, 네 조작 168 × 168 px, 교육 geometry, 보호자 비스크롤 계약과 승인된 38개 음성 기능에 회귀가 없다.
+8. 사용자가 세 방향 중 하나를 선택하기 전 D1 production 전면 구현을 시작하지 않는다.
 
 ## 완료 정의
 
-`가나다 → 가`의 직접 쓰기 진입과 실제 에뮬레이터·무선 실기기 근거를 모두 확인하면 완료한다.
+D0 근거와 삭제 안전 수정·성능 baseline·art bible·mock 정확히 3안이 모두 준비되고 자동 역할 검토를 통과하면 사용자 선택 대기로 전환한다. 같은 작업자는 D1 production 구현을 시작하지 않는다.
 완료 체크포인트만 `git push origin HEAD`로 일반 push한다.

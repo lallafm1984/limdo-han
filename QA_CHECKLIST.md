@@ -26,6 +26,13 @@
 - 최신 APK를 다시 설치·실행한 뒤 앱 화면 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo, 필요한 시험 fixture 복원을 확인하고 QA를 재개한다.
 - 재시작 뒤 uptime은 7,200초 미만이어야 한다. 재시작 전 한계를 넘긴 뒤 얻은 PNG·hierarchy·focus는 완료 증거로 인정하지 않는다.
 
+## 실기기 앱 데이터 보존 관문
+
+- 사용자 실기기에서는 `connectedDebugAndroidTest`를 실행하지 않는다. Gradle의 connected test 정리 단계가 대상 앱을 제거해 `noBackupFilesDir`의 보호자 녹음과 설정을 함께 지울 수 있다.
+- 계측 테스트는 `ANDROID_SERIAL=emulator-5554`를 명시한 에뮬레이터에서만 실행한다.
+- 실기기 검증은 `adb install -r` 덮어쓰기, 실제 화면·focus·로그·수동 재생으로 수행한다. 앱 제거가 필요한 검증은 사용자에게 데이터 삭제 범위를 먼저 알리고 명시적 승인을 받은 별도 test package에서만 한다.
+- 음성·설정이 있는 debug package를 실기기에서 검증하기 전 `run-as <package> find no_backup`으로 보존 대상을 읽기 전용 감사하고, 검증 뒤 파일 존재를 다시 확인한다.
+
 ## 다섯 살 이해 가능성 관문
 
 - 한 화면에 분명한 학습 과제 하나만 제시한다.
