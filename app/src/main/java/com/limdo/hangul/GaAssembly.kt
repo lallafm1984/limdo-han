@@ -23,6 +23,7 @@ internal enum class GaAssemblyTarget(
     NU(LessonId.NU, "누", initialName = "니은"),
     NYU(LessonId.NYU, "뉴", initialName = "니은"),
     NEU(LessonId.NEU, "느", initialName = "니은"),
+    NI(LessonId.NI, "니", initialName = "니은"),
 }
 
 internal val GaAssemblyTarget.isHorizontalVowel: Boolean
