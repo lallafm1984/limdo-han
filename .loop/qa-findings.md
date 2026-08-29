@@ -3061,3 +3061,11 @@
 - 판정: 글을 읽지 않아도 `라`의 오른쪽 짧은 획과 `러`의 왼쪽 짧은 획, `ㄹ·ㅓ` 조각·좌·우 빈칸·오순서 재강조·완성·쓰기 시작점·방향·성공 체크를 구분한다. 네 그림 조작은 hierarchy에서 각 168 × 168 px callback과 상태를 유지한다.
 - 자동 QA: `verify.sh`·diff·`ReoAssemblyFlowTest` 1/1, WritingCanvas 1962 × 954 px, production 정방향 5획·성공·다음·홈 통과. 실제 아이 관찰: 실행 안 함.
 - 다음 제품 작업: 새 불편은 없다. 2차 교육과정 3단계의 다음 미구현 조립 `ㄹ + ㅕ → 려`를 루프 234로 준비한다.
+
+## QA-192 — 루프 235 `가나다 → 가` 직접 쓰기 복원 최종 아이 대리 QA
+
+- 상태: 통과. 새 P0·P1·진행 방해 P2는 0건이다.
+- 근거: 변경 전 `captures/loop234/iteration1/after/target-selection.png`·hierarchy와 변경 후 `captures/loop235/iteration1/after/ga-direct-writing.png`·hierarchy·focus, 격리 APK SHA-256 `e4924c142a181b8cc58747e0d2bb7e3b6eac7b4d205851e15ed94acf360f2f14`.
+- 판정: `가` 카드 뒤에 여러 조립 대상을 다시 고르게 하던 화면이 제거되고 즉시 큰 `가` 쓰기판·초록 시작점·점선 경로·네 그림 조작이 나타난다. 2340 × 1080에서 잘림·겹침·왜곡·조작 가림은 0건이다.
+- 자동 QA: 격리 unit·lint·debug build와 `GanadaDirectWritingFlowTest` 1/1, `가를 3획으로` 존재·`가 조립 선택` 부재, WritingCanvas 1962 × 954 px, LimDo focus를 통과했다. 실제 아이 관찰: 실행 안 함.
+- 다음 제품 작업: 루프 234의 조립 후보는 최신 사용자 지시와 충돌하므로 자동 전환하지 않는다. 감독자는 후속 제품 방향을 다시 정하기 전까지 중지 상태를 유지한다.

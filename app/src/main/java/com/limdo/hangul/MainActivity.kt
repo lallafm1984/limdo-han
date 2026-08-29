@@ -243,16 +243,12 @@ private fun LearningShell(
         is LearningDestination.Selection -> LessonSelection(
             menu = current.menu,
             onSelect = { lesson ->
-                if (current.menu == LearningMenu.GANADA && lesson.id == LessonId.GA) {
-                    destination = LearningDestination.GaAssembly
-                } else {
-                    nextWritingSessionId += 1
-                    destination = LearningDestination.Writing(
-                        menu = current.menu,
-                        lessonId = lesson.id,
-                        sessionId = nextWritingSessionId,
-                    )
-                }
+                nextWritingSessionId += 1
+                destination = LearningDestination.Writing(
+                    menu = current.menu,
+                    lessonId = lesson.id,
+                    sessionId = nextWritingSessionId,
+                )
             },
             onHome = { destination = LearningDestination.Home },
         )

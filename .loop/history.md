@@ -584,6 +584,36 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예(반복 1 변경의 최종 경계 판정이며 이번 반복의 신규 시각 변경은 없음). 자산 필요 판정: 불필요 — 기존 production 점선·시작점·동적 시범 geometry 상태 경계 검증이며 bitmap은 lifecycle 정확성을 높이지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
 
+### 2026-08-29 루프 235 반복 1 결과 — 기존 `가` 쓰기 직접 진입·무선 설치 통과
+
+- 최소 제품 변경: `MainActivity`에서 `GANADA + GA`만 `GaAssembly`로 보내던 예외 분기를 제거하고 모든 가나다 lesson이 공통 `LearningDestination.Writing` 경로를 사용하게 복원했다. `GanadaDirectWritingFlowTest`로 `가 쓰기 시작` 직후 `가를 3획으로`가 존재하고 `가 조립 선택`이 없음을 고정했다.
+- 자동 검증: 현재 작업 트리 `./scripts/verify.sh`·`git diff --check`가 통과했고, 미커밋 루프 234 후보를 제외한 격리 소스에서 unit·Android lint·debug APK와 `GanadaDirectWritingFlowTest` 1/1이 통과했다. 최종 APK는 package `com.limdo.hangul`, versionName `0.1.0`, versionCode `1`, v2 서명 유효, SHA-256 `e4924c142a181b8cc58747e0d2bb7e3b6eac7b4d205851e15ed94acf360f2f14`다.
+- 에뮬레이터·실화면: `alarmquest-qa` cold boot uptime `100.52`초에서 물리 1080 × 2340·`user_rotation=1`을 확인했다. 최종 격리 APK의 실제 탭 결과는 2340 × 1080, hierarchy에 `가를 3획으로` 존재·`가 조립 선택` 0건, LimDo `mCurrentFocus`·`mFocusedApp` 통과다. WritingCanvas는 1962 × 954 px이고 글자·시작점·네 조작의 잘림·겹침·가림은 0건이다.
+- 무선 전달: SM-S931N에 `adb install -r --no-streaming`이 성공했고 `MainActivity` 콜드 실행 331 ms, version `0.1.0`/1, 실행 PID와 `ResumedActivity`·`mFocusedApp` LimDo를 확인했다. 기기 잠금 화면 Bouncer가 현재 창 위에 있어 `mCurrentFocus`는 잠금 UI이며, 설치된 `base.apk`를 다시 읽은 SHA-256이 빌드 APK와 일치했다. FATAL EXCEPTION은 0건이다.
+- 가설 판정: 채택. 자동 그래픽 디자인·자동 QA·에뮬레이터·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건이다. 실제 아이 관찰: 실행 안 함.
+- 완료·전환: 루프 235를 완료했다. 최신 직접 쓰기 지시와 충돌하는 루프 234 조립 후보는 사용자 작업을 보존한 채 커밋·push하지 않았고 감독자도 자동 재개하지 않는다.
+
+### 2026-08-29 루프 234 반복 1 결과 — `려` 후보 검증 통과 후 최신 사용자 지시와 충돌로 차단
+
+- 기록 정정: 이 반복의 가설에서 `돨`로 적어야 할 기존 `ㅕ` geometry 참조를 `돨`로 잘못 적은 표기가 있다. 덧붙이기 전용 계약에 따라 기존 기록은 수정·삭제하지 않고, 실제 구현·검증은 `돨`의 오른쪽 `ㅕ` 3획 geometry를 사용했음을 정정한다.
+- 최소 제품 변경 후보: `LessonId.RYEO`·production `려` 6획 geometry·cue와 `GaAssemblyTarget.RYEO`·접근성 이름·단위·Android 계측 검사를 추가했다. 기존 좌우 조립 상태·쓰기 callback·atlas를 재사용했고 다음 모음은 늘리지 않았다.
+- 자동 검증 비교: 첫 `./scripts/verify.sh`는 새 lesson을 반영하지 않은 교육 단계 oracle 1건을 정확히 실패시켰다. `려` 한 항목을 보정한 최종 검증은 167개 unit·Android lint·debug build·`git diff --check`를 통과했다. APK SHA-256은 `375946299c8e93cde5d51ca11066901f7b1537d92d87b99f6f87fa939153a67f`이다.
+- 에뮬레이터 관문: serial이 없어 `alarmquest-qa`를 snapshot 없이 cold boot했다. uptime `9.82`초에서 시작해 최종 수집 `41.65`초, 물리 1080 × 2340, `user_rotation=1`, 7개 PNG 2340 × 1080, 각 동시점 focus `com.limdo.hangul/.MainActivity`를 확인했다.
+- 실제 입력·화면: `RyeoAssemblyFlowTest` 1/1이 선택, 모음 먼저 거부, `ㄹ`→`ㅕ` 완성, production 정방향 6획 성공, 다음·홈을 실행했다. 조각은 각 341 × 368 px, 좌·우 칸은 각 284 × 284 px, WritingCanvas는 `[189,63][2151,1017]`=1962 × 954 px, 네 조작은 각 168 × 168 px이다.
+- 실화면 직접 판정: `captures/loop234/iteration1/after/`의 선택·시작·오순서·완성·쓰기·성공 PNG를 원본 크기로 읽었다. `러`의 짧은 획 하나와 `려`의 두 획, 좌·우 조립, 완성·쓰기 geometry가 일치했고 잘림·겹침·왜곡·조작 가림은 0건이다.
+- 정확한 차단 사유: 검증 도중 `.loop/user-directives.md`에 `가나다 → 가`를 조립 선택으로 보내지 말고 기존 production 쓰기로 즉시 진입하라는 최우선 사용자 지시가 새로 추가됐다. 이번 계측 검사는 정확히 금지된 `가나다 → 가 → 조립 선택`을 진입점으로 사용했으므로 회귀 없음·자동 QA·아이 대리 QA 통과로 인정할 수 없다.
+- 가설 판정: `려` geometry·조립·쓰기 후보는 자동·실화면 범위에서 채택했지만, 최신 사용자 지시와 충돌해 루프 전체는 `차단`이다. 자동 그래픽 디자인·자동 QA·아이 대리 QA는 미판정, 실제 아이 관찰: 실행 안 함.
+- 종료: 정확히 한 번의 반복을 마쳤다. 완료 커밋·push·다음 루프 전환은 실행하지 않았다. 감독자가 최신 사용자 지시를 단일 회귀 수정 루프로 재정의해야 한다.
+
+### 2026-08-29 루프 234 반복 1 가설 — production `러`·`돨` geometry로 `려` 3+3획 자모 조립
+
+- 가장 중요한 미충족 조건: 현재 `ㄹ` 조립 진입은 `라·러`만 제공해, 왼쪽 짧은 획 두 개의 `ㅕ`를 오른쪽 칸에 놓고 `려`를 완성한 뒤 production 쓰기로 연결할 수 없다.
+- 반증 가능한 가설: `LessonId.RYEO`와 production `려` 6획 lesson을 `러`의 `ㄹ` 3획·`돨`의 `ㅕ` 3획 상대 배치로 추가하고 `GaAssemblyTarget.RYEO` 하나만 확장하면, `러`와 짧은 획 개수로 구분하면서 조각·칸·완성·쓰기 geometry가 일치하고 1962 × 954 px 쓰기판으로 연결될 것이다.
+- 반증 기준: `려` 선택이 누락·중복되거나 `ㅕ`의 왼쪽 짧은 획이 하나만 보이고, 모음 먼저·빈 칸이 완성되거나, callback이 `LessonId.RYEO`가 아니거나, 정방향 6획·오순서 거부·기존 조립·navigation·geometry 검사 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: `RYEO` lesson·geometry·cue, 조립 target·접근성 이름·단위·대표 on-device 검사만 확장하고 기존 상태 전이·좌우 layout·쓰기 callback·atlas를 재사용한다. 다음 모음은 늘리지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — production `러`·`돨` geometry와 기존 조립 카드·성공·조작 atlas가 `려` 교육 geometry와 다음 행동을 직접 표현하며 새 bitmap은 과제를 더 정확하게 하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
 ### 2026-08-29 루프 233 반복 1 결과 — `러` 3+2획 조립·쓰기·성공 통과
 
 - 최소 제품 변경: `LessonId.REO`·production `러` 5획 geometry·cue와 `GaAssemblyTarget.REO`·접근성 이름·단위·대표 on-device 검사를 추가했다. 기존 상태 전이·좌우 layout·쓰기 callback·atlas를 재사용했고 다른 모음은 늘리지 않았다.
@@ -8763,3 +8793,22 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 합리적인 최소 변경: `REO` lesson·geometry·cue, 조립 target·접근성 이름·단위·대표 on-device 검사만 확장하고 기존 상태 전이·좌우 layout·쓰기 callback·atlas와 다른 모음은 늘리지 않는다.
 - 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — production `라`·`더` geometry와 기존 조립 카드·성공·조작 atlas가 `러` 교육 geometry와 다음 행동을 직접 표현하므로 새 bitmap은 과제를 더 정확하게 하지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 234 반복 1 결과 최신 위치 정정
+
+- 반복 1의 전체 가설·결과가 과거 동일 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 234 반복 1 결과 — 려 후보 검증 통과 후 최신 사용자 지시와 충돌로 차단` 절을 현재 유효한 전체 결과로 사용한다.
+- 최종 판정: `려` 후보의 167개 unit·lint·build·`RyeoAssemblyFlowTest` 1/1·2340 × 1080 화면은 통과했지만, 최신 `가나다 → 가` 직접 쓰기 복원 지시와 실행 경로가 충돌해 루프 234는 `차단`이다. 완료 커밋·push·큐 전환은 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-29 루프 235 반복 1 가설 — `가나다`의 `가` 직접 쓰기 진입 복원
+
+- 가장 중요한 미충족 조건: `가나다`의 `가`를 누르면 production 쓰기판 대신 조립 대상 선택이 나타나 사용자가 요청한 기존 자유 쓰기 흐름을 막는다.
+- 반증 가능한 가설: `LearningDestination.Selection`의 `GANADA + GA`만 `GaAssembly`로 보내는 예외 분기를 제거하고 기존 공통 `Writing` 진입을 사용하면, 다른 메뉴·lesson·보호자 흐름을 바꾸지 않고 `가` 쓰기판이 즉시 나타날 것이다.
+- 반증 기준: `가 쓰기 시작` 탭 직후 `가 조립 선택`이 나타나거나 `가를 3획으로` 쓰기판이 없고, 자동 검사·에뮬레이터·무선 실기기 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: `MainActivity` 예외 분기 제거와 직접 진입 회귀 검사 한 개만 추가한다. 미커밋 `려` 후보나 조립 코드 전체 정리는 섞지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 선택 카드·production 쓰기판·조작 atlas를 재사용한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-29 루프 235 반복 1 결과 최신 위치 정정
+
+- 반복 1 결과 전체가 동일한 과거 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 235 반복 1 결과 — 기존 가 쓰기 직접 진입·무선 설치 통과` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 판정: 격리 unit·lint·debug build·`GanadaDirectWritingFlowTest` 1/1과 2340 × 1080 직접 쓰기 화면, SM-S931N 무선 덮어쓰기·실행·설치 APK 동일 SHA-256을 통과했다. 자동 그래픽 디자인·자동 QA·에뮬레이터·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건이다. 실제 아이 관찰: 실행 안 함.

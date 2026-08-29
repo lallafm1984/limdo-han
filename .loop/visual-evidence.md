@@ -1,19 +1,17 @@
 # 현재 시각 루프 증거
 
-루프: 216
-상태: 완료 — 반복 2 `녀` 선택·조립·쓰기·성공·`다` 다음·홈 통과
+루프: 235
+상태: 완료 — `가나다 → 가` production 쓰기판 직접 진입 복원·무선 설치 통과
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop215/iteration1/after/target-selection.png
-변경 전 hierarchy: captures/loop215/iteration1/after/target-selection.xml
-변경 후 PNG: captures/loop216/iteration2/after/target-selection.png
-변경 후 hierarchy: captures/loop216/iteration2/after/target-selection-hierarchy.txt
-성공 PNG: captures/loop216/iteration2/after/nyeo-success.png
-성공 hierarchy: captures/loop216/iteration2/after/nyeo-success-hierarchy.txt
+변경 전 PNG: captures/loop234/iteration1/after/target-selection.png
+변경 전 hierarchy: captures/loop234/iteration1/after/target-selection-hierarchy.txt
+변경 후 PNG: captures/loop235/iteration1/after/ga-direct-writing.png
+변경 후 hierarchy: captures/loop235/iteration1/after/ga-direct-writing-hierarchy.txt
 package: com.limdo.hangul
 focus: 통과
-APK SHA-256: ace011229f13bee11a461d8aa41d643025c0075edbf17199c0ec121eedd72b66
+APK SHA-256: e4924c142a181b8cc58747e0d2bb7e3b6eac7b4d205851e15ed94acf360f2f14
 Git commit: 현재 HEAD 기준 미커밋 작업 트리
-자산 필요 판정: 불필요 — production `NYEO` geometry와 기존 조립 token·성공·조작 atlas 재사용
+자산 필요 판정: 불필요 — 기존 `가` production geometry와 네 조작 atlas 재사용
 자산 자동 검사: 불필요 — 새 raster 0건
 자동 그래픽 디자인 역할: 통과
 자동 QA 역할: 통과
@@ -297,4 +295,16 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 자동 그래픽 디자인 역할: 통과 — `드`의 아래쪽 가로 모음과 `디`의 오른쪽 세로 모음이 선택·조립·쓰기·성공에서 구분되고 잘림·왜곡·가림·halo·검은 배경은 0건이다.
 - 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`DiAssemblyFlowTest` 1/1, 오순서 거부·정방향 3획·성공·다음·홈을 통과했다.
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 `ㄷ·ㅣ` 조각, 좌·우 빈칸, 오순서 재강조, 완성 카드, 큰 쓰기판, 정답 체크와 네 그림 조작을 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+
+## 루프 235 반복 1 최종 근거
+
+- 변경 전: `captures/loop234/iteration1/after/target-selection.png`와 hierarchy의 `가 조립 선택`. 변경 후: `captures/loop235/iteration1/after/ga-direct-writing.png`와 hierarchy·focus의 `가를 3획으로` production 쓰기판.
+- 환경: `alarmquest-qa` cold boot, QA 시작 uptime `100.52`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo.
+- APK SHA-256: `e4924c142a181b8cc58747e0d2bb7e3b6eac7b4d205851e15ed94acf360f2f14`. package `com.limdo.hangul`, version `0.1.0`/1, v2 서명 통과.
+- 실측: WritingCanvas `[189,63][2151,1017]`=1962 × 954 px. 기존 네 조작 배치와 `가` 교육 geometry를 그대로 사용했다.
+- 자산 필요 판정: 불필요 — 기존 `가` production geometry·시작점·조작 atlas를 재사용했고 새 raster는 0건이다.
+- 자동 그래픽 디자인 역할: 통과 — 직접 진입한 화면에서 큰 `가`와 초록 시작점·점선 경로·네 조작의 잘림·겹침·가림·왜곡은 0건이다.
+- 자동 QA 역할: 통과 — 격리 unit·lint·debug build와 `GanadaDirectWritingFlowTest` 1/1, `가 조립 선택` 0건, 설치 APK 동일 해시를 확인했다.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 `가` 카드 뒤에 곧바로 큰 따라 쓰기 길이 나타나며 추가 조립 선택 없이 시작 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
