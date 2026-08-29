@@ -85,6 +85,17 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 자동 QA 역할: 통과 — `verify.sh`·diff·시각 계약·`GiAssemblyFlowTest` 1/1, 2획 성공·`RA` 다음·홈, WritingCanvas 1962 × 954 px와 네 168 × 168 px 조작을 통과했다.
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 왼쪽 `ㄱ`·오른쪽 단일 세로획, 완성 글자, 큰 체크와 기쁜 캐릭터, 네 그림 조작으로 과제·성공·다음 행동을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+## 루프 223 반복 1 최종 근거
+
+- 변경 전: `captures/loop223/iteration1/before/target-selection.png`와 hierarchy. 변경 후: `captures/loop223/iteration1/after/`의 선택·시작·오순서·완성·쓰기·성공·다음 PNG와 각 hierarchy·focus.
+- 환경: `alarmquest-qa` snapshot 없이 cold boot, uptime `9.86`초에서 시작해 최종 기록 7,200초 미만, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, 모든 focus `com.limdo.hangul/.MainActivity`.
+- APK SHA-256: `3117083cbe14a4acc4c9f960c21e2ca2db053c542df938de8b5896feeb66e11f`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 실측: 선택 `다` 카드 `[1428,698][1680,950]`=252 × 252 px, 조립 조각 341 × 368 px, 좌·우 칸 284 × 284 px, WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 네 조작 각 168 × 168 px. 성공 overlay는 쓰기판 내부에 머물렀다.
+- 자산 필요 판정: 불필요 — production `DA` geometry와 기존 조립 token·정답·조작 atlas 재사용, 새 raster 0건. 기존 atlas의 APK production 소비를 성공 PNG·semantics로 재확인했다.
+- 자동 그래픽 디자인 역할: 통과 — 첫 6열 후보의 `다` 카드 126 px 높이 P2를 7열×3행으로 교정했고, `나`의 열린 `ㄴ`과 `다`의 닫힌 `ㄷ`, 조립·쓰기·성공에서 잘림·왜곡·가림·halo·검은 배경은 0건이다.
+- 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`DaAssemblyFlowTest` 1/1, 오순서 거부·production 4획·성공·`라` 다음·홈을 통과했다.
+- 아이 대리 QA: 통과 — 글을 읽지 않아도 큰 `ㄷ·ㅏ` 조각, 좌·우 빈칸, 주황 재안내, 완성 카드, 큰 쓰기판, 큰 체크와 기쁜 캐릭터, 네 그림 조작을 순서대로 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
 
 ## 루프 221 반복 1 최종 근거
 
@@ -168,3 +179,7 @@ Git commit: 현재 HEAD 기준 미커밋 작업 트리
 - 자동 QA 역할: 통과 — `verify.sh`·`git diff --check`·`NiAssemblyFlowTest` 1/1, 오순서 거부·정방향 2획·성공·`다` 다음·홈 통과.
 - 아이 대리 QA: 통과 — 글을 읽지 않아도 `ㄴ·ㅣ` 조각, 좌·우 빈칸, 오순서 재강조, 완성 카드, 큰 쓰기판, 큰 체크와 기쁜 캐릭터, 네 그림 조작을 구분한다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+## 루프 223 반복 1 최종 근거 최신 위치 정정
+
+- 전체 근거가 과거 동일 문장 anchor 때문에 88행 부근에 먼저 덧붙여졌다. `루프 223 반복 1 최종 근거` 절과 이 절을 최신 유효 근거로 사용한다.
+- 최종 파일은 `captures/loop223/iteration1/after/`, APK SHA-256 `3117083cbe14a4acc4c9f960c21e2ca2db053c542df938de8b5896feeb66e11f`, 자동 그래픽 디자인·자동 QA·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건이다.

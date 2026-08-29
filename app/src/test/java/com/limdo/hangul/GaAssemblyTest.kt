@@ -36,7 +36,8 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.NYU.lessonId == LessonId.NYU)
         assertTrue(GaAssemblyTarget.NEU.lessonId == LessonId.NEU)
         assertTrue(GaAssemblyTarget.NI.lessonId == LessonId.NI)
-        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140", "노", "뇨", "누", "뉴", "느", "니"))
+        assertTrue(GaAssemblyTarget.DA.lessonId == LessonId.DA)
+        assertTrue(GaAssemblyTarget.entries.map { it.glyph } == listOf("가", "거", "겨", "고", "교", "구", "규", "그", "기", "나", "너", "\uB140", "노", "뇨", "누", "뉴", "느", "니", "다"))
         assertFalse(GaAssemblyTarget.GA.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GO.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.GYO.isHorizontalVowel)
@@ -53,6 +54,7 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.NYU.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NEU.isHorizontalVowel)
         assertFalse(GaAssemblyTarget.NI.isHorizontalVowel)
+        assertFalse(GaAssemblyTarget.DA.isHorizontalVowel)
         assertTrue(GaAssemblyTarget.NA.initialName == "니은")
         assertTrue(GaAssemblyTarget.NA.initialStrokeCount == 1)
         assertTrue(GaAssemblyTarget.NEO.initialName == "니은")
@@ -71,6 +73,25 @@ class GaAssemblyTest {
         assertTrue(GaAssemblyTarget.NEU.initialStrokeCount == 1)
         assertTrue(GaAssemblyTarget.NI.initialName == "니은")
         assertTrue(GaAssemblyTarget.NI.initialStrokeCount == 1)
+        assertTrue(GaAssemblyTarget.DA.initialName == "디귿")
+        assertTrue(GaAssemblyTarget.DA.initialStrokeCount == 2)
+    }
+
+    @Test fun daUsesTheProductionDigeutAndTwoAStrokesToItsRight() {
+        val da = KoreanCurriculum.lessons.single { it.id == LessonId.DA }
+        val geometry = WritingCanvasGeometry.glyph(da, 1962f, 954f)
+
+        assertTrue(da.strokeCount == 4)
+        assertTrue(da.strokeDirections == listOf(StrokeDirection.RIGHT, StrokeDirection.DOWN, StrokeDirection.DOWN, StrokeDirection.RIGHT))
+        assertTrue(geometry.strokes.take(GaAssemblyTarget.DA.initialStrokeCount).size == 2)
+        assertTrue(geometry.strokes.drop(GaAssemblyTarget.DA.initialStrokeCount).size == 2)
+        val initial = geometry.strokes.take(2).flatten()
+        val vowel = geometry.strokes.drop(2)
+        assertTrue(initial.maxOf { it.x } < vowel.flatten().minOf { it.x })
+        assertTrue(vowel.first().first().x == vowel.first().last().x)
+        assertTrue(vowel.first().first().y < vowel.first().last().y)
+        assertTrue(vowel.last().first().x < vowel.last().last().x)
+        assertTrue(vowel.last().first().y == vowel.last().last().y)
     }
 
     @Test fun niUsesTheProductionNieunAndOneVerticalIStrokeToItsRight() {

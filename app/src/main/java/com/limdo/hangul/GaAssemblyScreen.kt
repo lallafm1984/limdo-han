@@ -45,7 +45,7 @@ internal fun GaAssemblyScreen(onHome: () -> Unit, onWrite: (LessonId) -> Unit) {
         ) {
             HomeAction(onClick = onHome, modifier = Modifier.size(64.dp))
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                GaAssemblyTarget.entries.toList().chunked(6).forEach { choices ->
+                GaAssemblyTarget.entries.toList().chunked(7).forEach { choices ->
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         choices.forEach { choice ->
                             Surface(
@@ -166,6 +166,7 @@ private fun GaAssemblyTarget.vowelName(): String = when (this) {
     GaAssemblyTarget.NYU -> "유"
     GaAssemblyTarget.NEU -> "으"
     GaAssemblyTarget.NI -> "이"
+    GaAssemblyTarget.DA -> "아"
 }
 
 @Composable
