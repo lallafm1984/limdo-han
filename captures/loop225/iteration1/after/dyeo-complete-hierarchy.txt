@@ -1,0 +1,33 @@
+Printing with useUnmergedTree = 'true'
+Node #1 at (l=0.0, t=0.0, r=2340.0, b=1080.0)px
+ |-Node #2 at (l=0.0, t=0.0, r=2340.0, b=1080.0)px
+   IsTraversalGroup = 'true'
+    |-Node #121 at (l=42.0, t=456.0, r=210.0, b=624.0)px
+    | Focused = 'false'
+    | ContentDescription = '[홈으로 돌아가기]'
+    | Actions = [OnClick, RequestFocus]
+    | MergeDescendants = 'true'
+    |-Node #124 at (l=242.0, t=156.0, r=583.0, b=524.0)px
+    | ContentDescription = '[디귿 조각]'
+    | StateDescription = '놓음'
+    | [Disabled]
+    | Actions = [OnClick]
+    | MergeDescendants = 'true'
+    |-Node #126 at (l=242.0, t=556.0, r=583.0, b=924.0)px
+    | ContentDescription = '[여 모음 조각]'
+    | StateDescription = '놓음'
+    | [Disabled]
+    | Actions = [OnClick]
+    | MergeDescendants = 'true'
+    |-Node #130 at (l=904.0, t=398.0, r=1188.0, b=682.0)px
+    | ContentDescription = '[왼쪽 디귿 칸]'
+    | StateDescription = '채움'
+    |-Node #132 at (l=1325.0, t=398.0, r=1609.0, b=682.0)px
+    | ContentDescription = '[오른쪽 여 모음 칸]'
+    | StateDescription = '채움'
+    |-Node #134 at (l=1930.0, t=356.0, r=2298.0, b=724.0)px
+      Focused = 'false'
+      ContentDescription = '[완성한 뎌 쓰기 시작]'
+      StateDescription = '완성'
+      Actions = [OnClick, RequestFocus]
+      MergeDescendants = 'true'
