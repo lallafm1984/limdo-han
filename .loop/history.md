@@ -584,6 +584,81 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예(반복 1 변경의 최종 경계 판정이며 이번 반복의 신규 시각 변경은 없음). 자산 필요 판정: 불필요 — 기존 production 점선·시작점·동적 시범 geometry 상태 경계 검증이며 bitmap은 lifecycle 정확성을 높이지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
 
+### 2026-08-30 루프 237 반복 11 최종 위치 인계
+
+- 반복 11 결과 전체가 과거의 동일 문장 anchor 때문에 앞선 위치에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 237 반복 11 결과 — preview-only 검사 경계 통과·D0 완료` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 판정: 가설 `채택`, 반복 `11`, 루프 237 `완료`. 자동·에뮬레이터·시각·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건, 실제 아이 관찰: 실행 안 함이다.
+- 다음 루프: 사용자 선택 A를 production 홈·공통 shell에 적용하는 루프 238 D1을 `준비`했으며 이번 작업자는 구현하지 않는다.
+
+### 2026-08-30 루프 237 반복 11 결과 — preview-only 검사 경계 통과·D0 완료
+
+- 최소 변경: `scripts/check-visual-loop.sh`에 `자산 적용 범위: production|preview-only` 분기를 추가했다. production 분기는 기존 `res`·소비·자산 자동 검사 의무를 유지하고, preview-only는 사용자 선택 전 production 적용 금지 목표·실제 2340 × 1080 PNG·production 미소비·선택 관문을 모두 요구한다. `scripts/check-automation.sh`와 그래픽 시스템 계약이 두 경계를 고정한다.
+- 자동 검증: `bash -n`, `./scripts/verify.sh`의 unit·lint·debug build, `git diff --check`, 완료 상태의 `scripts/check-visual-loop.sh`, `scripts/check-automation.sh`, `scripts/check-emulator-only.sh`가 통과했다. preview-only 분기는 A·B·C 세 PNG 3/3을 읽었고 production 기본 분기의 res 실패 문구와 검사는 보존됐다.
+- 에뮬레이터·화면: QA 시작 uptime `2689.17`초로 7,200초 미만, 물리 1080 × 2340, `user_rotation=1`, LimDo `mCurrentFocus`·`mFocusedApp`을 확인했다. 새 `captures/loop237/iteration11/emulator/home-current.png`·hierarchy는 2340 × 1080이고 APK SHA-256 `adf70bdf3de774173196a67ec9648990d829d3cfee7766ec7d715f08ad76197a`, 화면 SHA-256 `ac7238179845bf3f0722d4e2ecf617bebaeba7dcde2f59adcfffce3a2443ebc3`다.
+- 직접 판정: production 홈은 반복 10과 픽셀 해시가 같아 화면 변경이 없고 세 카드·보호자 단서의 잘림·겹침·왜곡은 0건이다. mock은 production에 포함되지 않았고, 사용자가 선택한 A만 다음 D1에서 슬롯별 production 계약으로 적용한다.
+- 이전 비교·가설 판정: 반복 10의 유일한 실패였던 preview와 production 자산 범위 충돌이 해소됐고 production 관문을 약화하지 않았으므로 가설을 `채택`한다. 루프 237 성공 조건 1~8은 모두 통과했다.
+- 최종 역할: 자동 아트 디렉션·자동 UI/UX·자동 접근성·자동 QA·아이 대리 QA 통과. 새 P0 0건, 새 P1 0건, 진행 방해 P2 0건. 실제 아이 관찰: 실행 안 함.
+- 전환: 새 아이 대리 QA에서 D0 범위의 추가 불편은 없었다. 최신 사용자 선택 A와 지속 계약 D1을 제품 가치가 다른 다음 루프 238 홈·공통 scene shell로 준비했으며 이번 작업자는 구현하지 않는다.
+
+### 2026-08-30 루프 237 반복 9 결과 — 공통 art bible·코드 token 계약 고정·D0 계속
+
+- 최소 변경: `docs/프리미엄-art-bible.md`에 palette·재질·광원·corner·elevation·spacing·typography·icon·background density·motion 열 분류의 수치·의미·금지 경계를 고정했다. 기존 `LimDoPlaygroundTokens`에 같은 계층의 재사용 token과 WritingCanvas 1962 × 954 px·네 조작 168 px·터치 64dp·움직임 줄이기 경계를 추가했다.
+- 화면·자산 경계: 새 token은 아직 production Composable에 소비되지 않으며 자산·배치·음성·교육 geometry를 바꾸지 않았다. 따라서 이번 반복은 production 시각 변경이 없고 새 2340 × 1080 전후 캡처 요구는 발생하지 않았다. mock 3안의 bitmap 생성·production 적용은 수행하지 않았다.
+- 자동 검증: `premiumArtBibleTokensKeepSharedSafetyAndExpressionScales` 포함 `./scripts/verify.sh`의 unit·Android lint·debug build가 통과했다. `git diff --check`, `./scripts/check-visual-loop.sh`, `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`도 통과했고 에뮬레이터 관문은 `serial=emulator-5554 avd=alarmquest-qa physical=0`이다. SM-S931N 조작은 0건이다.
+- 이전 반복 비교·가설 판정: 반복 8에는 없던 열 표현 분류의 문서↔코드 대응과 안전 경계 unit test를 새로 고정했고 반증 기준을 모두 통과했으므로 가설을 `채택`한다.
+- 자동 아트 디렉션 역할: art bible 범위 통과 — 현재 성공·action atlas와 일관된 soft toy/clay·warm paper·왼쪽 위 광원·세 깊이 층을 고정했다. 자동 UI/UX·접근성 역할: 계약 범위 통과 — 대비·font scale·touch·비스크롤·destructive action·움직임 줄이기 경계가 문서와 token에 연결됐다. 자동 QA·아이 대리 QA: production 화면 미변경·자동 회귀 통과, 새 P0·P1·진행 방해 P2 0건. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: D0 full-screen mock 정확히 3안과 자동 역할 비교가 남았다. 다음 새 세션은 동일 루프 반복 10에서 production 안전 영역을 기준으로 mock 3안 생성·비교만 수행한다. 루프 전체가 완료되지 않아 커밋·push하지 않는다.
+
+### 2026-08-30 루프 237 반복 7 결과 최신 위치 정정
+
+- 반복 7 결과 전체가 과거의 동일 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 237 반복 7 결과 — 저장 실패 원본·학습 흐름 보존 추가·D0 계속` 절을 현재 유효한 전체 결과로 사용한다.
+- 최종 판정은 가설 `채택`, 반복 `7`, 루프 `진행 중`이다. 성능 baseline·art bible·mock 3안이 남아 커밋·push하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 237 반복 7 결과 — 저장 실패 원본·학습 흐름 보존 추가·D0 계속
+
+- 최소 변경: production UI·녹음 controller·자산·교육 geometry는 바꾸지 않았다. `SceneInventoryEvidenceTest`에 기존 `ㄱ` 확정 녹음 생성 → 다시 녹음 → 정지 직전 directory 쓰기 차단으로 atomic commit만 실패시키는 fixture와 hash·`READY` 검사를 추가했다.
+- 검증 정제: 첫 계측은 production semantics와 다른 선택자로 입력 전 실패해 교정했다. 둘째는 directory가 쓰기 불가한 동안 임시 파일도 즉시 삭제될 것을 요구한 과도한 fixture 조건만 실패했다. 권한 복구 뒤 시험 잔여물을 정리하도록 범위를 줄였고 세 번째 계측 1/1이 통과했다.
+- 자동 검증: 최종 `./scripts/verify.sh`의 unit·lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`, `scripts/check-automation.sh`가 통과했다. `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.limdo.hangul.SceneInventoryEvidenceTest#reachableStableScenesAreCapturedFromHomeNavigation`는 최종 1/1 통과했다.
+- 에뮬레이터 관문: ADB 목록은 `emulator-5554` 하나였고 `alarmquest-qa`, 실기기 후보 0건이다. QA 시작 uptime `287.60`초, 물리 1080 × 2340, `user_rotation=1`, PNG 2340 × 1080, LimDo focus를 확인했다. APK SHA-256은 `c944e2b6be137f46156c1db8f7b93fde6fdac3a161445710321d0ebaf9d0b9a3`이다.
+- 실화면 직접 판정: `captures/loop237/iteration7/inventory/28-guardian-recording-save-failed-original-preserved.png`를 원본 크기로 읽었다. `녹음 완료`와 듣기·다시 녹음·삭제가 분리됐고 세 동작은 각각 389 × 194 px이다. 잘림·겹침·비활성 오판정은 0건이며 후속 보호자 목록 학습 완료까지 통과했다.
+- 이전 비교·가설 판정: 반복 6의 저장 실패 미수집을 ID 28로 채웠고 기존 파일 hash·`READY`·후속 학습을 보존했으므로 가설을 `채택`한다. 수집 범위의 자동 그래픽 디자인·자동 QA·아이 대리 QA는 통과하며 새 P0·P1·진행 방해 P2는 0건이다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: D0 성능 baseline·art bible·full-screen mock 정확히 3안이 남았다. 다음 반복은 성능 baseline 하나를 고정한다. 루프가 완료되지 않아 커밋·push하지 않는다. SM-S931N 조작은 0건이다.
+
+### 2026-08-30 루프 237 반복 5 결과 — 권한 복구·재생 실패 보존 추가·inventory 계속 미판정
+
+- 최소 변경: `SceneInventoryEvidenceTest`에 Android 녹음 권한 거부→production 녹음 버튼 재요청→허용·녹음 재개와 `ftyp` 헤더만 유효한 손상 파일의 playback 실패·SHA-256 보존 흐름을 추가했다. 새 bitmap·교육 geometry·녹음 판정은 바꾸지 않았다.
+- 실화면 결함·교정: 첫 신규 화면에서 권한 승인 직후 Android system bar가 남아 상단 제목이 잘렸다. 권한 callback 후 `restoreImmersiveMode()`가 120 ms 지연 후 system bar를 다시 숨기도록 최소 수정했고, 새 APK 화면에서 제목·상태·정지 버튼 잘림이 사라졌다. 녹음 중 OS 마이크 표시는 Android 개인정보 의미 표시로 보존했다.
+- 자동 검증: 최종 `./scripts/verify.sh`의 전체 unit·lint·debug build와 `git diff --check`가 통과했다. `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.limdo.hangul.SceneInventoryEvidenceTest`는 수정 전·1차 교정·최종까지 각 1/1 통과했다.
+- 에뮬레이터 관문: QA 시작 uptime `6847.33`초, 최종 수집 후 `7051.35`초로 7,200초 미만이었다. 물리 1080 × 2340, `user_rotation=1`, 세 PNG 2340 × 1080, 모든 `mCurrentFocus`·`mFocusedApp`의 LimDo를 확인했다. APK SHA-256은 `85fcec65cbfa2c0d17cd3a15e145088d8273767896fd427b21475ae3887d5b9a`이다.
+- 직접 판정: `18` 권한 거부는 빨간 원형·녹음 안 함·학습 보존 문구와 다시 녹음 버튼을 가림 없이 보였다. `19` 재요청 승인은 녹음 중 모양·최대 8초·정지를 분리했고 상단 잘림이 0건이다. `20` 재생 실패는 원본을 지우지 않고 `READY`의 듣기·다시 녹음·삭제 복구 동작을 유지했다.
+- 이전 반복 비교·가설 판정: 반복 4의 쓰기 동적 상태에 서로 다른 오류 복구 흐름 3개를 추가했고, 손상 파일 보존·몰입형 복원까지 통과해 가설을 `채택`한다. 해당 범위의 자동 그래픽 디자인·자동 QA·아이 대리 QA는 통과하며 새 P0·P1·진행 방해 P2는 0건이다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 자유 목록 중복·1페이지·중간·마지막 페이지·선택·이동·삭제와 저장 실패가 남아 D0 성공 조건 2 전체는 여전히 미판정이다. 다음 반복은 7,200초를 넘길 예정이므로 QA 전 `alarmquest-qa` cold boot 후 자유 목록 동적 상태를 우선한다. 성능 baseline·art bible·mock 3안도 남았다. 루프를 완료하지 않아 커밋·push하지 않는다.
+
+### 2026-08-30 루프 237 반복 3 결과 위치 정정
+
+- 반복 3 결과 전체가 과거의 동일 문장 anchor 위치에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 237 반복 3 결과 — 녹음 동적 4상태 추가·inventory 계속 미판정`절과 이 절을 최신 인계로 사용한다. 현재 판정은 부분 채택이며 커밋·push는 없다.
+
+### 2026-08-30 루프 237 반복 3 결과 — 녹음 동적 4상태 추가·inventory 계속 미판정
+
+- 최소 변경: `SceneInventoryEvidenceTest`가 실제 녹음 버튼·Android 권한 승인·정지·삭제 확인·취소 callback을 통해 `녹음 중`, `녹음 준비`, `삭제 확인`, `취소 후 READY 보존` 4상태를 수집하도록 확장했다. production UI·디자인·교육 geometry·삭제 callback은 바꾸지 않았다.
+- 검증 정제: 권한 승인 즉시 계측에서 Compose root가 사라지는 첫 안과 dialog의 root가 2개인 경우 `onRoot()`를 쓴 둘째 안은 기각했다. Android 권한 dialog의 실제 allow callback을 accessibility action으로 선택하고 multi-root hierarchy를 수집하는 안으로 고정했다. 첫 성공 계측의 screenshot에는 전환 중 빈화면·잔상이 있어 실패로 판정했고, Compose idle 후 600ms·UIAutomation idle을 추가한 새 계측을 최종 근거로 사용했다.
+- 자동 검증: `./scripts/verify.sh`의 단위 테스트·lint·debug build가 통과했고, 최종 에뮬레이터 전용 `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.limdo.hangul.SceneInventoryEvidenceTest`는 1/1 통과했다. APK SHA-256은 `7f72cd4839e54736bb3658a1fec7520619037dfc5bc146f65a8a0dd13162c918`이다.
+- 에뮬레이터 관문: QA 시작 uptime `2931.93`초, 최종 수집 후 `3233.79`초로 7,200초 미만이다. 물리 1080 × 2340, `user_rotation=1`, PNG 13장 모두 2340 × 1080을 확인했다. 각 수집 focus file에서 LimDo를 확인했다.
+- 이미지 직접 판정: 최종 `10~13` PNG를 원본으로 읽었다. 녹음 중은 빨간 정지 모양·`8초` 문구·정지 버튼, 준비는 재생 모양·듣기·다시 녹음·삭제로 구분된다. 확인 dialog는 대상 `ㄱ`과 원본 소실 결과, 분리된 삭제·취소를 보여 준다. 취소 후 녹음 준비 화면이 그대로 복귀되었고 잘림·겹침·불명한 주 행동은 0건이다.
+- 운영 위반: 첫 `connectedDebugAndroidTest` 명령에 에뮬레이터 환경변수를 누락해 연결된 SM-S931N에도 계측 1/1이 실행됐다. 직후 읽기 전용 `pm path com.limdo.hangul`이 빈 결과여서 Gradle 정리가 실기기 패키지를 제거한 것으로 판정한다. D0~D10 중간 실기기 설치·connected test 금지를 어긴 사고이며, 이전과 같이 앱 녹음 데이터가 복구 불가능할 위험이 있다. 사용자의 최종 1회 설치 지시와 충돌하므로 명시적 복구 지시 없이 재설치하지 않았다. 후속 계측은 모두 `ANDROID_SERIAL=emulator-5554`로 고정했다.
+- 가설 판정: `부분 채택`. 녹음 동적 4상태는 production callback으로 안정적으로 고정했지만, 쓰기 진행·재시도·성공·완료·권한 거부·재요청·재생 실패가 미수집이므로 inventory 누락 0건은 아직 입증하지 못했다.
+- 자동 그래픽 디자인 역할: 부분 통과 — 네 상태의 정보 위계·상태 모양·주 행동·destructive action 분리는 분명하다. 자동 QA 역할: 부분 통과 — 실제 callback·삭제 취소 보존·정확한 해상도는 통과했지만 D0 전량은 남았다. 아이 대리 QA: 부분 통과 — 이 네 상태는 보호자 전용이고 아이 쓰기판을 바꾸지 않았다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 다음 반복은 에뮬레이터만 명시적으로 고정하고 쓰기 진행·재시도·성공·완료 상태를 우선 수집한다. 성능 baseline·art bible·mock 정확히 3안은 후속 반복으로 남긴다. 루프 성공 조건이 남아 완료 커밋·push는 하지 않는다.
+
+### 2026-08-30 루프 237 반복 4 가설 — 쓰기 진행·재시도·성공·완료 inventory 고정
+
+- 가장 중요한 미충족 조건: D0 성공 조건 2의 아이 쓰기 흐름에서 획별 진행·부정확 입력 재시도·성공·보호자 목록 완료가 새 PNG·hierarchy·focus·실제 callback으로 연결되지 않았다.
+- 반증 가능한 가설: production WritingCanvas의 현재 획 semantics action과 실제 pointer 오입력, 보호자 목록 추가·처음부터 callback만 사용하면 화면을 가짜로 render하지 않고 네 상태를 결정적으로 재현할 수 있다.
+- 반증 기준: production callback을 우회하는 직접 상태 주입, 진행 1/3획 불일치, 오입력 후 재시도 효과 누락, 성공 표시·완료 화면 누락, 2340 × 1080·LimDo focus 불일치, WritingCanvas·네 조작·교육 geometry 회귀 중 하나라도 발생하면 가설을 기각한다.
+- 합리적인 최소 변경: production UI·판정·자산은 바꾸지 않고 `SceneInventoryEvidenceTest`와 inventory 문서만 네 상태로 확장한다. 권한·재생 실패, 성능 baseline, art bible, mock 3안은 이번 반복에 섞지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오 — 이번 반복은 production 화면를 바꾸지 않고 동적 근거만 확장한다. 자산 필요 판정: 불필요 — 현재 WritingCanvas·성공 atlas·완료 Compose가 대상 상태를 식별하며 mock 3안 자산은 후속 반복 범위다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
 ### 2026-08-29 루프 236 반복 1 기술 검증 결과 — 네 자음 후보 반영·사용자 청취 판정 대기
 
 - 최소 제품 변경: Yuna로 생성한 `기역·니은·디귿·리을` M4A 네 파일을 `res/raw`에 넣고 정확히 `GIEOK·NIEUN·DIGEUT·RIEUL`에 매핑했다. `사용자 녹음 사용` 영속 온오프를 보호자 녹음 화면에 추가했으며 기본값은 켜짐이다.
@@ -8908,3 +8983,184 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - SM-S931N: 실기기 connected test 없이 `install -r --no-streaming`이 `Success`였다. 설치 전후 `no_backup` 파일 2개와 `firstInstallTime=2026-08-29 15:27:42`가 보존됐고, versionCode 1·versionName 0.1.0, cold launch 364 ms, `mCurrentFocus`·`mFocusedApp` LimDo, 설치 APK SHA-256이 빌드 APK와 일치했다.
 - 이전 반복 비교·가설 판정: 반복 4의 유일한 미충족 조건인 사용자 청취 승인이 충족됐고 동일 자산·로직의 새 자동·에뮬레이터·화면·실기기 관문에도 반증 기준이 발생하지 않아 가설을 `채택`한다. 자동 그래픽 디자인 역할·자동 QA 역할·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건이다. 실제 아이 관찰: 실행 안 함.
 - 완료·전환: 루프 236의 모든 성공 조건을 통과했다. 최신 사용자 지시의 프리미엄 디자인 에픽 D0를 루프 237로 준비했으며 이 작업자는 구현하지 않는다. 루프 237은 도달 전 씬 inventory·보호자 녹음 삭제 안전·성능 baseline·art bible·full-screen mock 정확히 3안 뒤 사용자 선택 대기를 종료 경계로 삼는다.
+### 2026-08-30 루프 237 반복 1 가설 — 보호자 녹음 삭제 전 대상·결과 화교
+
+- 가장 중요한 미충족 조건: D0 성공 조건 3의 보호자 녹음 삭제가 즉시 실해하며 원본 파일을 복구할 수 없는 데이터 손실 위험이 가장 크다.
+- 반증 가능한 가설: `READY` 상태의 `삭제`가 바로 파일을 지우지 않고, 대상 lesson 글자와 삭제 결과를 미리 보여 주고 `취소`·`삭제`를 분리하며, `취소`나 다이얼로그그를 누르며 원본 M4A가 그대로 보존되다.
+- 반증 기준: 화교없이 `controller.delete()`를 호출하거나, 취소가 삭제 콜백을 호출하거나, 대상 글자·결과가 화교없이 노출되며 가설을 기각한다.
+- 합리적인 최소 변경: 녹음 관리 화교 하나와 이를 거부 주거 문구·버튼·토글·움직임 모두 계소에 나타나지 않으며 새 bitmap은 불피요하다. D0 inventory·성능 baseline·art bible·mock 3안은 이번 반복에서 건드리지 않는다.
+- 실제 아이 관찰: 보호자와 accessibility를 위한 잡은 화교 패널과 취소 상태의 2340 × 1080 PNG·hierarchy에서 글자, 결과, 주요 동자가 잘리지 않고 원본 모두 존재를 지키며 이번 녹음은 이력이나 그 파일을 보존하는지 화긴한다.
+- 반복 1 최소 제품 변경: 보호자 녹음 `READY` 상태의 삭제 버튼은 이제 `showDeleteConfirmation`만 열고, 대상 글자와 원본을 다시 들을 수 없다는 결과를 보여 준다. 취소·바깥 닫기에는 삭제 callback이 없고, 붉은 영구 삭제 확인에만 `controller.delete()`가 한 번 연결된다. 새 bitmap은 만들지 않았다.
+- 자동 검증: `GuardianVoiceRecordingTest` 대상 실행과 최종 `./scripts/verify.sh`의 전체 단위 테스트·Android lint·debug build, `git diff --check`가 통과했다. 회귀 검사는 READY 삭제 버튼의 직접 삭제 0회, 확인 panel의 삭제 1회, 취소 영역의 삭제 0회를 고정한다.
+- 에뮬레이터 근거: QA 시작 uptime `1657.07`초, 종료 `1776.42`초로 한도 미만이었다. 물리 1080 × 2340, `user_rotation=1`, LimDo 앱 2340 × 1080, 모든 focus LimDo를 확인했다. APK SHA-256은 `7f72cd4839e54736bb3658a1fec7520619037dfc5bc146f65a8a0dd13162c918`이다.
+- 파일 보존·삭제: `ㄱ` fixture 원본 해시 `23658728fd3014c2898fec3e78068fe0d2d3d72989de20267a018186bb805bd6`는 확인 화면을 연 뒤와 취소 뒤 동일했다. 다시 확인해 영구 삭제를 누른 뒤 파일은 없어지고 화면은 `녹음 없음`으로 전환됐다.
+- 직접 화면 판정: `captures/loop237/iteration1/after/delete-confirm.png`를 원본 크기로 읽었다. 대상 `ㄱ`, 손실 결과, 붉은 삭제와 초록 취소가 분명하며 panel 840 × 849 px, 두 버튼 각 389 × 194 px이고 잘림·겹침은 0건이다.
+- 이전 비교·가설 판정: 이전 production의 즉시 삭제와 달리 새 APK는 확인 전과 취소 뒤 원본을 보존하고 명시적 확인만 삭제하므로 가설을 `채택`한다. 자동 그래픽 디자인·자동 QA·에뮬레이터·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건이다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 루프 237 성공 조건 3만 충족했다. D0 전 씬 inventory·성능 baseline·art bible·full-screen mock 정확히 3안과 전체 D0 회귀 관문은 남아 있다. 다음 새 세션은 같은 루프 반복 2에서 도달 가능한 전 씬 inventory를 가장 높은 미충족 조건으로 진행한다. 이번 반복은 루프 완료가 아니므로 커밋·push하지 않는다.
+
+### 2026-08-30 루프 237 반복 2 가설 — production navigation 기반 전 씬·중요 상태 inventory 확정
+
+- 가장 중요한 미충족 조건: D0 성공 조건 2의 도달 가능한 전 씬·중요 상태가 새 APK·실제 입력 경로에서 도달 가능한지, 도달 불가의 `GaAssembly`가 명확히 분리되지 않아 리디자인 대상이 넘어가는다.
+- 반증 가능한 가설: 현재 `LearningDestination` 진입과 production 콜백을 진입 계회로 고정하고, 홈→순차 입력으로 각 도달 상태의 PNG·hierarchy·focus·진입 동작을 1:1로 연결하면, D0 리디자인 범위와 `GaAssembly` 도달 불가 분리가 명확히 구분될 것이다.
+- 반증 기준: 필수 도달 상태 누락, PNG·hierarchy·focus·진입 동작 중 하나라도 누락, LimDo 외 앱 focus, 2340 × 1080 불일치, 홈의 상태에서 `GaAssembly` 노출, 혹은 test hook으로만 진입 중 하나라도 나타나면 가설을 기각한다.
+- 합리적인 최소 변경: production code와 새 APK의 도달 경로를 바꾸는 변경은 하지 않고, inventory 문서와 재현할 수 있는 로컬 기록가 외의 유일한 제품 변경이다. 성능 baseline·art bible·mock 3안은 이번 반복에 섞지 않는다.
+- 단계: 겨래픽·시스템 구형 구형 완료. 시각 변경: 아니오 — inventory 기록과 기준을 추가하며 production UI는 바뀌지 않기 때문이다. 자산 피요 판정: 불피요 — 새 bitmap 제작이 없고, 현재 UI·atlas·교육 geometry로 전 씬 상태를 식별한다. mock 정확히 3안의 bitmap 판정은 다음 반복에 유지한다.
+- 실제 아이 관찰: 실행 안 함. 이 판정은 아이의 주 흐름의 도달 가능한지 음성가 인정된 음성 큐와 연결되어 있는지를 거주한다.
+
+### 2026-08-30 루프 237 반복 2 결과 — 안정 ᄉ힌 9개 도달 경로 고정·동작 상태 누락으로 미판정
+
+- 최소 변경·근거: production UI는 바꾸지 않고 `SceneInventoryEvidenceTest`와 `docs/전-씬-inventory.md`를 추가했다. 계축 이동은 홈 cold start → 세 메뉴 선택 → `가` 쓰기 → 홈 → 보호자 2초 장누르기 → 녹음 관리·목록 추가·빈 편집·녹음 없음이다.
+- 자동 겨래: `SceneInventoryEvidenceTest` 첫 실행은 자음 카드를 Unicode normalization이 다른 내용으로 찾지 못해 기각했고, 두 번째는 touch long click이 semantics callback을 호출하지 못해 기각했다. 최종 semantics action으로 고정한 세 번째 1/1은 통과했다.
+- 에뮬레이터 관문: QA 시작 uptime `2136.81`초, 계축 종료 `2493.26`초로 7,200초 미만이다. 물리 1080 × 2340, `user_rotation=1`, 모든 PNG 2340 × 1080, 수집 중 모든 근거의 focus 모든 LimDo이다. 계축 종료 후 계축 앱을 재설치하고 LimDo focus를 다시 확인했다.
+- 이미지 직접 판정: `captures/loop237/iteration2/inventory/` 9장을 원본 2340 × 1080으로 읽었다. 홈·선택·쓰기의 글자 짤림·겹침·왜곡·조작 가림은 0건이다. 보호자 빈 목록의 다른 사용 불가 버튼을 형태·명도로 구분하며 비스크롤 계약을 지킨다.
+- 도달 가능성: `LearningShell` 진입 경로와 실제 홈→가나다→가 클릭이 `Writing`으로 연결됨을 재확인했다. `GaAssembly` render·back 분기는 남아 있지만 production navigation call site가 없으므로 도달 불가로 분리했다.
+- 자동 검증: 최종 `./scripts/verify.sh`, `git diff --check`, `./scripts/check-visual-loop.sh`, `./scripts/check-automation.sh`가 모두 통과했다. 실기기 설치·connected test는 실행하지 않았다.
+- 가설 판정: `미판정`. 안정 씬 9개와 `GaAssembly` 도달 불가 분리는 통과했지만, 녹음 중·권한 거부·쓰기 진행·재시도·성공·완료 등 동적 중요 상태의 실화면·진입 동작 연결이 남아 반증 기준의 누락 0건을 입증하지 못했다.
+- 자동 그래픽 디자인 역할: 부분 통과 — 안정 씬의 기준 구성은 잘림·가림·왜곡이 없으나 전 씬 판정은 남았다. 자동 QA 역할: 부분 통과 — 안정 경로와 회귀 검사는 통과했으나 동적 픽스처 누락으로 D0 조건 2는 미판정이다. 아이 대리 QA: 부분 통과 — 홈·선택·쓰기 초기의 주 행동과 보호자 격리는 분명하지만 재시도·성공·완료는 새 근거가 남았다. 실제 아이 관찰: 실행 안 함.
+- 새 P0·P1·진행 방해 P2: 현재 안정 씬 직접 판정에서 0건. 미수집 동적 상태는 결함 0건으로 간주하지 않는다.
+- 남은 조건·다음 작업: D0 전 씬 inventory의 동적 상태, 성능 baseline, art bible, full-screen mock 정확히 3안이 남았다. 다음 새 세션은 반복 3에서 동적 상태 fixture를 고정해 inventory 누락을 0건으로 만든다. 루프 전체 성공 조건이 남아 완료 커밋·push하지 않았다.
+### 2026-08-30 루프 237 반복 3 가설 — 동적 중요 상태 fixture inventory 고정
+
+- 가장 중요한 미충족 조건: 반복 2는 production navigation으로 안정 씬 9개만 고정했고, 녹음 중·준비·삭제 확인, 쓰기 진행·재시도·성공·완료와 같은 동적 중요 상태가 새 PNG·hierarchy·focus·진입 동작으로 연결되지 않아 D0 성공 조건 2가 미판정이다.
+- 반증 가능한 가설: production 상태 전이를 그대로 사용하되 테스트 fixture가 진입 전 로컬 파일·목록·권한을 결정적으로 준비하도록 하면, 수동 타이밍에 의존하지 않고 도달 가능한 동적 중요 상태를 2340 × 1080 근거로 수집해 inventory 누락을 줄일 수 있다.
+- 반증 기준: fixture가 production 콜백을 우회하거나 상태를 가짜로 렌더링하는 경우, 대표 동적 상태의 PNG·hierarchy·focus 중 하나라도 누락되는 경우, 앱 영역이 2340 × 1080이 아닌 경우, LimDo focus를 잃는 경우, 기존 삭제 안전·음성·교육 geometry 검사가 회귀하는 경우 가설을 기각한다.
+- 합리적인 최소 변경: 기존 `SceneInventoryEvidenceTest`와 production의 검증 가능한 픽스처 진입점만 확장하고, 디자인·배치·교육 판정 로직은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 루프 전체의 반복 1 삭제 안전 UX와 후속 mock 3안 준비를 포함하며, 이번 반복은 production 시각 재설계가 아닌 실화면 inventory 근거 확장이다. 자산 필요 판정: 불필요 — 동적 상태 수집에는 현재 production 자산과 Compose 표시가 충분하며, mock 3안의 전용 bitmap 생성은 후속 반복으로 남긴다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 감독 안전장치 적용 — 루프 237 재개 전 에뮬레이터 강제
+
+- 사용자가 실기기 계측 사고 후 `에뮬레이터 serial 강제 안전장치를 적용하고 루프 237을 재개`하는 것을 승인했다.
+- 같은 근본 원인의 실기기 connected test·패키지 제거가 루프 236과 237에서 반복되어 `docs/회귀-규칙.md`에 영구 규칙으로 승격했다.
+- 감독자는 `ANDROID_SERIAL=emulator-5554`·`ADB_MDNS_AUTO_CONNECT=0`을 강제하고, `scripts/emulator-only/adb`를 PATH 앞에 두며, `scripts/check-emulator-only.sh`를 시작·새 세션 직전·세션 종료 후에 실행하도록 변경했다.
+- 램퍼 자동 검사에서 `emulator-5554` 조작은 통과했고, 실기기 serial 후보와 `adb -d`는 각각 즉시 차단됐다. 실제 관문은 `serial=emulator-5554 avd=alarmquest-qa physical=0`으로 통과했다.
+- `scripts/check-automation.sh`가 실행 파일·감독자 환경·세션 전후 관문·작업자 지시·회귀 규칙을 기계적으로 확인해 통과했다. SM-S931N 설치·입력·계측·재연결은 실행하지 않았다.
+- 최종 사전 검증에서 `bash -n`, 실기기 serial·`adb -d` 차단, `./scripts/verify.sh`의 전체 unit·lint·debug build, `git diff --check`, `scripts/check-visual-loop.sh`, `scripts/check-automation.sh`, 세션 전·후 `scripts/check-emulator-only.sh`가 모두 통과했다. ADB 목록은 `emulator-5554` 하나였고 실기기 조작은 0건이다.
+
+### 2026-08-30 루프 237 반복 4 결과 — 쓰기 동적 4상태 추가·inventory 계속 미판정
+
+- 최소 변경: production UI·교육 geometry·판정·자산은 바꾸지 않았다. `SceneInventoryEvidenceTest`를 production WritingCanvas 현재 획 callback, 허용 경로 밖 실제 pointer 입력, 보호자 목록 추가·처음부터 callback으로 확장해 `가` 1획 진행·재시도·성공·목록 완료를 재현했다. device accessibility hierarchy를 수집해 기존 root 요약 98 byte 문제도 제거했다.
+- 검증 정제: 첫 계측은 성공 contentDescription 예상값이 production 문구와 달라 실패했고, 둘째는 Compose 시계가 자동 진행되어 성공 화면을 놓쳤다. 성공 시계를 200ms에 고정해 교정했다. 세 번째는 복수 root에서 Compose hierarchy 단일 root 검사가 실패했고, 네 번째 uiautomator 파일은 0 byte여서 무효로 버렸다. 최종은 accessibility tree를 순회해 상태·bounds·클릭 가능성을 남겼고 1/1 통과했다.
+- 자동 검증: 최종 `./scripts/verify.sh`의 전체 단위 테스트·Android lint·debug build, `git diff --check`, `./scripts/check-visual-loop.sh`, `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`가 통과했다. `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.limdo.hangul.SceneInventoryEvidenceTest`는 최종 1/1 통과했다.
+- 에뮬레이터 관문: QA 시작 uptime `6150.09`초, 최종 수집 후 `6449.44`초로 7,200초 미만이다. 물리 1080 × 2340, `user_rotation=1`, 네 PNG 모두 2340 × 1080, 각 `mCurrentFocus`·`mFocusedApp`의 LimDo를 확인했다. APK SHA-256은 `7f72cd4839e54736bb3658a1fec7520619037dfc5bc146f65a8a0dd13162c918`이다.
+- 실화면 직접 판정: `captures/loop237/iteration4/inventory/14~17` 네 PNG를 원본으로 읽었다. 1획 진행은 완성된 초성과 다음 시작점이 분리되고, 재시도는 허용 경로 밖 점 흔적과 재시작 상태를 보였다. 성공은 완성 `가`·체크·도마뱀·제한 파티클이 나타났고, 완료는 큰 별·`다 했어요!`·홈·처음부터가 분리됐다. WritingCanvas `[189,63][2151,1017]`=1962 × 954 px와 네 조작 168 × 168 px, 글자 잘림·왜곡·조작 가림 0건을 유지했다.
+- 이전 반복 비교·가설 판정: 반복 3의 녹음 4상태에 이번 쓰기 4상태를 추가했고 모두 production callback으로 재현됐으므로 이번 반복 가설을 `채택`한다. 자동 그래픽 디자인 역할·자동 QA 역할·아이 대리 QA는 수집한 네 상태 범위에서 통과하며 새 P0·P1·진행 방해 P2는 0건이다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 권한 거부·재요청·손상 파일·playback 실패와 자유 목록 중복·페이지·편집 상태가 남아 D0 성공 조건 2 전체는 여전히 미판정이다. 다음 새 세션은 서로 다른 오류 복구 흐름인 권한 거부·재요청·재생 실패를 우선 수집한다. 성능 baseline·art bible·mock 3안도 남았다. 루프를 완료하지 않아 커밋·push하지 않는다.
+
+### 2026-08-30 루프 237 반복 5 가설 — 녹음 권한 거부·재요청·재생 실패 보존 inventory
+
+- 가장 중요한 미충족 조건: D0 성공 조건 2에서 녹음 권한을 거부한 다음 학습 복귀 화면, 권한 재요청 후 녹음 재개, 손상된 녹음의 playback 실패 후 원본 보존이 새 실화면·hierarchy·focus·진입 동작과 연결되지 않아 inventory가 미판정이다.
+- 반증 가능한 가설: `RECORD_AUDIO` 권한을 처음 거부하고 production 녹음 버튼으로 재요청하며, `ftyp` 헤더만 유효한 손상 파일의 미리 듣기를 실패시키면 production 오류 복구가 학습을 멈추거나 원본을 지우지 않는다는 새 화면 근거를 고정할 수 있다.
+- 반증 기준: 거부 후 LimDo focus 복귀 화면이 보이지 않거나, 재요청이 녹음을 시작하지 못하거나, 재생 실패가 손상 파일을 지우거나, 2340 × 1080·LimDo focus·기존 교육 회귀 중 하나라도 누락되면 가설을 기각한다.
+- 합리적인 최소 변경: 기존 `SceneInventoryEvidenceTest`에 권한 거부→재요청→녹음 중·정지·재생 실패와 손상 파일 재생 유지 흐름을 추가하고, production 배치·교육·판정·자산은 바꾸지 않는다. 성능 baseline·art bible·mock 3안과 자유 목록은 이번 반복에 섞지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 루프 전체에서는 반복 1 삭제 안전 UX와 후속 mock 3안 준비를 포함한다. 자산 필요 판정: 불필요 — 이번 반복은 현재 production 자산을 재설계하지 않고 오류 복구 실화면을 고정하며, mock 3안은 전용 bitmap 시안이 필요하다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 237 반복 6 가설 — 자유 목록 중복·페이지·편집 상태 inventory
+
+- 가장 중요한 미충족 조건: D0 성공 조건 2에서 자유 학습 목록의 중복, 1페이지·중간·마지막 페이지, 선택, 이동·삭제 callback이 새 PNG·hierarchy·focus·진입 동작과 연결되지 않아 inventory 전체가 미판정이다.
+- 반증 가능한 가설: production 목록 추가·페이지·편집 callback만 사용해 중복을 포함한 11개 목록을 만들고 첫·중간·마지막 페이지와 선택·이동·삭제 전후를 순차 캡처하면 비스크롤 탐색·현재 위치·중복 구분·파일 보존이 명확하게 구분될 것이다.
+- 반증 기준: 목록이 11개가 되지 않거나, 페이지 표시·첫·마지막 자료가 누락되거나, 중복 하나만 사라지거나, 자동 스크롤이나 192 px 미만 터치·현재 비활성·중복 구분·파일 보존·2340 × 1080·LimDo focus·기존 교육 회귀 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: `SceneInventoryEvidenceTest`에 자유 목록 상태 진입·캡처·근거 문서화만 확장하고 production 배치·교육 판정·자산은 바꾸지 않는다. 성능 baseline·art bible·mock 3안은 이번 반복에 섞지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 루프 전체의 반복 1 삭제 안전 UX와 후속 mock 3안 준비를 포함한다. 자산 필요 판정: 불필요 — 이번 반복은 현재 production UI·atlas로 자유 목록 편집 상태를 고정하며, mock 3안에만 후속 전용 bitmap이 필요하다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 237 반복 6 결과 — 자유 목록 7상태 추가·inventory 계속 미판정
+
+- 최소 변경: production UI·저장·교육 geometry·자산은 바꾸지 않고 `SceneInventoryEvidenceTest`에 11개 중복 목록의 첫·중간·마지막 페이지, 중복 선택·이동, 마지막 항목 삭제 전후의 production callback 캡처를 추가했다. 실행 시작 전 전용 로컬 픽스처만 초기화했다.
+- 검증 정제: 첫 두 계측은 마지막 glyph를 `ㅈ`로 잘못 예상해 실패했다. 실패 원인을 마지막 항목의 글자가 아닌 순번·callback 계약으로 교정했고 최종 전용 계측 1/1이 통과했다.
+- 에뮬레이터 관문: 시작 uptime `7499.82`초로 7,200초를 넘어 새 캡처를 중지했다. `emu kill`로 serial 소멸을 확인한 뒤 `alarmquest-qa`를 snapshot 없이 cold boot했고 uptime `8.84`초에서 재개했다. 물리 1080 × 2340, `user_rotation=1`, 모든 PNG 2340 × 1080, 각 캡처 focus의 LimDo를 확인했다. 종료 uptime은 `142.30`초다.
+- 실화면 직접 판정: `captures/loop237/iteration6/inventory/21~27`의 7장을 원본으로 읽었다. 11개·3페이지에서 중복 `ㄱ` 두 개가 순번으로 구분되고, 중간·마지막 페이지와 선택·이동 상태가 색·모양으로 분리된다. 마지막 삭제 후 10개·2/2로 재정렬됐고 중복 두 개는 보존됐다. 카드는 387 × 354 px, 하단 동작은 228~229 × 194 px로 관문을 지켰고, 잘림·겹침·스크롤·페이지 표시 오판정은 0건이다.
+- 자동 검증: 최종 `./scripts/verify.sh`, `git diff --check`, `./scripts/check-visual-loop.sh`, `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`가 통과했다. APK SHA-256은 `c944e2b6be137f46156c1db8f7b93fde6fdac3a161445710321d0ebaf9d0b9a3`이다. 실기기 조작은 0건이다.
+- 이전 반복 비교·가설 판정: 반복 5의 녹음 오류 복구 3상태에 자유 목록 7상태를 추가했고 모두 production callback으로 재현됐으므로 이번 가설을 `채택`한다. 자동 그래픽 디자인 역할·자동 QA 역할·아이 대리 QA는 수집한 범위에서 통과하며 새 P0·P1·진행 방해 P2는 0건이다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 저장 실패 무음 대안이 실화면과 연결되지 않아 D0 성공 조건 2 전체는 아직 미판정이다. 다음 새 세션은 반복 7에서 녹음 저장 실패 후 원본·학습 흐름 보존을 우선 수집한다. 성능 baseline·art bible·mock 3안도 남았다. 루프를 완료하지 않아 커밋·push하지 않는다.
+
+### 2026-08-30 루프 237 반복 7 재개 전 감독자 안전 보강
+
+- 중지 원인: 반복 6 작업자는 정상 결과를 기록했지만 세션 종료 뒤 작업자 수명에 묶인 에뮬레이터가 사라졌다. 이어진 `scripts/check-emulator-only.sh` 실패 문구의 `$expected_serial이`가 `expected_serial이`라는 다른 변수로 해석돼 `set -u`의 unbound variable로 postcheck가 종료 코드 3을 냈다.
+- 최소 자동화 변경: 한글 조사 앞 shell 변수를 모두 `${variable}이` 형태로 고쳤다. 새 `scripts/ensure-emulator-ready.sh`는 실기기 후보 0건을 먼저 확인하고, `emulator-5554` 부재 또는 uptime 7,200초 이상일 때만 감독자 쪽에서 `alarmquest-qa`를 snapshot 없이 cold boot한다. 다른 프로젝트 focus이면 기존 에뮬레이터를 종료하지 않는다.
+- 감독자 연결: `scripts/run-cli-loop.sh`가 최초 시작·각 새 세션 직전·성공 종료 후 준비 스크립트와 정체 관문을 순서대로 실행한다. 작업자 지시에는 foreground 에뮬레이터 직접 실행 금지와 준비 스크립트 사용을 추가했다.
+- 회귀 고정: `scripts/check-automation.sh`가 새 스크립트의 존재·실행 권한, 감독자 세 번 호출, 작업자 지시 연결과 `$변수한글조사` 패턴 0건을 검사한다. `docs/회귀-규칙.md`에도 작업자 종료와 에뮬레이터 소멸의 원인·관문을 추가했다.
+- 재개 전 실제 결과: cold boot 뒤 `sys.boot_completed=1`, `ro.kernel.qemu=1`, AVD `alarmquest-qa`, 물리 1080 × 2340, `user_rotation=1`, uptime 31초, ADB 실기기 후보 0건을 확인했다. 에뮬레이터 qemu process는 부모 PID 1로 유지됐고 두 번째 준비·정체 관문도 통과했다. 새 APK 설치·LimDo focus·가로 2340 × 1080 확인은 반복 7 작업자가 새 build 뒤 수행한다.
+- 제품 상태: 반복 6의 production·inventory 근거는 보존했다. 다음 제품 변경은 상태 문서대로 녹음 저장 실패 후 원본·학습 흐름 보존 한 가지이며, SM-S931N 설치·입력·계측·재연결은 실행하지 않는다.
+
+### 2026-08-30 루프 237 반복 7 가설 — 녹음 저장 실패 무음 대안·원본 보존 inventory
+
+- 가장 중요한 미충족 조건: D0 성공 조건 2에서 녹음 저장 실패 뒤 보호자 화면이 무음 대안으로 복구되고, 기존 확정 녹음과 아이 학습 진입이 보존되는 상태가 새 PNG·hierarchy·LimDo focus·진입 동작과 연결되지 않아 전 씬 inventory가 미판정이다.
+- 반증 가능한 가설: 에뮬레이터 전용 fixture로 대표 lesson의 기존 확정 녹음을 만든 뒤 다음 녹음의 최종 저장만 실패시키고 production callback을 실행하면, 실패 안내 뒤 기존 파일 hash와 `녹음 완료` 상태가 유지되며 보호자 화면에서 아이 학습으로 복귀할 수 있을 것이다.
+- 반증 기준: 저장 실패가 재현되지 않거나, 기존 확정 파일이 삭제·변경되거나, UI가 녹음 중에 멈추거나, 실패 뒤 듣기·다시 녹음·삭제 또는 아이 학습 복귀가 막히거나, PNG가 2340 × 1080이 아니거나 LimDo focus·자동 검사 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: 기존 `SceneInventoryEvidenceTest`와 production 녹음 저장 경로에 저장 실패 fixture·검증만 추가하고, 정상 녹음 lifecycle·화면 배치·음성 자산·교육 geometry·자유 목록은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오 — 기존 production 저장 실패·복구 상태를 새로 수집하며 배치나 자산을 바꾸지 않는다. 자산 필요 판정: 불필요 — 기존 보호자 상태 카드와 아이 학습 화면만으로 실패 복구와 다음 행동을 표현할 수 있다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 237 반복 7 결과 최신 인계
+
+- 반복 7 결과 전체는 과거 동일 anchor로 587행 부근에 덧붙여진 `루프 237 반복 7 결과 — 저장 실패 원본·학습 흐름 보존 추가·D0 계속` 절을 현재 유효한 결과로 사용한다. 덧붙이기 전용 계약에 따라 기존 기록은 수정·삭제하지 않았다.
+- 최종 판정: 가설 `채택`, 반복 `7`, 루프 `진행 중`. 성능 baseline·art bible·mock 3안이 남아 커밋·push하지 않았다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 237 반복 8 가설 — 현재 APK·raster·framestats·PSS 성눙 baseline
+
+- 가장 주요 미충족 조건: D0 성공 조건 5에서 요구하느 현재 APK 크기, raster 압축·decode 크기, 대표 흐름 framestats·PSS가 기록되지 않아 프리미엄 전후 비교와 후속 안전성을 판정할 수 없다.
+- 반중 가능한 가설: 동일 debug APK를 새로 build·설치하고 앱 홈→자음 선택→쓰기 진입 흐름을 고정한 후 구간에서 재현하면, 결과느 후속 리디자인·메모리·렌더 자산 비용을 D1 이후 평가 기준으로 사용할 수 있을 것이다.
+- 반중 기준: APK·raster 목록이 누락되거나 압축·decode 합계가 계산되거나, 리디자인·메모리·렌더 중 어느 하나라도 50% 이상 프레임이 관찰되거나, PSS 측정이 실패하거나, 에뮬레이터·2340 × 1080·LimDo focus 관문이나 자동 구글 중 하나라도 누락되면 가설을 기각한다.
+- 합리적인 최소 변경: production 코드·자산·배치·음성·교육 geometry는 바꾸지 않고 성능 baseline 문서화와 검젱 스크립트·결과 문서화만 더한다.
+- 단계: 그래픽·시스템 구ᄒ체 구ᄒ천. 시각 변경: 아니오 — 이번 반복은 production 화면을 바꾸지 않는 성능 baseline이다. 자산 피요 판정: 불피요 — 새 bitmap을 만들거나 표시하는 자기 가아 명화도를 노피지 않고 mock 3안은 후속 반복이다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 237 반복 8 결과 — 성능 baseline 고정·D0 계속
+
+- 최소 변경: production 코드·자산·배치·음성·교육 geometry는 바꾸지 않고 `docs/성능-baseline.md`와 동일 APK 측정 근거를 추가했다.
+- APK·raster: debug APK는 26,609,791 byte, SHA-256은 `c944e2b6be137f46156c1db8f7b93fde6fdac3a161445710321d0ebaf9d0b9a3`이다. PNG 13개의 APK 내 합계는 16,837,080 byte, RGBA8888 전체 decode 예산은 71.50 MiB이다. production 참조 3개의 합계 15.9978 MiB는 16 MiB 예산을 2,256 byte 아래에서 통과했고, 참조 0건인 gecko·차량 9개는 D9 제거 여유로 남겼다.
+- 에뮬레이터: QA 시작 uptime 1,046.54초로 7,200초 미만이었다. 물리 1080 × 2340, `user_rotation=1`, 홈·자음 선택·쓰기 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo를 확인했다. SM-S931N 조작은 0건이다.
+- 프레임·메모리: cold launch 후 홈→자음 선택→`ㄱ` 쓰기 진입을 실제 tap한 172 frame에서 deadline miss 4개(2.33%), frozen 0개, p50 17 ms, p90 22 ms, p95 23 ms, p99 150 ms였다. 쓰기 안정 PSS는 95,559 KiB이다.
+- 직접 판정: 새 홈·선택·쓰기 화면을 원본 2340 × 1080으로 읽었다. 쓰기판·글자·조작의 잘림·겹침·왜곡은 0건이며 production 화면은 변경되지 않았다.
+- 이전 비교·가설 판정: 반복 7에 없던 APK·raster·framestats·PSS 비교 기준을 같은 APK에서 고정했고, deadline miss 3% 미만·frozen 0개를 통과했으므로 가설을 `채택`한다. 자동 Android 성능 역할: baseline 범위 통과. 자동 QA·아이 대리 QA: 화면 회귀 없음, 새 P0·P1·진행 방해 P2 0건. 실제 아이 관찰: 실행 안 함.
+- 검증: `./scripts/verify.sh`의 unit·lint·debug build가 통과했다. 최종 `git diff --check`, `scripts/check-visual-loop.sh`, `scripts/check-automation.sh`, `scripts/check-emulator-only.sh`를 추가로 실행한다.
+- 남은 조건·다음 작업: D0 art bible·재사용 코드 기준과 full-screen mock 정확히 3안이 남았다. 다음 새 세션은 반복 9에서 art bible 하나만 고정한다. 루프를 완료하지 않아 커밋·push하지 않는다.
+
+### 2026-08-30 루프 237 반복 9 가설 — D0 공통 art bible·재사용 코드 기준 고정
+
+- 가장 중요한 미충족 조건: D0 성공 조건 4의 palette·재질·광원·corner·elevation·spacing·typography·icon·background density·motion이 권장 문장으로만 남아 후속 화면군이 서로 다른 수치를 쓸 위험이 있다.
+- 반증 가능한 가설: 현재 production 화면과 기존 성공·action atlas를 기준으로 위 열 분류의 의미·수치·금지 경계를 한글 art bible에 고정하고, 코드에는 후속 D1~D8이 공통으로 참조할 token 계층을 두면 mock 선택 뒤 화풍이 바뀌어도 교육 geometry를 건드리지 않고 표현값만 교체할 수 있다.
+- 반증 기준: 열 분류 중 하나라도 문서·코드 대응이 없거나, 필수 대비·touch·WritingCanvas·네 조작·비스크롤·움직임 줄이기 경계가 누락되거나, 새 token이 이번 반복에서 production 화면을 바꾸거나, unit·lint·build·문서 검사가 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: 공통 art bible 문서, 기존 `LimDoPlaygroundTokens`의 D0 공통 token, 두 계층의 대응을 고정하는 unit test만 추가한다. production composable·자산·배치·교육 geometry와 mock 3안은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오 — 이번 반복은 후속 화면의 표현 계약만 고정하고 현재 UI에 새 token을 소비시키지 않는다. 자산 필요 판정: 불필요 — art bible은 기존 production raster를 품질 기준으로 삼고, 전용 bitmap이 필요한 mock 3안은 다음 반복에서만 생성한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 237 반복 9 결과 최신 위치 정정
+
+- 반복 9 결과 전체가 과거의 동일 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 237 반복 9 결과 — 공통 art bible·코드 token 계약 고정·D0 계속` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 판정: 가설 `채택`, 반복 `9`, 루프 `진행 중`. `./scripts/verify.sh`·`git diff --check`·`check-visual-loop.sh`·`check-automation.sh`·`check-emulator-only.sh` 통과, production 화면 미변경, 새 P0·P1·진행 방해 P2 0건이다. full-screen mock 정확히 3안이 남아 커밋·push하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 237 반복 10 가설 — production 기준 full-screen mock 정확히 3안 생성·비교
+
+- 가장 중요한 미충족 조건: D0 성공 조건 6의 현재 production 기준 full-screen mock 방향 정확히 3안과 자동 아트 디렉션·UI/UX·접근성 비교가 아직 없다.
+- 반증 가능한 가설: 동일한 홈·선택·쓰기 production 기준 화면과 반복 9의 art bible을 입력으로 사용하되 `햇살 정원 글자 공방`, `구름빛 글자 놀이터`, `포근한 종이 공방`의 재질·공간감·배경 밀도를 분리하면, 세 안 모두 기존 세 메뉴 touch 영역과 중앙 교육 geometry·네 조작 안전 영역을 보존하면서 사용자가 구별해 선택할 수 있는 2340 × 1080 full-screen 방향 시안이 된다.
+- 반증 기준: 결과가 정확히 3안이 아니거나, 한 안이라도 2340 × 1080이 아니거나, 임의 한글·숫자·가짜 UI·차량·워터마크가 생기거나, 홈의 세 주 영역 또는 쓰기의 중앙 교육 geometry·가장자리 조작 안전 영역을 가리거나, 세 안의 palette·재질·공간감 차이가 선택 판단에 부족하거나, 자동 아트 디렉션·UI/UX·접근성 역할 중 하나라도 기각하면 가설을 기각한다.
+- 합리적인 최소 변경: Codex 내장 `imagegen`으로 production 화면을 참고한 preview bitmap 정확히 3안을 만들고, workspace의 D0 mock 근거 경로와 한글 비교 문서에만 저장한다. production resource·Composable·교육 geometry·callback은 바꾸지 않으며 D1 적용은 사용자 선택 전까지 시작하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — production 적용 전 full-screen 시안 세 방향을 새로 만든다. 자산 필요 판정: 필요 — 동일 슬롯과 안전 영역을 유지하면서 서로 다른 프리미엄 공간·재질을 비교하려면 전용 raster mock이 필요하다.
+- 실제 아이 관찰: 실행 안 함. 자동 역할·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 237 반복 10 결과 — mock 3안 통과·시각 자동화 계약 불일치로 D0 계속
+
+- 최소 변경: production resource·Composable·교육 geometry·callback은 바꾸지 않았다. production 홈·자음 선택·쓰기 화면을 공통 참조로 Codex 내장 `imagegen`에서 A `햇살 정원 글자 공방`, B `구름빛 글자 놀이터`, C `포근한 종이 글자 공방`의 full-screen preview 정확히 3개를 생성하고 `docs/프리미엄-mock-3안-비교.md`에 prompt·해시·역할 비교를 고정했다.
+- 자산 검사: 최종 세 PNG는 모두 정확한 2340 × 1080이며 완전 불투명하다. SHA-256은 A `dd4f1cddd0a24f034d852a973c82772529f32e9231b8d58bb5bfd581f1647c60`, B `b2665c1829fc20bd8ea5557e7d27644c290c701de86344982b3ab26524c25def`, C `74977e551db0dd26d654d472563e300a7bc025a430fedccc38e932a8bccacdfb`다. 생성 한글·숫자·가짜 UI·차량·워터마크·잘림은 0건이며 production 소비도 0건이다.
+- 실화면 직접 판정: 세 이미지를 원본 2340 × 1080으로 읽었다. 세 안 모두 큰 좌·중·우 카드 중심과 보호자 단서를 보존하고 장식은 바깥에 머문다. A는 clay 정원, B는 felt 하늘, C는 paper 제본으로 palette·재질·공간감이 충분히 구별된다. 기본 권장안은 기존 성공 clay 자산 연결 비용이 가장 낮은 A지만 최종 선택은 사용자에게 맡긴다.
+- 에뮬레이터: QA 시작 uptime `2159.11`초로 7,200초 미만, 물리 1080 × 2340, `user_rotation=1`이다. 최신 APK SHA-256 `adf70bdf3de774173196a67ec9648990d829d3cfee7766ec7d715f08ad76197a`를 에뮬레이터에만 설치했고 안정 홈 PNG·hierarchy는 2340 × 1080, `mCurrentFocus`·`mFocusedApp` 모두 LimDo다. 현재 production 세 카드·보호자 단서의 잘림·겹침·왜곡은 0건이다. SM-S931N은 조작하지 않았다.
+- 자동 검증: `./scripts/verify.sh`의 unit·lint·debug build는 통과했고, 완료 상태로 바꾼 뒤 실행한 최종 자동화 관문은 `시각 루프 계약 실패: 필요 자산이 production res 경로에 없음`으로 실패했다. 원인은 D0 성공 조건 8이 사용자 선택 전 preview mock의 production 적용을 금지하는 반면 현재 `check-visual-loop.sh`는 `자산 필요 판정: 필요`를 preview·production 구분 없이 production `res` 포함으로 해석하기 때문이다. `git diff --check`는 앞선 진행 상태 검사에서 통과했으며 실기기 조작은 0건이다.
+- 이전 비교·가설 판정: 반복 9까지 비어 있던 D0 mock 3안과 역할 비교가 채워졌고 모든 반증 기준이 발생하지 않아 가설을 `채택`한다. 자동 아트 디렉션·자동 UI/UX·자동 접근성·아이 대리 QA 통과, 새 P0·P1·진행 방해 P2 0건이다. 실제 아이 관찰: 실행 안 함.
+- 루프 판정: 반복 1 삭제 안전, 반복 2~7 전 씬 inventory, 반복 8 성능 baseline, 반복 9 art bible·코드 token, 반복 10 mock 정확히 3안은 준비됐다. 그러나 성공 조건 1의 `check-visual-loop.sh`가 실패했으므로 루프는 `진행 중`으로 유지한다. 다음 반복은 preview-only D0 선택 자산과 production 자산을 정직하게 구분하는 자동화 계약을 최소 보강한 뒤 전체 관문을 재검증해야 한다. production mock 적용, 완료 커밋·push는 하지 않는다.
+
+### 2026-08-30 루프 237 반복 11 가설 — preview-only·production 자산 검사 경계 보강
+
+- 가장 중요한 미충족 조건: 사용자가 A 햇살 정원 방향을 선택했지만 D0 mock 3안은 선택 전 비교 자산이므로 production에 억지로 적용할 수 없다. 반면 현행 `check-visual-loop.sh`는 이 선택 자산도 production `res` 포함으로 요구해 D0 완료 조건과 충돌한다.
+- 반증 가능한 가설: 시각 증거에 `자산 적용 범위: preview-only`를 명시하고 mock 세 자산의 2340 × 1080·production 미소비·선택 관문을 검사하면 D0를 정직하게 완료할 수 있다. 반대로 production 자산이면 기존 res·소비·자동 검사 의무를 그대로 유지해야 한다.
+- 반증 기준: preview-only가 production `res`를 요구하거나 production 소스·APK에 포함되거나, preview 경로와 자산 2340 × 1080 검사가 누락되거나, 사용자 선택 전용 목표가 아닌 일반 production 루프에서도 preview-only 우회가 가능하거나, 기존 production 자산 검사 분기가 약해지거나, 자동화·시각·전체 검증 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 변경: `scripts/check-visual-loop.sh`에 명시적 자산 적용 범위와 preview 전용 강한 관문을 추가하고 `scripts/check-automation.sh`가 production 기본값과 preview 예외 조건을 정적 검사하게 한다. production UI·자산·callback·교육 geometry는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 루프 전체의 삭제 확인 UI와 mock 3안 근거를 완료 판정하되 이번 반복의 production 화면 변경은 없다. 자산 필요 판정: 필요 — 기존 mock 3안의 검증 경계를 고치는 작업이며 새 자산은 생성하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 237 반복 11 결과 최신 인계
+
+- 반복 11 결과 전체가 과거의 동일 anchor 때문에 앞선 위치에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 237 반복 11 결과 — preview-only 검사 경계 통과·D0 완료` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 판정: 가설 `채택`, 반복 `11`, 루프 237 `완료`. `verify.sh`·diff·완료 시각 검사·자동화·에뮬레이터 전용 관문과 2340 × 1080 LimDo focus가 통과했다. 새 P0·P1·진행 방해 P2 0건, 실제 아이 관찰: 실행 안 함이다.
+- 다음 루프: 사용자 선택 A를 production 홈·공통 shell에 적용하는 루프 238 D1을 `준비`했으며 이번 작업자는 구현하지 않는다.

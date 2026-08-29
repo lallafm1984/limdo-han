@@ -31,6 +31,10 @@ visible_stop_file="$repo_root/.loop/STOP"
 prompt_file="$repo_root/.loop/cli-worker-prompt.md"
 session_log="$runtime_dir/sessions.tsv"
 [[ -r "$env_file" ]] && source "$env_file"
+export ANDROID_SERIAL="emulator-5554"
+export ADB_MDNS_AUTO_CONNECT="0"
+export LIMDO_REAL_ADB="/Users/lim/Library/Android/sdk/platform-tools/adb"
+export PATH="$repo_root/scripts/emulator-only:$PATH"
 max_process_failures="${CODEX_LOOP_MAX_PROCESS_FAILURES:-3}"
 pause_seconds="${CODEX_LOOP_PAUSE_SECONDS:-2}"
 max_sessions="${CODEX_LOOP_MAX_SESSIONS:-0}"
@@ -120,6 +124,14 @@ if ! ./scripts/check-automation.sh; then
     echo "CLI 루프 중지: 자동화 계약 실패" >&2
     exit 2
 fi
+if ! ./scripts/ensure-emulator-ready.sh; then
+    echo "CLI 루프 중지: 에뮬레이터 준비 실패" >&2
+    exit 2
+fi
+if ! ./scripts/check-emulator-only.sh; then
+    echo "CLI 루프 중지: 에뮬레이터 전용 관문 실패" >&2
+    exit 2
+fi
 
 codex_bin="${CODEX_BIN:-}"
 if [[ -z "$codex_bin" ]]; then
@@ -150,6 +162,14 @@ while has_work; do
 
     if ! ./scripts/check-automation.sh; then
         echo "CLI 루프 중지: 다음 세션의 자동화 계약 또는 작업 가치 관문 실패" >&2
+        exit 2
+    fi
+    if ! ./scripts/ensure-emulator-ready.sh; then
+        echo "CLI 루프 중지: 다음 세션 직전 에뮬레이터 준비 실패" >&2
+        exit 2
+    fi
+    if ! ./scripts/check-emulator-only.sh; then
+        echo "CLI 루프 중지: 다음 세션 직전 실기기 연결 또는 에뮬레이터 정체 불일치" >&2
         exit 2
     fi
 
@@ -188,6 +208,16 @@ while has_work; do
         2> "$run_dir/stderr.log"
     cli_status=$?
     set -e
+
+    if [[ "$cli_status" -eq 0 ]] && ! ./scripts/ensure-emulator-ready.sh >> "$run_dir/postcheck.log" 2>&1; then
+        echo "CLI 루프 작업자 종료 후 에뮬레이터 준비 실패" >&2
+        cli_status=3
+    fi
+
+    if [[ "$cli_status" -eq 0 ]] && ! ./scripts/check-emulator-only.sh >> "$run_dir/postcheck.log" 2>&1; then
+        echo "CLI 루프 작업자 종료 후 에뮬레이터 전용 관문 실패" >&2
+        cli_status=3
+    fi
 
     if [[ "$cli_status" -eq 0 ]] && ! ./scripts/check-automation.sh >> "$run_dir/postcheck.log" 2>&1; then
         echo "CLI 루프 작업자 종료 후 자동화·시각·전체 플레이 계약 재검사 실패" >&2

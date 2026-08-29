@@ -32,12 +32,20 @@
 
 ## 세션 절차
 
-1. 감독자는 시작할 때와 모든 새 세션 직전에 `./scripts/check-automation.sh`를 검증하고 저장소 전용 원자적 잠금을 얻는다. 이 검사는 `scripts/check-work-value.sh`의 작업 가치 관문을 포함한다.
+1. 감독자는 시작할 때와 모든 새 세션 직전에 `./scripts/check-automation.sh`와 `./scripts/check-emulator-only.sh`를 검증하고 저장소 전용 원자적 잠금을 얻는다. 작업자 종료 후에도 두 관문을 다시 검사한다. 이 검사는 `scripts/check-work-value.sh`의 작업 가치 관문을 포함한다.
 2. `.loop/env.sh`를 읽은 뒤 `.loop/cli-worker-prompt.md`를 표준 입력으로 전달해 `codex exec --ephemeral --json --sandbox danger-full-access`를 시작한다. Android Gradle 잠금, ADB, 에뮬레이터는 macOS 작업공간 샌드박스가 막는 로컬 소켓을 사용하므로 이 모드가 필요하다. 별도의 승인·샌드박스 우회 플래그는 사용하지 않는다.
 3. 작업자는 대화 기억 대신 현재 프로젝트 계약과 Git 상태를 읽는다.
 4. 작업자는 정확히 한 번 반복하고 성공 또는 실패를 한글로 기록한 뒤 종료한다.
 5. 감독자는 새 thread ID와 종료 상태를 `.loop/runtime/sessions/`에 남기고 날짜별 요약을 `logs/YYYY-MM-DD/`에 남긴다.
 6. 활성 루프 또는 명시적 `준비` 항목이 있을 때만 다음 새 세션을 시작한다. 정상 완료는 `AUTO_CHILD_PROXY_QA` 전환으로 다음 활성 루프를 남긴다.
+
+### 에뮬레이터 전용 실행 격리
+
+- 감독자는 작업자 전체 수명 동안 `ANDROID_SERIAL=emulator-5554`와 `ADB_MDNS_AUTO_CONNECT=0`을 강제한다.
+- `scripts/emulator-only/adb`를 PATH 앞에 두어 `-d`, transport id, 실기기 serial, `adb connect`·`pair`·`disconnect`를 차단한다.
+- `scripts/check-emulator-only.sh`는 `emulator-5554`가 `alarmquest-qa`이고 `ro.kernel.qemu=1`인지 확인하며, ADB 목록에 어떤 실기기 후보라도 있으면 기기를 건드리지 않고 세션 시작을 거부한다.
+- 감독자는 각 세션 전·후 `scripts/ensure-emulator-ready.sh`를 실행한다. 에뮬레이터가 없으면 감독자 process에서 persistent cold boot하고, uptime 7,200초 이상이면 serial 소멸을 확인한 뒤 새로 띄운다. 다른 프로젝트 focus나 실기기 후보가 있으면 종료·연결·입력을 하지 않고 중지한다.
+- Gradle 계측은 `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest ...`, 직접 ADB 조작은 `adb -s emulator-5554 ...`만 허용한다. SDK 절대 경로 adb로 램퍼를 우회하지 않는다.
 
 ## 허용되는 자율 작업
 
@@ -102,6 +110,7 @@ Codex 앱 heartbeat 자동화 `LimDo 진행 상황 보고`가 10분마다 이 �
 - 첫 값이 7,200초 미만일 때만 새 입력·PNG·hierarchy 수집을 시작한다. 7,200초 이상이면 해당 시점부터 새 화면 근거를 만들지 않는다.
 - 현재 LimDo가 사용하는 `alarmquest-qa`임을 확인한 뒤 `adb -s emulator-5554 emu kill`을 실행하고, `adb devices`에서 `emulator-5554`가 사라질 때까지 기다린다. 다른 프로젝트가 사용 중이면 임의 종료하지 않고 작업을 중지해 충돌을 기록한다.
 - `/Users/lim/Library/Android/sdk/emulator/emulator -avd alarmquest-qa -no-snapshot-load -no-snapshot-save -no-boot-anim -gpu host`로 cold boot하고 `sys.boot_completed=1`까지 기다린다.
+- 자동 감독에서는 위 순서를 `scripts/ensure-emulator-ready.sh`가 담당한다. 작업자가 자기 세션 수명에 묶인 foreground 에뮬레이터를 직접 띄우지 않는다.
 - 재실행 뒤 `wm size`가 물리 1080 × 2340, `user_rotation=1`, 앱 화면 2340 × 1080인지 확인하고 최신 APK를 다시 설치·실행해 `mCurrentFocus`와 `mFocusedApp`이 LimDo인지 확인한다.
 - 재시작 시간과 전·후 uptime을 현재 반복 이력 또는 검증 로그에 남긴다. 재시작 전 7,200초 이후 캡처는 완료 근거에서 제외한다.
 

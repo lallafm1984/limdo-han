@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+expected_serial="emulator-5554"
+real_adb="${LIMDO_REAL_ADB:-/Users/lim/Library/Android/sdk/platform-tools/adb}"
+
+fail() {
+    echo "LimDo 에뮬레이터 전용 adb 차단: $1" >&2
+    exit 64
+}
+
+[[ -x "$real_adb" ]] || fail "실제 adb를 찾을 수 없음: $real_adb"
+
+case "${1:-}" in
+    connect|disconnect|pair)
+        fail "실기기 연결 상태를 바꾸는 ${1} 명령은 중간 루프에서 금지됨"
+        ;;
+    -d|-t)
+        fail "실기기나 transport id 선택은 금지됨"
+        ;;
+    -s)
+        [[ "${2:-}" == "$expected_serial" ]] || \
+            fail "허용되지 않은 serial: ${2:-없음}"
+        ;;
+esac
+
+if [[ "${1:-}" == "mdns" && "${2:-}" != "services" ]]; then
+    fail "mdns는 읽기 전용 services 조회만 허용됨"
+fi
+
+if [[ "${1:-}" != "devices" && "${1:-}" != "version" && "${1:-}" != "help" && \
+      "${1:-}" != "start-server" && "${1:-}" != "kill-server" && "${1:-}" != "mdns" && \
+      "${1:-}" != "-s" ]]; then
+    [[ "${ANDROID_SERIAL:-}" == "$expected_serial" ]] || \
+        fail "대상을 생략한 adb는 ANDROID_SERIAL=$expected_serial 환경에서만 허용됨"
+fi
+
+exec "$real_adb" "$@"

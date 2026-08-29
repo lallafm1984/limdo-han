@@ -28,6 +28,8 @@
 
 ## 실기기 앱 데이터 보존 관문
 
+- 자동 루프 시작·새 세션 직전·세션 종료 후 `scripts/check-emulator-only.sh`가 `ANDROID_SERIAL=emulator-5554`, `alarmquest-qa`, `ro.kernel.qemu=1`, 실기기 후보 0건을 모두 통과해야 한다.
+- 위 세 시점에 `scripts/ensure-emulator-ready.sh`가 에뮬레이터 부재·2시간 관문을 먼저 처리한다. 작업자 세션 안에서 직접 시작한 foreground 에뮬레이터는 세션 종료와 함께 사라질 수 있으므로 완료 근거 호스트로 인정하지 않는다.
 - 사용자 실기기에서는 `connectedDebugAndroidTest`를 실행하지 않는다. Gradle의 connected test 정리 단계가 대상 앱을 제거해 `noBackupFilesDir`의 보호자 녹음과 설정을 함께 지울 수 있다.
 - 계측 테스트는 `ANDROID_SERIAL=emulator-5554`를 명시한 에뮬레이터에서만 실행한다.
 - 실기기 검증은 `adb install -r` 덮어쓰기, 실제 화면·focus·로그·수동 재생으로 수행한다. 앱 제거가 필요한 검증은 사용자에게 데이터 삭제 범위를 먼저 알리고 명시적 승인을 받은 별도 test package에서만 한다.

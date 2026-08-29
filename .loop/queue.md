@@ -2,7 +2,7 @@
 
 실행 단계: CLI
 
-활성 루프: 237
+활성 루프: 238
 
 검토 관문: AUTO_CHILD_PROXY_QA
 
@@ -247,7 +247,8 @@
 | 234 | 차단 | `docs/2차-목표-제품-기획서.md` 2차 교육과정 3단계, `QA-191` | 검증된 `려` 후보는 보존, 최신 `가나다` 직접 쓰기 복원 지시로 완료·push 보류 |
 | 235 | 완료 | `.loop/user-directives.md` 2026-08-29 `가나다` 직접 쓰기 복원 | 직접 진입·에뮬레이터 QA·SM-S931N 무선 덮어쓰기 통과; 감독자 중지 유지 |
 | 236 | 완료 | `.loop/user-directives.md` 2026-08-29~30 기본 음성팩·사용자 녹음 온·오프·청취 승인 | 38 lesson 음성·1회 재생·설정·자동·에뮬레이터·SM-S931N 검증 통과 후 237 준비 |
-| 237 | 준비 | `.loop/user-directives.md` 2026-08-30, `docs/전-씬-프리미엄-디자인-루프-작업지시.md` D0 | 전 씬 inventory·삭제 안전·성능 baseline·art bible·mock 3안 뒤 사용자 선택 대기 |
+| 237 | 완료 | `.loop/user-directives.md` 2026-08-30, `docs/전-씬-프리미엄-디자인-루프-작업지시.md` D0 | 삭제 안전·inventory·성능·art bible·mock 3안·preview-only 검사 통과 후 238 준비 |
+| 238 | 준비 | 사용자 선택 A `햇살 정원 글자 공방`, `docs/전-씬-프리미엄-디자인-루프-작업지시.md` D1 | 홈·공통 scene shell production 적용 후 D2 세 선택 화면 준비 |
 
 큐 규칙:
 

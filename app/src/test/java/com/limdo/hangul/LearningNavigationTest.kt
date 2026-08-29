@@ -60,6 +60,36 @@ class LearningNavigationTest {
     }
 
     @Test
+    fun premiumArtBibleTokensKeepSharedSafetyAndExpressionScales() {
+        assertEquals(listOf(12f, 20f, 32f, 48f), listOf(
+            LimDoPlaygroundTokens.SPACING_COMPACT_DP,
+            LimDoPlaygroundTokens.SPACING_RELATED_DP,
+            LimDoPlaygroundTokens.SPACING_SECTION_DP,
+            LimDoPlaygroundTokens.SPACING_SCENE_DP,
+        ))
+        assertEquals(listOf(20f, 32f, 40f), listOf(
+            LimDoPlaygroundTokens.CORNER_CONTROL_DP,
+            LimDoPlaygroundTokens.CARD_CORNER_DP,
+            LimDoPlaygroundTokens.CORNER_HERO_DP,
+        ))
+        assertTrue(LimDoPlaygroundTokens.CHILD_TOUCH_MIN_DP >= 64f)
+        assertTrue(LimDoPlaygroundTokens.GUARDIAN_TOUCH_MIN_DP >= 64f)
+        assertTrue(LimDoPlaygroundTokens.WRITING_CANVAS_MIN_WIDTH_PX >= 1962)
+        assertTrue(LimDoPlaygroundTokens.WRITING_CANVAS_MIN_HEIGHT_PX >= 954)
+        assertEquals(168, LimDoPlaygroundTokens.WRITING_ACTION_PX)
+        assertEquals(0, LimDoPlaygroundTokens.REDUCED_MOTION_PARTICLE_COUNT)
+        assertTrue(LimDoPlaygroundTokens.MOTION_RETRY_MAX_DURATION_MS <= 500)
+        assertTrue(LimDoPlaygroundTokens.MOTION_SUCCESS_MAX_DURATION_MS <= 1000)
+        assertEquals(5, listOf(
+            LimDoPlaygroundTokens.warmCream,
+            LimDoPlaygroundTokens.deepTeal,
+            LimDoPlaygroundTokens.coral,
+            LimDoPlaygroundTokens.sunYellow,
+            LimDoPlaygroundTokens.ink,
+        ).distinct().size)
+    }
+
+    @Test
     fun lessonCardsDistinguishDefaultSelectedAndDisabledWithoutColorAlone() {
         LearningMenu.entries.forEach { menu ->
             val default = menu.lessonCardVisuals(LessonCardVisualState.DEFAULT)

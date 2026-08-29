@@ -26,6 +26,8 @@ required_files=(
     ".loop/user-directives.md"
     ".loop/cli-worker-prompt.md"
     "scripts/check-work-value.sh"
+    "scripts/check-emulator-only.sh"
+    "scripts/ensure-emulator-ready.sh"
     "scripts/check-visual-loop.sh"
     "scripts/check-full-play-evidence.sh"
     "scripts/run-cli-loop.sh"
@@ -33,6 +35,7 @@ required_files=(
     "scripts/cli-loop-status.sh"
     "scripts/stop-cli-loop.sh"
     "scripts/cli-loop-service.sh"
+    "scripts/emulator-only/adb"
     "automation/com.limdo.cli-loop.plist.template"
     "README.md"
 )
@@ -63,6 +66,18 @@ grep -q 'force push하지 않는다' .loop/cli-worker-prompt.md || fail "일반 
 grep -q -- '--ephemeral' scripts/run-cli-loop.sh || fail "임시 CLI 플래그가 없음"
 grep -q 'CODEX_LOOP_SANDBOX:-danger-full-access' scripts/run-cli-loop.sh || fail "Android 도구 sandbox 모드가 없음"
 grep -q 'env -u CODEX_SESSION_ID' scripts/run-cli-loop.sh || fail "새 세션 환경 분리가 없음"
+grep -q 'export ANDROID_SERIAL="emulator-5554"' scripts/run-cli-loop.sh || fail "감독자가 Android 대상을 에뮬레이터로 고정하지 않음"
+grep -q 'export ADB_MDNS_AUTO_CONNECT="0"' scripts/run-cli-loop.sh || fail "무선 실기기 자동 연결 차단이 없음"
+grep -q 'scripts/emulator-only' scripts/run-cli-loop.sh || fail "에뮬레이터 전용 adb 램퍼 PATH가 없음"
+(( $(grep -c './scripts/check-emulator-only.sh' scripts/run-cli-loop.sh) >= 3 )) || fail "세션 전·후 에뮬레이터 전용 관문이 부족함"
+(( $(grep -c './scripts/ensure-emulator-ready.sh' scripts/run-cli-loop.sh) >= 3 )) || fail "세션 전·후 지속 에뮬레이터 준비 관문이 부족함"
+grep -q './scripts/ensure-emulator-ready.sh' .loop/cli-worker-prompt.md || fail "작업자 지시에 지속 에뮬레이터 준비 절차가 없음"
+grep -q 'connectedDebugAndroidTest.*ANDROID_SERIAL=emulator-5554' .loop/cli-worker-prompt.md || fail "작업자 지시에 에뮬레이터 전용 계측 명령 규이 없음"
+grep -q '실기기 ADB 연결이 보이면' .loop/cli-worker-prompt.md || fail "실기기 감지 시 즉시 중단 규이 없음"
+grep -q '실기기 connected test 중복 사고' docs/회귀-규칙.md || fail "실기기 계측 중복 사고 회귀 규칙이 없음"
+[[ -x scripts/check-emulator-only.sh ]] || fail "에뮬레이터 전용 관문이 실행 가능하지 않음"
+[[ -x scripts/ensure-emulator-ready.sh ]] || fail "에뮬레이터 준비 관문이 실행 가능하지 않음"
+[[ -x scripts/emulator-only/adb ]] || fail "에뮬레이터 전용 adb 램퍼가 실행 가능하지 않음"
 grep -q 'screen -dmS' scripts/start-cli-loop.sh || fail "분리 CLI 세션 호스트가 없음"
 grep -q 'Markdown 문서는 한글로 작성' AGENTS.md || fail "한글 문서 기록 계약이 없음"
 grep -q '2340 × 1080' AGENTS.md || fail "AGENTS.md에 기준 화면이 없음"
@@ -80,6 +95,10 @@ grep -q '자산 필요 판정' AGENTS.md || fail "AGENTS.md에 시각 자산 필
 grep -q '변경 전·후' CLI_AUTOMATION.md || fail "CLI 자동화에 동일 상태 전후 비교 계약이 없음"
 grep -q '최종 전체 플레이' .loop/cli-worker-prompt.md || fail "작업자 지시문에 최종 전체 플레이 계약이 없음"
 grep -q '화면 누락 0건' 'docs/그래픽-시스템-루프-계약.md' || fail "그래픽·시스템 계약에 최종 화면 누락 관문이 없음"
+grep -q 'asset_scope' scripts/check-visual-loop.sh || fail "시각 검사에 자산 적용 범위 분기가 없음"
+grep -q 'preview-only는 사용자 선택 전 production 적용 금지 목표에서만 허용됨' scripts/check-visual-loop.sh || fail "preview-only 예외가 사용자 선택 관문으로 제한되지 않음"
+grep -q '필요 자산이 production res 경로에 없음' scripts/check-visual-loop.sh || fail "production 자산의 res 의무가 보존되지 않음"
+grep -q 'preview production 미소비 검사: 통과' scripts/check-visual-loop.sh || fail "preview 자산의 production 미소비 검사가 없음"
 grep -q '실제 사용자 입력' 'docs/전체-플레이-QA-행렬.md' || fail "최종 전체 플레이 행렬에 실제 입력 계약이 없음"
 grep -q '^## 1차 목표 완료 관문$' 'docs/1차-목표-작업-기획서.md' || fail "1차 목표 완료 관문이 없음"
 grep -q '자음·모음·가나다' 'docs/1차-목표-작업-기획서.md' || fail "1차 기본 세 메뉴 계약이 없음"
@@ -93,6 +112,11 @@ grep -q '숫자만 늘린 반복' AGENTS.md || fail "AGENTS.md에 무의미한 �
 grep -q '작업 가치 관문' CLI_AUTOMATION.md || fail "CLI 자동화 문서에 작업 가치 관문이 없음"
 grep -q '작업 가치 관문' .loop/cli-worker-prompt.md || fail "작업자 지시문에 작업 가치 관문이 없음"
 (( $(grep -c './scripts/check-automation.sh' scripts/run-cli-loop.sh) >= 2 )) || fail "감독자에 세션별 자동화 계약 재검사가 없음"
+
+if rg -n -P '\$[A-Za-z_][A-Za-z0-9_]*[가-힣]' \
+    scripts/check-emulator-only.sh scripts/ensure-emulator-ready.sh scripts/emulator-only/adb >/dev/null; then
+    fail "한글 조사 앞 shell 변수는 중괄호로 경계를 고정해야 함"
+fi
 
 ./scripts/check-work-value.sh LOOP_GOAL.md
 ./scripts/check-visual-loop.sh

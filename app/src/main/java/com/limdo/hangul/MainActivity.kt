@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
@@ -118,6 +119,10 @@ class MainActivity : ComponentActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemBars()
+    }
+
+    internal fun restoreImmersiveMode() {
+        window.decorView.postDelayed(::hideSystemBars, 120L)
     }
 
     private fun hideSystemBars() {
@@ -936,6 +941,7 @@ private fun GuardianStartRecordingScreen(
     val context = LocalContext.current
     var voiceState by remember { mutableStateOf(controller.currentState()) }
     var permissionDenied by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
     LaunchedEffect(controller) {
         permissionDenied = false
     }
@@ -944,6 +950,7 @@ private fun GuardianStartRecordingScreen(
     ) { granted ->
         permissionDenied = !granted
         if (granted) controller.startRecording()
+        (context as? MainActivity)?.restoreImmersiveMode()
     }
     DisposableEffect(controller) {
         controller.observe { voiceState = it }
@@ -1029,13 +1036,43 @@ private fun GuardianStartRecordingScreen(
                                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) controller.startRecording()
                                 else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                             }
-                            GuardianTextAction("삭제", "${lesson.glyph} 녹음 삭제", Color(0xFF765B50)) { controller.delete() }
+                            GuardianTextAction("\uC0AD\uC81C", "${lesson.glyph} \uB179\uC74C \uC0AD\uC81C \uD655\uC778", Color(0xFF765B50)) {
+                                showDeleteConfirmation = true
+                            }
                         }
                         GuardianVoiceState.PLAYING -> GuardianTextAction("듣기 정지", "미리 듣기 정지", Color(0xFF3F725E)) { controller.stopPlayback() }
                     }
                 }
             }
         }
+    }
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = {
+                Text(
+                    "${lesson.glyph} \uB179\uC74C\uC744 \uC0AD\uC81C\uD560\uAE4C\uC694?",
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+            text = {
+                Text("\uC0AD\uC81C\uD558\uBA74 \uBCF4\uD638\uC790\uAC00 \uB179\uC74C\uD55C \uC6D0\uBCF8\uC744 \uB2E4\uC2DC \uB4E4\uC744 \uC218 \uC5C6\uC5B4\uC694.")
+            },
+            dismissButton = {
+                GuardianTextAction("\uCDE8\uC18C", "${lesson.glyph} \uB179\uC74C \uBCF4\uC874", Color(0xFF3F725E)) {
+                    showDeleteConfirmation = false
+                }
+            },
+            confirmButton = {
+                GuardianTextAction("\uC0AD\uC81C", "${lesson.glyph} \uB179\uC74C \uC601\uAD6C \uC0AD\uC81C", Color(0xFF9A4B43)) {
+                    showDeleteConfirmation = false
+                    controller.delete()
+                }
+            },
+            containerColor = Color(0xFFFFF8EC),
+            titleContentColor = Color(0xFF2D4037),
+            textContentColor = Color(0xFF3E4A44),
+        )
     }
 }
 

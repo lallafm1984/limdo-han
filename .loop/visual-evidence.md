@@ -1,18 +1,25 @@
 # 현재 시각 루프 증거
 
-루프: 236
-상태: 진행 중 — 여자아이 38 lesson 음성·쓰기 진입 1회 재생·에뮬레이터·무선 설치 통과, 사용자 청취 대기
+## 루프 237 반복 7 저장 실패 복구 inventory
+
+- 시각 변경: 아니오. production 배치·자산·색·callback은 유지하고 저장 실패 복구 상태를 새로 수집했다.
+- 새 근거: `captures/loop237/iteration7/inventory/28-guardian-recording-save-failed-original-preserved.png`·hierarchy·focus. 2340 × 1080, LimDo focus, APK SHA-256 `c944e2b6be137f46156c1db8f7b93fde6fdac3a161445710321d0ebaf9d0b9a3`.
+- 직접 판정: 기존 확정 녹음이 `녹음 완료`로 보존되고 듣기·다시 녹음·삭제가 각 389 × 194 px로 활성이다. 잘림·겹침·가림·상태 오판정 0건.
+- 자동 그래픽 디자인 역할: 통과. 자동 QA 역할: 통과. 아이 대리 QA: 통과. 실제 아이 관찰: 실행 안 함. 새 P0·P1·진행 방해 P2: 0건.
+
+루프: 237
+상태: 진행 중 — 반복 1 보호자 녹음 삭제 확인·취소 보존 통과, D0 나머지 조건 대기
 기준 화면: 2340 × 1080
-변경 전 PNG: captures/loop194/iteration1/after/guardian-single-recording.png
-변경 전 hierarchy: captures/loop194/iteration1/after/guardian-single-recording.xml
-변경 후 PNG: captures/loop236/iteration1/after/gieok-toggle-on.png
-변경 후 hierarchy: captures/loop236/iteration1/after/gieok-toggle-on-hierarchy.xml
+변경 전 PNG: captures/loop194/iteration7/emulator/nieun-ready.png
+변경 전 hierarchy: captures/loop194/iteration7/emulator/nieun-ready.xml
+변경 후 PNG: captures/loop237/iteration1/after/delete-confirm.png
+변경 후 hierarchy: captures/loop237/iteration1/after/delete-confirm.xml
 package: com.limdo.hangul
 focus: 통과
-APK SHA-256: 9def859fd0ba1581717e405262a9e672a7330d2a2f0b0da3a8a90aeee408d0e7
+APK SHA-256: 7f72cd4839e54736bb3658a1fec7520619037dfc5bc146f65a8a0dd13162c918
 Git commit: 현재 HEAD 기준 미커밋 작업 트리
-자산 필요 판정: 필요 — runtime 합성 없이 보호자 38 lesson을 들려주는 production M4A 38파일
-production 자산 경로: app/src/main/res/raw/limdo_voice_*.m4a
+자산 필요 판정: 불필요 — 삭제 안전 modal은 기존 보호자 Compose token과 큰 버튼으로 충분하며 새 bitmap이 과제를 더 명확하게 하지 않음
+production 자산 경로: 새 자산 없음
 production 소비 검사: 통과
 자산 자동 검사: 통과
 자동 그래픽 디자인 역할: 통과
@@ -348,3 +355,34 @@ production 소비 검사: 통과
 - 자동 QA 역할: 통과 — `verify.sh`·diff·시각/자동화 계약과 에뮬레이터 계측 2/2, SM-S931N 데이터 보존 덮어쓰기·동일 APK·LimDo focus가 통과했다.
 - 아이 대리 QA: 통과 — 설정은 보호자 화면에 격리되고 쓰기 진입 1회 음성·정답 후 무반복 흐름이 아이의 입력과 다음 전환을 방해하지 않는다. 실제 아이 관찰: 실행 안 함.
 - 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+## 루프 237 반복 1 보호자 녹음 삭제 안전 근거
+
+- 변경 전: `captures/loop194/iteration7/emulator/nieun-ready.png`와 hierarchy의 녹음 완료 상태에서는 삭제 버튼이 즉시 원본 파일 삭제를 실행했다. 변경 후: `captures/loop237/iteration1/after/recording-ready.png`·`delete-confirm.png`·`delete-cancel-preserved.png`·`delete-confirmed.png`와 각 hierarchy.
+- 환경: `alarmquest-qa` QA 시작 uptime `1657.07`초, 종료 `1776.42`초로 7,200초 미만. 물리 1080 × 2340, `user_rotation=1`, 모든 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` 모두 `com.limdo.hangul/.MainActivity`.
+- APK SHA-256: `7f72cd4839e54736bb3658a1fec7520619037dfc5bc146f65a8a0dd13162c918`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 동일 fixture: `ㄱ` 원본 M4A SHA-256 `23658728fd3014c2898fec3e78068fe0d2d3d72989de20267a018186bb805bd6`를 사용했다. 확인 화면을 연 뒤와 취소 뒤 해시가 그대로였고, 확인 화면의 영구 삭제 뒤 파일이 존재하지 않으며 상태가 `녹음 없음`으로 바뀌었다.
+- 실측: 확인 panel `[814,115][1654,964]`=840 × 849 px. 영구 삭제와 취소는 각각 `[1202,481][1591,675]`, `[1202,707][1591,901]`=389 × 194 px이며 64 dp 최소 높이 192 px를 넘는다. 제목·결과 문구·두 버튼은 panel 안에서 잘림과 겹침이 없다.
+- 자산 필요 판정: 불필요 — 이번 최소 변경은 보호자 데이터 안전을 위한 modal·문구·큰 버튼으로 충분하고, 새 bitmap은 삭제 대상·결과·취소를 더 명확하게 하지 않는다. D0 mock 3안용 전용 bitmap 판정은 다음 반복에서 유지한다.
+- 자동 그래픽 디자인 역할: 통과 — 기존 보호자 palette·corner·elevation과 일치하고 배경 dim, 붉은 영구 삭제, 초록 취소가 정보 위계를 만든다. 흐림·왜곡·halo·검은 배경·잘림 0건.
+- 자동 QA 역할: 통과 — 새 단위 회귀 검사, `./scripts/verify.sh`, `git diff --check`, 최신 APK 설치, 확인 전·취소 후 해시 보존, 명시적 확인 뒤 파일 삭제와 상태 전환을 통과했다.
+- 아이 대리 QA: 통과 — 기능은 보호자 화면에 격리돼 아이의 쓰기·음성·성공 흐름을 바꾸지 않는다. 보호자는 대상 `ㄱ`, 원본 손실 결과, 취소와 영구 삭제를 모양·위치·문구로 구분한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0.
+
+## 루프 237 반복 10 D0 mock 3안·현재 production 최종 근거
+
+- 변경 전 production: `captures/design-audit-20260830/baseline/01-home.png`·`02-consonant-selection.png`·`03-writing.png`와 각 hierarchy. 반복 10 현재 APK 안정 홈: `captures/loop237/iteration10/emulator/home-current.png`·`home-current.xml`.
+- preview 변경 후: `captures/loop237/iteration10/mocks/`의 A 햇살 정원, B 구름빛 놀이터, C 종이 공방 `*-2340x1080.png`. preview이므로 앱 hierarchy·focus나 production 소비를 주장하지 않는다.
+- 환경: QA 시작 uptime `2159.11`초로 7,200초 미만, 물리 1080 × 2340, `user_rotation=1`, 현재 앱 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` 모두 `com.limdo.hangul/.MainActivity`.
+- APK SHA-256: `adf70bdf3de774173196a67ec9648990d829d3cfee7766ec7d715f08ad76197a`. 현재 production 홈 PNG SHA-256: `ac7238179845bf3f0722d4e2ecf617bebaeba7dcde2f59adcfffce3a2443ebc3`.
+- 자산: Codex 내장 `imagegen`으로 정확히 3개 생성. 최종 세 PNG는 각각 2340 × 1080, 완전 불투명이고 SHA-256은 A `dd4f1cddd0a24f034d852a973c82772529f32e9231b8d58bb5bfd581f1647c60`, B `b2665c1829fc20bd8ea5557e7d27644c290c701de86344982b3ab26524c25def`, C `74977e551db0dd26d654d472563e300a7bc025a430fedccc38e932a8bccacdfb`다. production 소비·APK 포함은 0건이며 사용자 선택 뒤 D1에서 별도 적용한다.
+- 자동 그래픽 디자인 역할: 통과 — 세 안은 정원 clay·하늘 felt·종이 craft로 명확히 구별되고 공통 blue·orange·green 카드와 부드러운 좌상단 광원을 유지한다. 임의 한글·숫자·가짜 UI·차량·워터마크·검은 배경·잘림은 0건이다.
+- 자동 QA 역할: 통과 — `./scripts/verify.sh`, `git diff --check`, `check-visual-loop.sh`, `check-automation.sh`, `check-emulator-only.sh` 통과. 현재 production 홈은 새 APK에서도 세 카드·보호자 단서의 잘림·겹침·왜곡 0건이다.
+- 아이 대리 QA: 통과 — 세 preview 모두 글을 읽지 않아도 큰 선택 영역 세 개와 왼쪽 위 보호자 단서를 구분하며 카드 중앙이 비어 production glyph를 가리지 않는다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0. D1 production 구현은 사용자 선택 전 금지한다.
+
+자산 적용 범위: preview-only
+preview 자산 경로: captures/loop237/iteration10/mocks/direction-a-sunny-garden-workshop-2340x1080.png
+preview 자산 경로: captures/loop237/iteration10/mocks/direction-b-cloud-playground-2340x1080.png
+preview 자산 경로: captures/loop237/iteration10/mocks/direction-c-paper-workshop-2340x1080.png
+preview production 미소비 검사: 통과
+preview 사용자 선택 관문: 통과

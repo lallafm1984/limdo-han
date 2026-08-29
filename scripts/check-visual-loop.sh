@@ -79,10 +79,28 @@ check_png_field "변경 후 PNG"
 check_file_field "변경 후 hierarchy"
 
 if [[ "$asset_decision" == 필요\ —\ * ]]; then
-    asset_path="$(sed -n 's/^production 자산 경로: //p' "$evidence_file")"
-    [[ "$asset_path" == app/src/main/res/* && -s "$asset_path" ]] || fail "필요 자산이 production res 경로에 없음"
-    grep -q '^production 소비 검사: 통과$' "$evidence_file" || fail "production 소비 검사가 통과하지 않음"
-    grep -q '^자산 자동 검사: 통과$' "$evidence_file" || fail "자산 자동 검사가 통과하지 않음"
+    asset_scope="$(sed -n 's/^자산 적용 범위: //p' "$evidence_file")"
+    case "$asset_scope" in
+        production)
+            asset_path="$(sed -n 's/^production 자산 경로: //p' "$evidence_file")"
+            [[ "$asset_path" == app/src/main/res/* && -s "$asset_path" ]] || fail "필요 자산이 production res 경로에 없음"
+            grep -q '^production 소비 검사: 통과$' "$evidence_file" || fail "production 소비 검사가 통과하지 않음"
+            grep -q '^자산 자동 검사: 통과$' "$evidence_file" || fail "자산 자동 검사가 통과하지 않음"
+            ;;
+        preview-only)
+            grep -Eq '사용자가.*선택.*전.*production.*(적용|구현).*않' LOOP_GOAL.md || fail "preview-only는 사용자 선택 전 production 적용 금지 목표에서만 허용됨"
+            grep -q '^preview production 미소비 검사: 통과$' "$evidence_file" || fail "preview production 미소비 검사가 통과하지 않음"
+            grep -q '^preview 사용자 선택 관문: 통과$' "$evidence_file" || fail "preview 사용자 선택 관문이 통과하지 않음"
+            preview_count="$(grep -c '^preview 자산 경로: ' "$evidence_file")"
+            (( preview_count > 0 )) || fail "preview 자산 경로가 없음"
+            while IFS= read -r preview_path; do
+                [[ "$preview_path" != app/src/main/res/* ]] || fail "preview 자산이 production res에 포함됨: $preview_path"
+                [[ -s "$preview_path" ]] || fail "preview 자산 파일이 없거나 비어 있음: $preview_path"
+                file "$preview_path" | grep -q 'PNG image data, 2340 x 1080' || fail "preview 자산이 2340 × 1080 PNG가 아님: $preview_path"
+            done < <(sed -n 's/^preview 자산 경로: //p' "$evidence_file")
+            ;;
+        *) fail "필요 자산은 production 또는 preview-only 적용 범위를 명시해야 함" ;;
+    esac
 fi
 
 echo "시각 루프 계약 통과: 완료 증거 확인"

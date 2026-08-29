@@ -94,6 +94,8 @@ LimDo는 다섯 살 아이를 위한 개인용 로컬 우선 Android 학습 앱�
 
 시각 Android 루프는 `alarmquest-qa` 에뮬레이터의 세로 기기 해상도 1080 × 2340을 사용하고, 앱이 요구하는 가로 2340 × 세로 1080 상태에서 검증한다.
 
+자동 루프의 Android 대상은 `emulator-5554` 하나다. 감독자는 `ANDROID_SERIAL=emulator-5554`를 강제하고 `scripts/check-emulator-only.sh`를 세션 전·후에 실행한다. 실기기나 실기기 후보가 ADB 목록에 있으면 기기에 입력·설치·계측·재연결을 시도하지 않고 자동화를 중지한다. `connectedDebugAndroidTest`는 `ANDROID_SERIAL=emulator-5554`를 명시하고, 직접 adb 조작은 `adb -s emulator-5554`만 사용한다.
+
 에뮬레이터를 장시간 켜 둔 상태의 QA를 금지한다. 각 시각·입력 QA 시작 전에 `adb -s emulator-5554 shell cat /proc/uptime`의 첫 값을 확인한다. 값이 7,200초 이상이면 새 입력·캡처를 진행하지 않고 `adb -s emulator-5554 emu kill`로 완전히 종료해 serial이 사라진 것을 확인한 뒤 `alarmquest-qa`를 cold boot한다. 부팅 완료 후 물리 1080 × 2340, `user_rotation=1`, LimDo 2340 × 1080, package·focus를 다시 확인해야 한다. 재시작 전 7,200초 이후에 수집한 화면은 완료 근거로 사용하지 않는다. 정확한 종료·재실행 절차는 `QA_CHECKLIST.md`와 `docs/루프-엔지니어링-적용.md`를 따른다.
 
 시각 또는 입력 루프는 `QA_CHECKLIST.md`를 읽고 충족한다. `자동`, `에뮬레이터`, `아이 대리 점검`, `실제 아이 관찰` 근거를 구분하며 성인이나 에뮬레이터 점검을 다섯 살 아이 사용성의 실제 증거로 표현하지 않는다.

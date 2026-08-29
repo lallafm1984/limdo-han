@@ -330,6 +330,25 @@ class GuardianVoiceRecordingTest {
     }
 
     @Test
+    fun guardianRecordingDeletionRequiresExplicitConfirmationAndCancelPreservesTheFile() {
+        val source = File(rootProject(), "app/src/main/java/com/limdo/hangul/MainActivity.kt").readText()
+        val readyActions = source.substringAfter("GuardianVoiceState.READY -> {")
+            .substringBefore("GuardianVoiceState.PLAYING")
+        val confirmation = source.substringAfter("if (showDeleteConfirmation) {")
+            .substringBefore("\n}\n\n@Composable")
+
+        assertTrue(readyActions.contains("showDeleteConfirmation = true"))
+        assertFalse(readyActions.contains("controller.delete()"))
+        assertTrue(confirmation.contains("onDismissRequest = { showDeleteConfirmation = false }"))
+        assertTrue(confirmation.contains("\\uC6D0\\uBCF8"))
+        assertTrue(confirmation.contains("\\uCDE8\\uC18C"))
+        assertEquals(1, Regex("controller\\.delete\\(\\)").findAll(confirmation).count())
+        val cancelAction = confirmation.substringAfter("dismissButton = {")
+            .substringBefore("confirmButton = {")
+        assertFalse(cancelAction.contains("controller.delete()"))
+    }
+
+    @Test
     fun guardianRecordingBackReturnsToGuardianList() {
         assertEquals(
             LearningDestination.GuardianLessons,
