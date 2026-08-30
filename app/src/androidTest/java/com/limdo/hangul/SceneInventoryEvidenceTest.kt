@@ -22,9 +22,22 @@ import java.io.FileOutputStream
 import java.security.MessageDigest
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Before
 
 class SceneInventoryEvidenceTest {
     @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @Before
+    fun resetLearningListBeforeEachTest() {
+        val storage = GuardianLearningListStorage(
+            InstrumentationRegistry.getInstrumentation().targetContext.noBackupFilesDir,
+        )
+        if (storage.storageFile().exists()) {
+            check(storage.storageFile().delete())
+        }
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitForIdle()
+    }
 
     @Test
     fun reachableStableScenesAreCapturedFromHomeNavigation() {

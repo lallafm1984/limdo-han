@@ -96,8 +96,14 @@ release_lock() {
 }
 
 has_work() {
-    local active_loop
+    local active_loop status
     active_loop="$(sed -n 's/^활성 루프: //p' "$repo_root/.loop/queue.md")"
+    status="$(sed -n 's/^상태: //p' "$repo_root/.loop/state.md")"
+    case "$status" in
+        차단|완료)
+            return 1
+            ;;
+    esac
     [[ -n "$active_loop" && "$active_loop" != "없음" ]] && return 0
     grep -Eq '^\| [0-9]{3} \| 준비 \|' "$repo_root/.loop/queue.md"
 }

@@ -87,6 +87,21 @@ verify_display() {
     [[ "$rotation" == "1" ]] || fail "user_rotation이 1이 아님: ${rotation:-없음}"
 }
 
+stabilize_display() {
+    local attempt rotation
+    for attempt in {1..15}; do
+        "$real_adb" -s "$expected_serial" shell settings put system accelerometer_rotation 0
+        "$real_adb" -s "$expected_serial" shell settings put system user_rotation 1
+        sleep 1
+        rotation="$($real_adb -s "$expected_serial" shell settings get system user_rotation | tr -d '\r')"
+        if [[ "$rotation" == "1" ]]; then
+            verify_display
+            return 0
+        fi
+    done
+    fail "cold boot 뒤 user_rotation=1이 15회 안에 안정화되지 않음"
+}
+
 focus_package() {
     "$real_adb" -s "$expected_serial" shell dumpsys window windows 2>/dev/null \
         | sed -n -E 's/.*mCurrentFocus=.* ([A-Za-z0-9._]+)\/.*/\1/p' \
@@ -141,9 +156,7 @@ fi
 wait_until_booted
 verify_identity
 
-"$real_adb" -s "$expected_serial" shell settings put system accelerometer_rotation 0
-"$real_adb" -s "$expected_serial" shell settings put system user_rotation 1
-verify_display
+stabilize_display
 
 uptime_seconds="$($real_adb -s "$expected_serial" shell cat /proc/uptime | awk '{print int($1)}')"
 echo "에뮬레이터 준비 통과: serial=$expected_serial avd=$expected_avd physical=0 uptime=${uptime_seconds}초 display=1080x2340 rotation=1"

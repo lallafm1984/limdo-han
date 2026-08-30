@@ -17,6 +17,7 @@ class LearningNavigationTest {
         assertEquals(0f, start.symbolAlpha)
         assertTrue(middle.symbolAlpha in 0.4f..0.6f)
         assertEquals(1f, end.symbolAlpha)
+        assertTrue(LimDoPlaygroundTokens.MENU_TRANSITION_OVERLAY_ALPHA in 0.75f..0.9f)
         LearningMenu.entries.forEach { menu ->
             assertTrue(menu.symbol.isNotBlank())
             assertNotEquals(menu.visuals().accent, menu.visuals().softSurface)

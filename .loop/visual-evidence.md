@@ -386,3 +386,122 @@ preview 자산 경로: captures/loop237/iteration10/mocks/direction-b-cloud-play
 preview 자산 경로: captures/loop237/iteration10/mocks/direction-c-paper-workshop-2340x1080.png
 preview production 미소비 검사: 통과
 preview 사용자 선택 관문: 통과
+## 루프 238 반복 1 공통 정원 배경 중간 근거
+
+- 변경 전: `captures/design-audit-20260830/baseline/01-home.png`·`.xml`. 변경 후: `captures/loop238/iteration1/after/home-stable.png`·`.xml`.
+- 환경: QA 시작 uptime `3007.19`초, `alarmquest-qa`, 물리 1080 × 2340, `user_rotation=1`, 변경 후 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo.
+- APK SHA-256: `8b1507506742eb97b50d4cd5eb1d5bcc5f95f7938dac672cce91b599947f40b8`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 자산: `limdo_sunny_garden_scene_background.png`, 2340 × 1080 불투명 PNG, SHA-256 `a7dd238985c9bec4f545eeb9b616521e2770002efb97a791f12035c4f2a09bcd`, APK 포함·production 소비 통과. background이므로 RGBA·alpha bbox 관문은 비대상이며 비율 왜곡·문자·가짜 UI·차량·워터마크 0건이다.
+- 실측: 카드 688~689 × 702 px 세 개, 보호자 194 × 194 px. 잘림·겹침·callback 가로채기 0건.
+- 자동 그래픽 디자인 중간 판정: 통과 — warm cream, matte clay, 좌상단 광원과 가장자리 정원 깊이가 생겼고 중앙 과제 위계가 유지됐다.
+- 자동 QA 중간 판정: 통과 — `verify.sh`, `git diff --check`, APK 포함, 새 설치·focus·화면이 통과했다.
+- 아이 대리 QA 중간 판정: 배경은 통과하나 메뉴별 실제 그림·짧은 시범이 아직 없어 D1 최종 판정은 보류한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0. 루프 상태: 진행 중.
+
+## 루프 238 반복 6 배경 decode 축소·성능 재판정 근거
+
+- 변경 전: `captures/loop238/iteration5/performance/writing.png`·`.xml`, 정원 배경 2340 × 1080·2.9 MiB, 쓰기 안정 PSS 104,202 KiB, deadline miss 7.66%. 변경 후: `captures/loop238/iteration6/performance/home.png`·`home.xml`·`writing-final.png`·`writing-final.xml`, 정원 배경 1170 × 540·815 KiB.
+- 환경: QA 전 uptime `5491.11`초, `alarmquest-qa`, 물리 1080 × 2340, `user_rotation=1`, PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo. APK SHA-256는 `captures/loop238/iteration6/performance/apk-sha256.txt`에 기록했다. Git commit은 현재 HEAD 기준 미커밋 작업 트리다.
+- 실측·시각 판정: 배경 ARGB decode 상한 2.41 MiB, WritingCanvas 1962 × 954 px, 네 조작 각 168 × 168 px. 원본 2340 × 1080 화면에서 정원 소품·햇살·표면과 세 카드·clay 그림에 흐림·왜곡·halo·알파 이상·잘림·겹침이 없다.
+- 자동 그래픽 디자인 역할: 이번 단일 배경 최적화 범위 `통과`. 자동 QA 역할: unit·lint·debug build·diff·에뮬레이터 격리·화면·PSS는 통과했지만 전체 D1 성능은 `실패`. 아이 대리 QA: 과제·세 선택·보호자 진입·쓰기 영역 의미 보존 `통과`. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 성능 1건. PSS는 93,497 KiB로 회복했지만 deadline miss 6.69%(16/239)가 3% 기준을 넘으므로 루프 상태는 진행 중이다.
+
+## 루프 238 반복 4 홈 상태·모션 유효 근거
+
+- 변경 전: `captures/design-audit-20260830/baseline/01-home.png`·`.xml`. 변경 후: `captures/loop238/iteration4/after/` 홈 시작·안정·누림·자음 전환·animator scale 0 홈·모음 선택 PNG·hierarchy.
+- 환경: uptime `4549.88`→`4636.11`초, 물리 1080 × 2340, `user_rotation=1`, PNG 모두 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo. APK SHA-256 `32cceedbe830441fb5feaa387b37a961ddc0f62bf63770df4373a71efc05cb2f`.
+- 실측: 안정 홈 세 카드 688~689 × 702 px, 보호자 진입 194 × 194 px. 누림 중 세 카드 존속, 대상 카드 축소·흰 빛 테두리 구분, 선택 후 blue·orange shell을 확인했다.
+- 자산 필요 판정: 불필요 — 기존 production 정원 배경·세 clay 그림·Compose 상태를 검증했으며 새 bitmap은 생성하지 않았다.
+- 자동 그래픽 디자인·자동 QA·아이 대리 QA: 이번 상태·모션 범위 `통과`. 시작 순차, 누림 피드백, 선택 색 연결, animator scale 0 정적 완료가 의미를 보존했고 글자·버튼 가림·잘림·겹침은 0건이다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0. D1 전체 통합 회귀 관문은 남아 루프 상태는 진행 중이다.
+
+## 루프 238 반복 3 홈 motion 미판정 근거
+
+- 환경: `check-emulator-only.sh` 통과, 실기기 후보 0건, uptime `3894.96`→`4142.36`초, 물리 1080 × 2340, `user_rotation=1`, 최종 LimDo focus.
+- APK SHA-256: `32cceedbe830441fb5feaa387b37a961ddc0f62bf63770df4373a71efc05cb2f`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- 유효한 중간 발견: `home-consonant-pressed.png`에서 누른 자음 카드의 축소·흰 빛 테두리는 보였으나 나머지 두 카드가 사라져 상태 소유 결함 후보를 발견했고 `key(menu)`로 수정했다.
+- 완료 근거 제외: `home-entry-start.png`, `home-stable.png`, `home-reduced-motion*.png`, `home-final-*.png`는 launcher 노출 또는 서로 다른 복원 목적지가 섞여 파일명과 실제 상태가 일치하지 않으므로 자동 그래픽 디자인·자동 QA·아이 대리 QA 완료 근거로 사용하지 않는다.
+- 판정: 자동 검증은 통과했으나 수정 후 동일 진입 순서의 2340 × 1080 기본·누림·선택·animator scale 0를 입증하지 못해 자동 그래픽 디자인·자동 QA·아이 대리 QA는 모두 `미판정`이다. 실제 아이 관찰: 실행 안 함.
+
+## 루프 238 반복 2 세 메뉴 clay 교육 그림 중간 근거
+
+- 변경 전: `captures/loop238/iteration1/after/home-stable.png`·`.xml`. 변경 후: `captures/loop238/iteration2/after/home-stable.png`·`.xml`·`focus.txt`.
+- 환경: QA 시작 uptime `3432.87`초, `alarmquest-qa`, 물리 1080 × 2340, `user_rotation=1`, 변경 후 PNG 2340 × 1080, `topResumedActivity`·`mCurrentFocus`·`mFocusedApp` LimDo.
+- APK SHA-256: `1b030c3c4a122bd31b277cbdb182263a38b01903d64d21875b711bae3b678bc9`. Git commit: 현재 HEAD 기준 미커밋 작업 트리.
+- production 자산: `limdo_home_consonant_clay.png` 840 × 519 RGBA `2a3fa451…b70b0f5`, `limdo_home_vowel_clay.png` 840 × 519 RGBA `cd429b39…8561415`, `limdo_home_syllable_clay.png` 840 × 520 RGBA `5864cd39…13cd7f5`. 모서리 alpha 0~1, APK 포함·Compose production 소비 통과.
+- 실측: 세 그림 슬롯 약 420 × 258~260 px, 세 카드 688~689 × 702 px, 보호자 194 × 194 px. 홈 PSS `81,544 KiB`, 반복 1 대비 +5,042 KiB, 배경+세 자산 decode 상한 15,337,440 byte로 16 MiB 예산 이내.
+- 자동 그래픽 디자인 중간 판정: 통과 — 동일 matte clay·좌상단 광원·blue/orange/green 화풍이며 자음 블록·모음 줄기·조각 결합 장면이 구분된다. 글자·배경·가림·잘림·왜곡·halo 0건.
+- 자동 QA 중간 판정: 통과 — `verify.sh`·diff·자산 검사·APK 포함·새 설치·focus·화면·PSS가 통과했다.
+- 아이 대리 QA 중간 판정: 통과 — 글을 읽지 않아도 세 카드의 색과 실루엣으로 각진 조각·줄기 조각·두 조각 합치기를 구분하고, 아래 큰 glyph·라벨이 보조한다. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 0. 루프 상태: 진행 중.
+## 루프 238 반복 8 전환 bitmap 제거 성능 기각 근거
+
+- 변경 전: 반복 7의 bitmap 포함 전환 `3/31=9.68%`. 후보 변경 후: `captures/loop238/iteration8/performance/home-fixed.png`·XML, `selection-fixed.png`·XML, `menu-transition-framestats-fixed.txt`, `focus-fixed.txt`; bitmap·overlay 제거 뒤에도 `3/31=9.68%`, frozen 0.
+- 환경: QA 시작 uptime `6318.63`초, `emulator-5554` 단독, 물리 1080 × 2340, `user_rotation=1`, PNG 2340 × 1080, LimDo focus. 후보 APK SHA-256 `d5f77153cdc4eead784ef66aca7536ef27d47b11d7a07a82202b80afe58bb220`.
+- 직접 판정: 홈·선택의 잘림·겹침·왜곡 0건, 홈 카드 `688~689 × 702 px`, 보호자 callback `194 × 194 px`. 자동 성능·아이 대리 QA 실패, 새 P0·P1 0건, 진행 방해 P2 1건. 실패 코드는 원복했으며 실제 아이 관찰은 실행하지 않았다.
+
+## 루프 239 반복 2 action atlas 규격 복원 근거
+
+- 변경 전: `captures/loop239/iteration1/after/writing.png`·`.xml`, atlas 836 × 836 px. 변경 후: `captures/loop239/iteration2/after/writing.png`·`.xml`, atlas 1254 × 1254 px. 두 화면은 같은 `ㄱ` 초기 쓰기 상태이며 앱 영역 2340 × 1080이다.
+- 환경: QA 시작 uptime `139.52`초, `alarmquest-qa`, 물리 1080 × 2340, `user_rotation=1`, 네 focus 지표 LimDo. APK SHA-256 `129c9f4e4871cfc4ded616222a82fdb62f1c2ae359ec4c4abd8c5245d04c2ed0`; Git commit은 현재 HEAD 기준 미커밋 작업 트리다.
+- 자산 판정: 새 생성 없이 현재 3 × 3 RGBA atlas를 균일 확대했다. PNG·alpha·1254 × 1254·418 px 셀 계약이 일치하며 APK 포함·production 소비가 유지된다.
+- 실측·직접 판정: WritingCanvas 1962 × 954 px, 네 조작 각 168 × 168 px. 변경 전 인접 셀 노출은 사라졌고 각 버튼은 단일 house·eraser·왼쪽·오른쪽 아이콘만 표시한다. 검은 배경·halo·왜곡·잘림·글자 길 가림 0건이다.
+- 자동 그래픽 디자인 역할: action atlas 범위 통과. 자동 QA 역할: 자동 검사·화면·bounds·PSS는 통과했으나 전체 성능 16/174=9.20%로 실패. 아이 대리 QA: 네 동작 구분은 통과했으나 전환 성능 P2 때문에 전체 실패. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 성능 1건. 루프 상태: 진행 중.
+
+## 루프 239 반복 15 배경 RenderNode 격리 기각 근거
+
+- 변경 전: `captures/loop239/iteration14/after/home.png`·`selection.png`·`writing.png`, 전체 흐름 13/189=`6.88%`. 변경 후 후보: `captures/loop239/iteration15/after/selection.png`·`writing.png`·hierarchy·focus, 전체 흐름 13/177=`7.34%`. `home.png`는 복원 중간 프레임으로 안정 화면 근거에서 제외했다.
+- 환경: QA 시작 uptime `5726.56`초, `emulator-5554`/`alarmquest-qa`, 실기기 후보 0건, 물리 1080 × 2340, `user_rotation=1`, PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo. APK SHA-256 `702a71724f87b9858d2a4a294a8bd482264cc2d2a1e20c7fa8e55865d62cb663`.
+- 실측: 짧은 전환 15프레임·miss 1·slow draw 0·frozen 0, 전체 흐름 slow UI 11·slow draw 12·bitmap upload 0·frozen 0, 쓰기 안정 PSS 92,241 KiB. WritingCanvas 1962 × 954 px, 네 조작 각 168 × 168 px.
+- 자산 판정: 새 생성 없이 기존 1170 × 540 정원 배경·세 clay·action atlas를 재사용했다. 선택·쓰기 화면에서 흐림·왜곡·halo·검은 면·잘림·겹침은 0건이다.
+- 판정: 자동 그래픽 디자인 역할은 화면 보존 통과. 자동 QA·아이 대리 QA는 3% 미만 성능 관문 미충족으로 실패. 실제 아이 관찰: 실행 안 함. 새 P0 0건, 새 P1 0건, 진행 방해 P2 1건. 후보는 원복했고 루프는 15회 상한으로 차단했다.
+
+## 루프 239 반복 3 controller 지연 생성 후보 기각 근거
+
+- 변경 전: `captures/loop239/iteration2/after/home.png`·`writing.png`·hierarchy. 후보 변경 후: `captures/loop239/iteration3/after/home.png`·`selection.png`·`writing.png`·hierarchy. 모두 앱 영역 2340 × 1080이며 후보는 성능 기각 후 소스에서 원복했다.
+- 환경: uptime `215.29`초, `alarmquest-qa`, 물리 1080 × 2340, `user_rotation=1`, 네 focus 지표 LimDo. 후보 APK SHA-256 `46a015eef2d9fd0096b39a94ac6121a08b81e1a3c06bd47cb5aeb3ec7f3b8565`; Git commit은 현재 HEAD 기준 미커밋 작업 트리다.
+- 자산 필요 판정: 불필요 — 기존 정원·clay·action atlas를 그대로 재사용했고 초기 CPU 구조 검증에 새 bitmap은 필요하지 않았다.
+- 직접 판정: 세 홈 카드·보호자 진입·14 자음·WritingCanvas 1962 × 954 px·네 조작 각 168 × 168 px의 모양·잘림·겹침·callback 회귀 0건이다.
+- 자동 그래픽 디자인 역할: 화면 보존 통과. 자동 QA 역할·아이 대리 QA: 전체 deadline miss `15/178=8.43%`로 실패. 실제 아이 관찰: 실행 안 함.
+- 새 P0: 0; 새 P1: 0; 진행 방해 P2: 성능 1건. 루프 상태: 진행 중.
+
+## 루프 239 반복 9 — 공통 scene shell 생명주기 후보
+
+- 변경 전: `captures/loop239/iteration8/after/selection.png`·`writing.png`. 변경 후: `captures/loop239/iteration9/after/selection.png`·`selection.xml`, `writing.png`·`writing.xml`, `focus-writing.txt`, `performance/apk-sha256.txt`.
+- 두 PNG는 2340 × 1080, 물리 1080 × 2340, `user_rotation=1`, package·focus `com.limdo.hangul`을 통과했다. WritingCanvas 1962 × 954 px, 네 조작 168 × 168 px, 가림·잘림·왜곡·흐림·블랙 배경 0건이다.
+- 동일 흐름 19/295=`6.44%`, frozen 0, 짧은 전환 miss 1/22, PSS 91,190 KiB로 가설을 기각하고 후보를 원복했다.
+- 자동 그래픽 디자인: 화면 보존 통과. 자동 QA·아이 대리 QA: 진행 방해 P2 1건으로 실패. 신규 P0 0, P1 0, 진행 방해 P2 1. 실제 아이 관찰: 실행 안 함.
+
+## 루프 239 반복 10 — 선택 카드 외곽 node 통합 후보
+
+- 변경 전: `captures/loop239/iteration9/after/selection.png`·`selection.xml`, 2340 × 1080.
+- 변경 후: `captures/loop239/iteration10/after/selection.png`·`selection.xml`, `writing.png`·`writing.xml`, 각 2340 × 1080.
+- focus: `captures/loop239/iteration10/after/focus-writing.txt`, package `com.limdo.hangul`, `mCurrentFocus`·`mFocusedApp` LimDo.
+- APK SHA-256: `4f500b0ed87594ba08af24d012f5a9405537a1f72f71968f82a6bdd4053cbebd`.
+- 자산: 새 생성 없음. 기존 정원·clay·action atlas production 소비를 보존했다.
+- 자동 그래픽 디자인 역할: 통과. 선택 카드 14개의 파란 외곽·그림자·모서리·글자 배치와 쓰기 geometry·조작 자산에 가림·잘림·화풍 회귀 0건.
+- 자동 QA 역할: 실패. 전체 deadline miss 19/297=`6.40%`로 3% 미만 관문 미충족.
+- 아이 대리 QA: 실패. 글을 읽지 않아도 14개 큰 글자 카드·홈·쓰기 시작점·방향·네 조작은 구분하지만 전환 성능 P2 1건이 남음.
+- 신규 P0 0건, P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+
+## 루프 239 반복 12 — 선택 glyph BasicText 후보
+
+- 변경 전: `captures/loop239/iteration11/after/selection-stable.png`·XML. 후보 변경 후: `captures/loop239/iteration12/after/selection.png`·XML, `writing.png`·XML. 모두 2340 × 1080이며 후보 소스는 성능 기각 후 원복했다.
+- 환경: uptime `4730.04`초, 물리 1080 × 2340, `user_rotation=1`, package `com.limdo.hangul`, `mCurrentFocus`·`mFocusedApp` LimDo. APK SHA-256 `752445cdb11d64c6f8a02af19482c9129763dcd0a0f8e50186530e8c86d03cbd`; Git commit은 현재 HEAD 기준 미커밋 작업 트리다.
+- 자산 필요 판정: 불필요. 기존 정원·clay·action atlas production 소비를 보존했고 text 계층 비용 분리에 새 bitmap을 사용하지 않았다.
+- 직접 판정: 14개 glyph의 굵기·중앙 정렬·잘림·겹침 0건, 카드 외곽·그림자·semantics·callback 보존. WritingCanvas 1962 × 954 px, 네 조작 168 × 168 px, 교육 geometry·표식 가림 0건.
+- 성능: 전체 16/295=`5.42%`, frozen 0, 짧은 전환 miss 0/22, bitmap upload 0, PSS 88,556 KiB. 3% 미만 관문 실패로 후보를 원복했다.
+- 자동 그래픽 디자인 역할: 화면 보존 통과. 자동 QA 역할·아이 대리 QA: 성능 P2 1건으로 실패. 신규 P0 0건, P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+
+## 루프 239 반복 13 — 보호자 저장소 IO 지연 후보
+
+- 변경 전: `captures/loop239/iteration12/after/selection.png`, `writing.png`·각 hierarchy. 반복 12 원복 production 상태이다.
+- 변경 후: `captures/loop239/iteration13/after/selection.png`, `writing.png`·각 hierarchy. 둘 다 2340 × 1080 RGBA이며 LimDo focus다.
+- APK SHA-256: `d906d75132f374198b7fab499e0f59181e37e58d648a8a3d57e12747f6a836be`.
+- 자산: 새 생성 없음. 기존 production 정원·clay·action atlas 소비와 APK 포함을 보존했다.
+- 자동 그래픽 디자인 역할: 화면 표현 통과. 14개 선택 글자·카드 깊이·외곽·홈·쓰기 guide·action icon 회귀 0건.
+- 자동 QA 역할: 실패. 전체 deadline miss 15/176=`8.52%`로 3% 미만 관문 미충족.
+- 아이 대리 QA: 실패. 과제·시작점·네 조작은 글 없이 구분되지만 최초 흐름 성능 P2가 남음.
+- 신규 P0 0건, P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+- 판정: 후보 기각·소스 원복. 완료 근거로 사용하지 않음.

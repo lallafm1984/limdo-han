@@ -584,6 +584,87 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 단계: 그래픽·시스템 구현. 시각 변경: 예(반복 1 변경의 최종 경계 판정이며 이번 반복의 신규 시각 변경은 없음). 자산 필요 판정: 불필요 — 기존 production 점선·시작점·동적 시범 geometry 상태 경계 검증이며 bitmap은 lifecycle 정확성을 높이지 않는다.
 - 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
 
+### 2026-08-30 루프 238 반복 11 결과 최신 위치 정정
+
+- 반복 11 결과 전체가 과거의 동일 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 238 반복 11 결과 — 외부 앱 focus로 실화면·성능 미판정` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 판정: 가설 `미판정`, 반복 `11`, 루프 238 `진행 중`. 836×836 action atlas 후보의 자동·lint·build는 통과했지만 Google Calendar focus로 LimDo 실화면·decode·framestats를 수집하지 못했다. 후보는 보존하고 완료 커밋·push는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 11 결과 — 외부 앱 focus로 실화면·성능 미판정
+
+- 최소 제품 변경: production `limdo_action_button_atlas.png`를 1254×1254에서 836×836으로 균일 축소했다. 4×4 셀은 각각 313.5px에서 209px이 됐고 alpha를 유지했다. 후보 SHA-256은 `c7fec06d8468e9d55a2b3c7ee5e78bcd1e9061bf51470dae6a4d8583629cf208`이다.
+- 자동 검증: `./scripts/verify.sh`의 단위 테스트·Android lint·debug build와 `git diff --check`가 통과했다. 후보 APK SHA-256은 `a581e8abc9f9af327a1156c36340decb67829f51092ded4fba47c2addc96436d`이다.
+- 에뮬레이터 안전 관문: ADB에는 `emulator-5554` 하나만 있었고 `alarmquest-qa`, 물리 기기 후보 0건, QA 전 uptime `297.22`초, 물리 1080×2340, `user_rotation=1`을 확인했다.
+- 정확한 중지 사유: 후보 APK를 `install -r`한 뒤 고정 흐름을 시작했으나 최종 focus 확인에서 `mCurrentFocus`와 `mFocusedApp`이 모두 LimDo가 아니라 `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다. 다른 프로젝트·앱 focus에서는 입력·캡처·종료를 계속하지 않는 계약에 따라 즉시 추가 ADB 조작을 중지했다. 수집된 `writing.png`·XML·framestats는 LimDo 완료 근거에서 제외한다.
+- 이전 반복 비교·가설 판정: 자동 build와 atlas 규격은 통과했지만 LimDo focus의 새 2340×1080 화질, action atlas decode 10ms 미만, deadline miss 3% 미만·frozen 0을 판정할 수 없으므로 가설은 `미판정`이다. 후보 변경은 다음 새 세션의 동일 반복 재개 근거로 보존하며 원복하지 않는다.
+- 남은 조건·다음 작업: 감독자가 Google Calendar 전면 상태와 공유 에뮬레이터 사용 충돌을 해소하고 LimDo focus를 보장한 새 세션에서 같은 후보 APK의 네 조작 화질·callback과 전환 Perfetto/framestats를 검증한다. 새 자산·D2·font scale·TalkBack은 시작하지 않는다. 완료 커밋·push는 실행하지 않았다.
+- 자동 Android 성능 역할·자동 QA·아이 대리 QA: 미판정. 새 P0·P1 0건, 기존 진행 방해 P2 성능 회귀 1건 유지. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 10 결과 — userspace trace 확보·장기 frame 미재현으로 가설 기각
+
+- 최소 변경: production 코드·자산·화면은 바꾸지 않았다. `-a com.limdo.hangul`로 userspace slice를 포함한 8초 Perfetto trace를 수집하고 `trace_processor` SQL 분석을 `captures/loop238/iteration10/performance/trace-analysis.txt`에 고정했다.
+- 에뮬레이터 관문: 첫 수집 뒤 uptime 7,200초를 넘어 새 입력을 중단했고 `./scripts/ensure-emulator-ready.sh`로 cold boot했다. 유효 trace의 QA 시작 uptime은 11.82초, 물리 1080 × 2340, `user_rotation=1`, `mCurrentFocus`·`mFocusedApp` LimDo였다. 실기기 조작은 0건이다.
+- trace 수치: 홈→자음 실제 tap 전환의 최대 frame은 `Choreographer#doFrame 6038` 57.553ms였다. 중첩 slice는 `Recomposer:recompose` 35.661ms, `Compose:recompose` 26.782ms, 1254×1254 clay bitmap decode 14.419ms, traversal 21.831ms, RenderThread draw 22.544ms였다. cold launch의 최대 frame도 93.869ms로 100ms 미만이었다.
+- 이전 비교·가설 판정: 반복 8의 300.419ms frame과 달리 이번 trace는 사전 반증 기준인 100ms 이상 전환 frame을 재현하지 못했다. recompose가 전환 frame의 61.96%이지만 bitmap decode와 중첩돼 단일 제품 수정 대상을 확정했다고 볼 수 없으므로 가설을 `기각`한다.
+- 자동 성능 역할: 실패. deadline miss 3% 미만 관문은 미충족이며 진행 방해 P2 1건을 유지한다. 자동 그래픽 디자인·UI/UX·자산은 production 미변경으로 회귀 없음. 아이 대리 QA: 성능 관문 미충족으로 실패. 새 P0·P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 반복 11에서 실제로 관찰된 전환 재구성·1254×1254 clay decode 중 하나를 사전 상한과 함께 고정해 최소 제품 수정·성능 재검증한다. deadline miss 3% 미만·frozen 0 통과 전 font scale 1.5·2.0·TalkBack·D2·완료 커밋·push는 시작하지 않는다.
+
+### 2026-08-30 루프 238 반복 9 결과 최신 위치 정정
+
+- 반복 9 결과 전체가 과거의 동일 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 238 반복 9 결과 — 단일 지배 구간 없음으로 가설 기각` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 판정: 가설 `기각`, 반복 `9`, 루프 238 `진행 중`. 300.419ms frame의 최대 단일 구간은 47.72%로 80% 기준을 통과하지 못했다. `git diff --check`·`check-automation.sh`·`check-emulator-only.sh`는 통과했고 production 변경·새 화면·실기기 조작은 0건이다. 진행 방해 P2 성능 회귀 1건이 남아 완료 커밋·push를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 9 결과 — 단일 지배 구간 없음으로 가설 기각
+
+- 최소 변경: production 코드·자산·화면은 바꾸지 않았다. 반복 8의 원시 `gfxinfo framestats` 행 `FrameTimelineVsyncId=980635`를 분해해 `captures/loop238/iteration9/performance/frame-980635-breakdown.txt`에 고정했다.
+- 수치 근거: 전체 `IntendedVsync → FrameCompleted` 300.419ms 중 `HandleInputStart → PerformTraversalsStart` 143.360ms=47.72%, traversal 73.167ms=24.36%, draw command 제출 56.147ms=18.69%, draw 준비 21.328ms=7.10%, GPU 4.505ms=1.50%다. 교차 파일의 최장 167.015ms frame도 최대 단일 구간이 53.56%로 80% 미만이다.
+- 이전 반복 비교·가설 판정: bitmap을 제거해도 같은 deadline miss가 남은 반복 8에 이어, 이번에도 GPU는 1.50%에 그쳐 raster가 단일 병목이 아니었다. 그러나 최대 구간이 사전 80% 기준에 미달했으므로 단일 지배 원인 확정 가설을 `기각`한다.
+- 검증: 원시 행의 23개 header·timestamp를 CSV로 일의적으로 해석했고, `git diff --check`·`scripts/check-automation.sh`·`scripts/check-emulator-only.sh`를 최종 실행한다. 앱 코드 변경과 새 화면 수집은 없어 `verify.sh`·실화면 QA를 반복하지 않았다.
+- 자동 성능 역할: 실패. deadline miss 3% 미만 관문은 미충족이며 진행 방해 P2 1건을 유지한다. 자동 그래픽 디자인·UI/UX·자산 회귀는 이번 반복에서 변경 없음. 아이 대리 QA: 성능 관문 미충족으로 실패. 새 P0·P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 반복 10에서 Perfetto/system trace로 main thread slice를 수집해 143.360ms CPU 전반부의 가장 큰 작업 하나를 확정한다. deadline miss 3% 미만·frozen 0 통과 전 font scale 1.5·2.0·TalkBack·D2·완료 커밋·push는 시작하지 않는다.
+
+
+### 2026-08-30 루프 238 반복 7 결과 — 메뉴 전환 병목 확정, 첫 최소 수정 기각
+
+- 구간 profile: 같은 APK에서 cold launch는 `1/1`(1,550ms), 홈→자음 메뉴 전환은 `3/31=9.68%`, 자음→`ㄱ` 쓰기 진입은 `2/46=4.35%`, 쓰기 안정은 `1/77=1.30%` deadline miss였다. 쓰기 안정은 3% 미만이고, 31개 전환 frame의 중앙값이 28ms·slow draw 3건이라 반복 6의 지배적인 반복 병목은 홈→메뉴 전환으로 확정했다.
+- 최소 수정과 검증: 전환 `Animatable` 값을 composition이 아니라 `graphicsLayer` draw 단계에서 읽도록 바꾸고 `./scripts/verify.sh`·`git diff --check` 통과 뒤 새 APK를 설치했다. 새 APK SHA-256은 `2967c1c4b22968ff7dbb57f67f468e6f72f7b927b20a2d004b7c8d88d7589fc0`다. 그러나 전환은 `5/32=15.62%`, 중앙값 32ms로 악화됐다. 전체 화면 tint overlay를 제거한 두 번째 최소 확인에서도 `5/32=15.62%`, 중앙값 24ms·slow draw 3건으로 3% 관문을 통과하지 못했다.
+- 화면·격리 근거: `after-selection.png`는 정확한 2340 × 1080 RGBA이고 `focus-after.txt`의 `mCurrentFocus`·`mFocusedApp`은 LimDo다. hierarchy의 자음 14개와 홈 callback은 유지됐다. QA 전 uptime은 7,200초 미만이며 ADB에는 `emulator-5554` 하나만 있었다.
+- 가설 판정: `기각`. 전체 scene recomposition과 tint overlay는 단독 근본 원인이 아니며, full-screen 정원 bitmap을 포함한 전환 scene 자체의 450ms 연속 합성 비용이 GPU 18~23ms로 남았다. 실패한 두 코드는 원복했고 반복 6의 production 상태를 보존했다.
+- 남은 조건·다음 작업: 다음 반복은 홈과 최종 선택 화면의 공통 정원 shell은 유지하되 짧은 전환 구간만 메뉴색 단색 surface와 실제 글자 확대 motion으로 구성해 full-screen bitmap 연속 합성을 제거하는 최소 변경을 검증한다. deadline miss 3% 미만·frozen 0 전에는 font scale·TalkBack·D2·완료 커밋·push를 진행하지 않는다.
+- 자동 QA 역할: 성능 관문 실패. 새 P0·P1은 0건, 진행 방해 P2 성능 회귀 1건 유지. 아이 대리 QA: 의미·callback 회귀는 없지만 끊기는 전환이 다음 행동을 늦출 수 있어 최종 실패. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 5 결과 — framestats 회귀로 가설 기각
+
+- 최소 변경: production 코드·자산은 더 바꾸지 않았다. 현재 D1 debug APK의 자동·계측·성능 근거만 새로 수집했다.
+- 자동 검증: `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `./scripts/verify.sh`, `git diff --check`가 통과했다. `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.limdo.hangul.WritingCanvasAccessibilityTest,com.limdo.hangul.DefaultGuardianVoicePlaybackTest` 2/2도 통과해 WritingCanvas 접근성 semantics와 38개 기본 음성 재생 회귀는 발견되지 않았다.
+- 에뮬레이터 관문: QA 시작 uptime `5011.57`초로 7,200초 미만이고, ADB에는 `emulator-5554` 한 대만 있으며 `alarmquest-qa`·물리 기기 0건 관문을 통과했다. connected test 정리 뒤 debug APK를 다시 설치했고 SHA-256은 `32cceedbe830441fb5feaa387b37a961ddc0f62bf63770df4373a71efc05cb2f`, 크기는 `31,037,150` byte다.
+- 자산·decode: 정원 배경은 2340 × 1080 불투명, 세 clay 자산은 840 × 519·520 RGBA다. 홈 동시 raw decode 상한은 배경 10,108,800 byte와 clay 세 장 5,231,520 byte의 합계 `15,340,320` byte=`14.63 MiB`로 16 MiB 상한 안이다.
+- 쓰기 회귀: 실제 홈→자음→`ㄱ` 입력으로 수집한 `captures/loop238/iteration5/performance/writing.png`는 2340 × 1080이고 LimDo focus다. hierarchy의 WritingCanvas `[189,63][2151,1017]`=`1962 × 954` px, 홈·다시쓰기·이전·다음은 각각 `168 × 168` px로 유지됐다. 계측 접근성 시험과 전체 unit의 교육 geometry·보호자 비스크롤 계약도 통과했다.
+- 성능 실패: 같은 흐름의 `gfxinfo framestats`는 235 frame 중 deadline miss 18개=`7.66%`, p50 17ms, p90 31ms, p95 65ms, p99 250ms였고 1,600ms frame 1개가 있었다. D0 baseline 172 frame·deadline miss 4개=`2.33%`·frozen 0개와 D1 목표 3% 미만을 모두 넘었다. slow bitmap upload는 0건이었고 slow draw command는 17건이다. 쓰기 안정 PSS는 `104,202 KiB`로 D0 `95,559 KiB`보다 `8,643 KiB` 높다.
+- 이전 반복 비교·가설 판정: decode·쓰기·조작·교육 geometry·비스크롤·38개 음성은 통과했지만 framestats와 PSS 회귀 반증 기준이 발생해 가설을 `기각`한다. font scale 1.5·2.0과 TalkBack 실화면 최종 판정은 성능 실패 뒤 중단했으며 통과로 간주하지 않는다.
+- 독립 역할 판정: 자동 아트 디렉션·UI/UX·그래픽 자산·모션의 기존 D1 화면 범위는 유지 통과, 자동 Android 성능 역할은 실패, 자동 접근성·아이 대리 QA와 자동 최종 QA는 미판정이다. 새 P0·P1은 0건이지만 진행 방해 P2 성능 회귀 1건이므로 D1을 완료하지 않는다. 실제 아이 관찰: 실행 안 함.
+- 다음 작업: 다음 새 세션은 같은 루프 반복 6에서 홈 진입 구간의 slow draw command 17건과 PSS 증가 8,643 KiB의 공통 원인을 profile해 가장 큰 한 원인만 최소 수정한다. 새 자산·장식·D2는 시작하지 않으며, 수정 뒤 새 APK의 고정 홈→자음→`ㄱ` 흐름에서 deadline miss 3% 미만·frozen 0·PSS 회귀 해소와 남은 font scale·TalkBack 관문을 다시 판정한다. 완료 커밋·push는 실행하지 않는다.
+
+### 2026-08-30 루프 238 반복 3 결과 — 자동 통과, 실화면 순서 오염으로 미판정
+
+- 최소 제품 변경: `MenuSelectionTransition`에 홈과 같은 `limdo_sunny_garden_scene_background` 자산을 깔고 선택한 blue·orange·green `softSurface`를 alpha `0.84`로 올려 선택 전환에서도 scene shell을 유지했다. 첫 누림 후 나머지 카드가 사라진 프레임을 발견해 `LearningMenu.entries`의 각 카드를 `key(menu)`로 묶어 interaction·entry `remember` 상태를 메뉴별로 고정했다. 새 bitmap은 추가하지 않았다.
+- 자동 검증: 수정 전·후 각각 `./scripts/verify.sh`가 unit·Android lint·debug build를 전부 통과했고, 최종 `git diff --check`도 통과했다. 전환 overlay alpha `0.75..0.9` 범위 검사를 단위 테스트에 추가했다. APK SHA-256은 `32cceedbe830441fb5feaa387b37a961ddc0f62bf63770df4373a71efc05cb2f`다.
+- 에뮬레이터 관문: `check-emulator-only.sh` 통과, 실기기 후보 0건, QA 시작 uptime `3894.96`초·종료 `4142.36`초로 7,200초 미만, 물리 1080 × 2340·`user_rotation=1`이다. 최종 focus는 `mCurrentFocus`·`mFocusedApp` 모두 LimDo였다.
+- 실화면 실패: 재시작·뒤로 가기를 섞어 사용한 수집 순서에서 `rememberSaveable` 목적지가 선택 전환·목록·홈으로 다르게 복원됐다. 그 결과 파일명이 의도한 상태와 일치하지 않았고 launcher가 섞인 PNG도 생겼다. 해당 PNG는 완료 근거에서 제외했다.
+- 이전 비교·가설 판정: 반복 2 안정 홈과 달리 반복 3은 누림 중 상태 소유 결함 후보를 발견·수정했지만, 수정 후 같은 진입 순서의 2340 × 1080 기본·누림·선택·animator scale 0 근거를 완전히 고정하지 못했으므로 가설은 `미판정`이다.
+- 루프 판정: D1 성공 조건 5·6·8의 실화면·성능·독립 역할 최종 관문이 남아 루프 238을 `진행 중`, 반복 3으로 유지한다. 새 P0·P1은 확정하지 않았고 진행 방해 P2 판정은 실화면 재검증 후로 보류한다. 완료 커밋·push는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 2 결과 — 세 메뉴 clay 교육 그림 production 적용 통과, D1 계속
+
+- 제품 변경: Codex 내장 imagegen으로 파란 각진 자음 블록, 주황 줄기·가지 모음 블록, 파랑+주황 조각이 초록 링 안에 합쳐진 가나다 장면을 각각 생성했다. 840 × 519~520 px RGBA로 규격화해 production `drawable-nodpi`와 `LearningMenuHome` 카드의 140 × 86 dp 장식 `Image(contentDescription=null)`로 연결했고, 기존 글자·semantics·callback은 변경하지 않았다.
+- imagegen 사용 근거·prompt 경계: built-in 모드로 각 자산을 별도 생성했다. 공통으로 `stylized-concept`, 홈 메뉴 교육 실루엣, sunny garden workshop matte clay, 좌상단 광원, 투명 배경, 글자·한글·숫자·UI·차량·워터마크 금지를 고정했다.
+- 자산 검사: 자음 `2a3fa451…b70b0f5`, 모음 `cd429b39…8561415`, 가나다 `5864cd39…13cd7f5` SHA-256이며 서로 다르다. 모드 RGBA, 네 모서리 alpha `0~1`, alpha bbox는 이미지 범위 안이고 한글·숫자·가짜 UI·차량·워터마크·검은 배경·잘림은 0건이다. APK에 세 `drawable-nodpi-v4` 파일이 각각 포함됐다.
+- 자동 검증: `./scripts/verify.sh` 단위 테스트·Android lint·debug build, `git diff --check`, `./scripts/check-automation.sh`가 통과했다. 새 APK SHA-256은 `1b030c3c4a122bd31b277cbdb182263a38b01903d64d21875b711bae3b678bc9`다.
+- 에뮬레이터: 시작 관문에서 `emulator-5554`/`alarmquest-qa`, 실기기 후보 0, uptime `3432.87`초, 물리 1080 × 2340, `user_rotation=1`을 확인했다. 새 APK 설치 후 `captures/loop238/iteration2/after/home-stable.png`·`.xml`·`focus.txt`를 2340 × 1080으로 수집했고 `topResumedActivity`·`mCurrentFocus`·`mFocusedApp`은 LimDo다.
+- 실화면 비교: 변경 전 반복 1 홈은 카드 중앙에 글자만 있었고, 변경 후는 각 카드 상단에 약 420 × 258~260 px clay 그림이 생겼다. 파란 각진 블록·주황 줄기 블록·두 조각의 결합 장면은 실루엣과 색이 서로 다르고 아래 실제 glyph·라벨과 겹침·잘림·왜곡·halo가 없다.
+- 배치·성능: 세 카드는 계속 `[84,294][772,996]`, `[825,294][1514,996]`, `[1567,294][2256,996]` 688~689 × 702 px이고 보호자는 `[74,74][268,268]` 194 × 194 px이다. 홈 안정 상태 PSS는 `81,544 KiB`로 반복 1의 `76,502 KiB`보다 5,042 KiB 증가했으며, 배경 10,108,800 byte+세 자산 최대 5,228,640 byte = 15,337,440 byte로 D1 동시 bitmap 16 MiB 예산 안이다.
+- 가설 판정: `채택`. 자산·APK·실화면 범위의 자동 아트 디렉션·UI/UX·그래픽 자산·성능·접근성·아이 대리 QA는 통과하며 새 P0·P1·진행 방해 P2는 0건이다. 글을 읽지 않아도 자음은 각진 조각 묶음, 모음은 줄기·가지 묶음, 가나다는 두 조각이 하나가 되는 장면으로 구분한다. 실제 아이 관찰: 실행 안 함.
+- 남은 성공 조건: 기본·누림·선택과 animator scale 1·0 진입 시작·중간·끝, font scale·TalkBack·대비, 최종 framestats 회귀와 D1 독립 역할 최종 판정이 남았다. 루프 238은 `진행 중`이며 완료 커밋·push를 실행하지 않는다.
+
 ### 2026-08-30 루프 237 반복 11 최종 위치 인계
 
 - 반복 11 결과 전체가 과거의 동일 문장 anchor 때문에 앞선 위치에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 237 반복 11 결과 — preview-only 검사 경계 통과·D0 완료` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
@@ -9164,3 +9245,808 @@ Codex 앱 Goal 단계에서 CLI로 옮기고 매 반복을 완전히 새로운 �
 - 반복 11 결과 전체가 과거의 동일 anchor 때문에 앞선 위치에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 237 반복 11 결과 — preview-only 검사 경계 통과·D0 완료` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
 - 최종 판정: 가설 `채택`, 반복 `11`, 루프 237 `완료`. `verify.sh`·diff·완료 시각 검사·자동화·에뮬레이터 전용 관문과 2340 × 1080 LimDo focus가 통과했다. 새 P0·P1·진행 방해 P2 0건, 실제 아이 관찰: 실행 안 함이다.
 - 다음 루프: 사용자 선택 A를 production 홈·공통 shell에 적용하는 루프 238 D1을 `준비`했으며 이번 작업자는 구현하지 않는다.
+### 2026-08-30 루프 238 반복 1 가설 — 공통 정원 배경 슬롯의 production 적용
+
+- 가장 중요한 미충족 조건: 변경 전 홈은 2340 × 1080 전체가 평평한 노란 단색이고 세 카드만 반복돼, 성공 조건 3의 warm cream 정원 깊이와 이후 화면이 공유할 scene shell이 production에 없다.
+- 반증 가능한 가설: 중앙 세 메뉴 touch bounds를 침범하지 않도록 가장자리와 상·하단에만 낮은 대비 정원·공방 깊이를 둔 2340 × 1080 단일 불투명 배경을 생성하고 실제 홈의 최하단 layer로 연결하면, 카드 callback과 한글 glyph를 그대로 유지하면서 선택안 A의 공통 공간감을 만들 수 있다.
+- 반증 기준: bitmap에 한글·숫자·가짜 UI·차량·워터마크가 생기거나, 중앙 카드 영역의 대비가 강해지거나, 2340 × 1080 crop에서 왜곡·잘림이 있거나, Compose layer가 touch/semantics를 가로채거나, APK 포함·decode 예산·실화면 focus 검증 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 제품 변경: 이번 반복은 D1 전체를 묶지 않고 공통 정원 배경 자산 한 장과 production 소비만 적용한다. 메뉴별 clay 그림과 눌림·선택 상태는 다음 반복으로 남긴다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 필요 — 화면 가장자리의 일관된 3D clay 정원 공간은 코드 도형만으로 대체하지 않고 Codex 내장 imagegen의 production bitmap으로 만든다.
+- 변경 전 근거: `captures/design-audit-20260830/baseline/01-home.png`·`.xml`, 정확한 2340 × 1080. 세 카드 약 688 × 702 px와 왼쪽 위 보호자 진입은 보존 대상이다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+### 2026-08-30 루프 238 반복 1 결과 — 공통 정원 배경 production 적용 통과, D1 계속
+
+- 제품 변경: Codex 내장 imagegen으로 중앙 카드 안전 영역을 비운 `햇살 정원 글자 공방` 배경을 생성해 `limdo_sunny_garden_scene_background.png` 2340 × 1080 불투명 PNG로 규격화하고, `LearningMenuHome`의 실제 최하단 장식 `Image(contentDescription=null)`로 연결했다. 카드·보호자 semantics와 callback은 변경하지 않았다.
+- 자산 검사: bitmap SHA-256 `a7dd238985c9bec4f545eeb9b616521e2770002efb97a791f12035c4f2a09bcd`, 한글·숫자·가짜 UI·차량·워터마크·검은 배경 0건, 비율 왜곡 0건이다. APK `res/drawable-nodpi-v4/limdo_sunny_garden_scene_background.png` 포함 크기는 3,010,891 byte다.
+- 자동 검증: `./scripts/verify.sh`의 단위 테스트·Android lint·debug build와 `git diff --check`가 통과했다. 새 APK SHA-256은 `8b1507506742eb97b50d4cd5eb1d5bcc5f95f7938dac672cce91b599947f40b8`다.
+- 에뮬레이터: QA 시작 uptime `3007.19`초로 7,200초 미만, `alarmquest-qa`, 물리 1080 × 2340, `user_rotation=1`을 확인했다. 새 APK 설치 뒤 `captures/loop238/iteration1/after/home-stable.png`·`.xml`을 2340 × 1080으로 수집했고 `mCurrentFocus`·`mFocusedApp`은 LimDo다.
+- 실화면 비교: 변경 전의 평평한 노란 면 대신 warm cream 벽·matte clay 화분·꽃·공방 도구가 상·하·가장자리에서 깊이를 만든다. 세 카드 bounds는 `[84,294][772,996]` 688 × 702 px, `[825,294][1514,996]` 689 × 702 px, `[1567,294][2256,996]` 689 × 702 px로 유지됐고 보호자 bounds `[74,74][268,268]` 194 × 194 px도 겹침·잘림 없이 유지됐다.
+- 성능 중간 근거: 홈 안정 상태 `TOTAL PSS=76,502 KiB`, `TOTAL RSS=158,580 KiB`를 기록했다. 이번 한 장의 decoded RGBA 상한은 2340 × 1080 × 4 = 10,108,800 byte로 동시 bitmap 16 MiB 예산 안이다. D1 완료 전 기준 APK·framestats 비교는 계속 필요하다.
+- 가설 판정: 채택. 공통 배경 한 장이 callback을 가로채지 않고 선택안 A의 공간감을 production에 만들었다. 자동 아트 디렉션·그래픽 자산·UI/UX 중 이번 배경 범위는 통과하며 새 P0·P1·진행 방해 P2는 0건이다.
+- 남은 성공 조건: 메뉴별 실제 clay 그림, 기본·눌림·선택 상태, animator scale 1·0 진입 시작·중간·끝, font scale·TalkBack·대비, 전체 decode/PSS/framestats 회귀와 D1 독립 역할 최종 판정이 남았다. 따라서 루프 238은 `진행 중`이며 완료 커밋·push하지 않는다.
+- 아이 대리 QA 중간 판정: 글을 읽지 않아도 세 큰 카드와 서로 다른 blue·orange·green 영역이 배경보다 강하고, 새 가장자리 장식은 주 행동을 가리지 않는다. 메뉴별 실제 그림과 짧은 시범이 아직 없어 D1 최종 통과는 보류한다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 2 가설 — 세 메뉴 clay 교육 그림의 production 구분 단서
+
+- 가장 중요한 미충족 조건: 반복 1 홈의 세 카드는 색과 실제 한글 glyph만 다르고 자음·모음·가나다의 학습 과제를 글을 읽지 않고 구분할 실제 그림이 없다.
+- 반증 가능한 가설: 각 688~689 × 702 px 카드의 중앙 glyph 위쪽에 420 × 260 px 안전 슬롯을 두고, 분리된 자음 블록·모음 스템·두 조각이 합쳐지는 조립 장면을 각각 투명 matte clay bitmap으로 생성·연결하면, 기존 blue·orange·green과 실제 glyph·callback을 보존하면서 세 과제를 글 없이 구분할 수 있다.
+- 반증 기준: 자산에 한글·숫자·가짜 UI·차량·워터마크·불투명 배경이 있거나, 세 실루엣이 서로 혼동되거나, glyph·라벨·touch bounds를 가리거나, alpha 여백·잘림·왜곡·APK 포함·production 소비·2340 × 1080 focus 관문 중 하나라도 실패하면 가설을 기각한다.
+- 합리적인 최소 제품 변경: 이번 반복은 세 메뉴 구분을 위한 동일 화풍 자산 한 세트와 홈 카드 소비만 다룬다. 누림·선택·진입 motion은 다음 반복으로 남긴다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 필요 — 기기와 font에 무관하게 동일한 학습 실루엣·clay 화풍·투명 경계를 보장하려면 전용 production bitmap이 필요하다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 2 결과 최신 위치 정정
+
+- 반복 2 결과 전체가 과거의 동일 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 238 반복 2 결과 — 세 메뉴 clay 교육 그림 production 적용 통과, D1 계속` 절을 현재 유효한 전체 결과로 사용한다.
+- 최종 판정: 가설 `채택`, 반복 `2`, 루프 238 `진행 중`. 세 RGBA clay 자산의 production 소비·APK 포함·2340 × 1080 LimDo focus·PSS·자동 검증이 통과했고 새 P0·P1·진행 방해 P2는 0건이다. 기본·누림·선택·진입 motion 관문이 남아 완료 커밋·push는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 3 가설 — 홈 카드 상태와 진입 motion의 정적 대체 계약
+
+- 가장 중요한 미충족 조건: 현재 production 홈은 세 메뉴의 기본 상태만 보이고, 누림·선택 피드백과 홈 진입 시작·중간·끝 상태, animator scale 0의 동일 의미 정적 대체가 실화면 근거로 고정되지 않았다.
+- 반증 가능한 가설: 기존 카드 callback을 바꾸지 않고 Compose interaction state로 누림 축소·빛 테두리를, 진입 시 짧은 투명도·이동을 적용하면 animator scale 1에서 시작·중간·끝이 구분되고 scale 0에서는 즉시 완료 상태로 안정화되며 세 688~689 × 702 px callback이 그대로 동작할 것이다.
+- 반증 기준: 누림 프레임에서 해당 카드의 크기·빛 테두리 차이가 없거나 glyph·clay 그림이 잘리고, 진입 연출이 입력을 가로채거나, animator scale 0에서 카드가 사라지·지연되거나, 세 메뉴 callback·bounds·보호자 진입 중 하나라도 회귀하면 가설을 기각한다.
+- 합리적인 최소 제품 변경: 홈 scene의 카드 interaction·entry transition만 적용하고 선택 화면 내부·쓰기·성공·보호자 화면군과 자산은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 production 정원 배경·clay 그림·카드 token을 그대로 사용하고 Compose 상태·모션만 보강하며, 새 bitmap은 다음 행동을 더 분명하게 하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 3 결과 최신 위치 정정
+
+<!-- 반복 4 가설은 이 절의 기존 결과 뒤에 이어진다. -->
+
+### 2026-08-30 루프 238 반복 4 가설 — 홈 진입 순서 고정으로 상태·모션 실화면 미판정 해소
+
+- 가장 중요한 미충족 조건: 반복 3의 자동 검사는 통과했지만 launcher와 이전 destination이 섞여 새 APK의 홈 기본·누림·선택 전환·animator scale 0 정적 대체를 동일한 진입 순서로 판정하지 못했다.
+- 반증 가능한 가설: `emulator-5554`에서 app force-stop 후 명시적 main activity를 매 시나리오의 첫 진입으로 사용하고 LimDo focus를 검사한 뒤 기본→누림→선택 전환과 animator scale 0 재진입을 수집하면 세 카드의 존속·누림 차이·공통 정원 shell·정적 의미 보존을 오염 없이 판정할 수 있다.
+- 반증 기준: 어느 프레임이든 LimDo 외 package가 focus이거나 2340 × 1080이 아니거나, 누림 중 대상 이외 카드가 사라지거나, 선택 후 공통 정원 shell·메뉴색 연결이 없거나, animator scale 0 재진입에서 카드가 사라지거나 입력이 지연되면 가설을 기각한다.
+- 합리적인 최소 변경: production 코드·자산은 더 바꾸지 않고 새 APK의 재현 가능한 에뮬런레이터 상태 근거만 수집·판정한다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 기존 미커밋 production 상태·모션 변경의 완료 근거를 새로 수집한다. 자산 필요 판정: 불필요 — 이미 production에 연결된 정원 배경·세 clay 그림과 Compose 상태를 검증하며 새 bitmap은 과제를 더 명확하게 하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬런레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 4 결과 — 홈 상태·모션 실화면 미판정 해소, D1 계속
+
+- 최소 변경: production 코드·자산은 더 바꾸지 않고 app force-stop→명시적 `MainActivity` 진입을 고정 출발점으로 사용해 새 APK의 홈 시작·기본·누림·선택 전환·animator scale 0 상태를 수집했다.
+- 검증: `./scripts/verify.sh`, `git diff --check`, `./scripts/check-emulator-only.sh`가 통과했다. APK SHA-256은 `32cceedbe830441fb5feaa387b37a961ddc0f62bf63770df4373a71efc05cb2f`, uptime은 `4549.88`→`4636.11`초, PNG는 모두 2340 × 1080, focus는 LimDo다. animator scale은 검증 후 `1.0`으로 복원했다.
+- 직접 화면: 시작 프레임은 카드 순차 등장을 보였고, 안정 홈의 세 카드는 688~689 × 702 px, 보호자 진입은 194 × 194 px다. 누른 자음 카드만 축소·흰 테두리로 구분됐고 나머지 두 카드도 남았다. blue 자음·animator scale 0 orange 모음 선택이 정상 표시됐고 잘림·겹침은 0건이다.
+- 가설 판정: `채택`. 상태·모션·정적 대체·callback이 의도대로 작동했다. 이 범위의 자동 역할·아이 대리 QA는 통과하며 새 P0·P1·진행 방해 P2는 0건이다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건: D1의 decode·PSS·framestats, font scale·TalkBack, WritingCanvas·네 조작·교육 geometry·보호자 비스크롤·38개 음성 회귀와 독립 역할 최종 판정이 남았다. 다음 새 세션은 이 통합 회귀 관문 하나만 수행한다. 루프 완료가 아니므로 커밋·push하지 않았다.
+
+- 반복 3 결과 전체가 과거의 동일 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 238 반복 3 결과 — 자동 통과, 실화면 순서 오염으로 미판정` 절과 이 절을 현재 유효한 인계로 사용한다.
+- 최종 판정: 반복 `3`, 가설 `미판정`, 루프 238 `진행 중`. `verify.sh`·`git diff --check`·에뮬레이터 전용 관문은 통과했지만 수정 후 동일 순서의 기본·누림·선택·animator scale 0 화면을 완전히 고정하지 못했다. 완료 커밋·push는 실행하지 않았고 실제 아이 관찰은 실행하지 않았다.
+
+### 2026-08-30 루프 238 반복 5 가설 — D1 통합 회귀 관문
+
+- 가장 중요한 미충족 조건: 홈·공통 scene shell의 새 자산과 상태·모션은 개별 관문을 통과했지만, 성공 조건 6~8의 현재 APK 대비 decode·PSS·framestats, font scale·TalkBack, WritingCanvas·네 조작·교육 geometry·보호자 비스크롤·38개 음성 회귀와 독립 자동 역할 최종 판정이 한 새 APK 근거로 아직 묶이지 않았다.
+- 반증 가능한 가설: 현재 미커밋 D1 제품 변경을 더 늘리지 않고 새 debug APK에서 고정 홈 흐름의 decoded bitmap 상한·PSS·framestats와 font scale 1.0·1.5·2.0·TalkBack, 쓰기·보호자·음성 회귀를 실행하면 기존 D0 baseline 및 영구 계약을 모두 만족하고 D1을 완료할 수 있다.
+- 반증 기준: 동시 decoded bitmap 16 MiB 초과, deadline miss 3% 이상 또는 frozen frame 발생, 기준 대비 설명되지 않는 PSS 증가, font scale 화면 잘림·겹침, TalkBack 순서·의미 오류, WritingCanvas 1962 × 954 px·네 조작 168 × 168 px 축소, 교육 geometry·보호자 비스크롤·38개 음성 중 하나라도 실패하거나 새 P0·P1·진행 방해 P2가 발견되면 가설을 기각한다.
+- 합리적인 최소 변경: production 코드·자산은 더 바꾸지 않고 현재 D1 APK의 최종 통합 회귀 근거와 역할 판정만 수집한다. 통과하면 D2를 준비하되 구현하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 현재 미커밋 D1 홈·공통 shell 변경의 완료 근거를 통합한다. 자산 필요 판정: 불필요 — 이미 생성·연결된 정원 배경과 세 clay 자산을 검증하며 새 bitmap은 과제를 더 분명하게 하지 않는다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 5 결과 최신 위치 정정
+
+- 반복 5 결과 전체가 과거의 동일 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 238 반복 5 결과 — framestats 회귀로 가설 기각` 절과 이 절을 현재 유효한 결과로 사용한다.
+- 최종 판정: 가설 `기각`, 반복 `5`, 루프 238 `진행 중`. 전체 verify·에뮬레이터 격리·WritingCanvas 접근성·38개 음성·decode 14.63 MiB·WritingCanvas 1962 × 954 px·네 조작 168 × 168 px는 통과했지만, 새 고정 흐름은 deadline miss `7.66%`, 1,600ms frame 1개, 쓰기 안정 PSS `104,202 KiB`로 D0 `2.33%`·`95,559 KiB`와 D1 성능 관문을 회귀했다. font scale 1.5·2.0과 TalkBack 실화면은 미판정이며 진행 방해 P2 성능 회귀 1건이 남았다. 완료 커밋·push는 실행하지 않았고 실제 아이 관찰은 실행하지 않았다.
+- 다음 작업: 반복 6에서 slow draw command 17건과 PSS +8,643 KiB의 가장 큰 공통 원인 하나만 profile·최소 수정하고, 새 APK에서 deadline miss 3% 미만·frozen 0·PSS 회귀 해소 뒤 남은 font scale·TalkBack 관문을 판정한다. D2와 새 자산은 시작하지 않는다.
+
+### 2026-08-30 루프 238 반복 6 가설 — full-screen 정원 배경 decode 상한 축소
+
+- 가장 주요 미충족 조건: 반복 5의 고정 흐름은 deadline miss `7.66%`·slow draw 17건·PSS `104,202 KiB`로 D0 baseline을 회귀했다. 새 full-screen 배경은 `2340 × 1080` RGB PNG이며 기기 decode 상한이 약 `9.64 MiB`로, PSS 증가 `+8,643 KiB`와 가장 큰 단일 후보다.
+- 반증 가능한 가설: 경계 소품·카드·callback·semantics를 유지하고 배경 raster만 `1170 × 540`으로 50% 축소하면 decode 상한이 `2.41 MiB`로 줄어 PSS와 full-screen draw 부하를 동시에 낮추고, 새 APK의 deadline miss는 3% 미만·frozen 0으로 회복할 수 있다.
+- 반증 기준: 축소 후 배경의 정원 일러스트가 2340 × 1080 합성에서 흐림·왜곡·halo·알파 이상이 보이거나, deadline miss 3% 이상·frozen frame이 하나라도 발생하거나, 쓰기 안정 PSS가 D0 `95,559 KiB`대로 수렴하지 않으면 가설을 기각한다.
+- 시각 변경: 예. 정원 그림은 보존하되 같은 raster가 고유 화질로도 과제·다음 행동을 더 분명하게 하지 않게 한다. 자산 필요 판정은 기존 자산 최적화이므로 새 생성 `불필요`다.
+
+### 2026-08-30 루프 238 반복 6 결과 — PSS 회복·framestats 관문 잔존
+
+- 최소 변경: production 정원 배경만 `2340 × 1080`에서 `1170 × 540`으로 50% 축소했다. 압축 파일은 2.9 MiB에서 815 KiB로, ARGB decode 상한은 9.64 MiB에서 2.41 MiB로 줄었다. Compose·callback·semantics·세 clay 자산과 다른 제품 동작은 바꾸지 않았다.
+- 자동 검증: 변경 후 `./scripts/verify.sh`의 단위 테스트·Android lint·debug build와 `git diff --check`가 통과했다. `./scripts/check-automation.sh`와 `./scripts/check-emulator-only.sh`도 통과했고 ADB에는 `emulator-5554` 하나만 있었다. QA 전 uptime은 `5491.11`초로 7,200초 미만이었다.
+- 새 화면 근거: `captures/loop238/iteration6/performance/home.png`와 `writing-final.png`는 정확한 2340 × 1080이고 `mCurrentFocus`·`mFocusedApp`은 LimDo다. 원본으로 직접 읽어 정원 경계 소품·햇살·카드 뒤 표면에 흐림·왜곡·halo·잘림이 없고, 세 카드와 clay 그림·중앙 실제 한글·보호자 진입이 분리됨을 확인했다. WritingCanvas는 `[189,63][2151,1017]`=`1962 × 954` px, 네 조작은 각각 `168 × 168` px다.
+- 성능 비교: 같은 cold launch 홈→자음→`ㄱ` 쓰기 고정 흐름의 안정 PSS는 `93,497 KiB`로 반복 5 `104,202 KiB`보다 10,705 KiB 낮고 D0 `95,559 KiB` 아래로 회복했다. 그러나 framestats는 239 frame 중 deadline miss 16개=`6.69%`, frozen 0개, slow draw command 12건으로 반복 5의 `7.66%`·17건보다는 개선됐지만 성공 기준 3% 미만은 통과하지 못했다.
+- 이전 비교·가설 판정: 배경 decode가 PSS 회귀의 가장 큰 원인이라는 부분은 채택되지만, 배경 축소 하나로 deadline miss 3% 미만까지 회복한다는 전체 가설은 반증됐다. 따라서 반복 6 가설을 `기각`하고 진행 방해 P2 성능 회귀 1건을 유지한다.
+- 남은 조건·다음 작업: 다음 반복은 제품·자산을 더 늘리지 않고 새 framestats의 deadline miss 16개가 cold launch·화면 전환·쓰기 안정 중 어디에 몰리는지 구간별 profile하고 가장 큰 한 구간의 원인만 최소 수정한다. font scale 1.5·2.0과 TalkBack 최종 관문, D2, 완료 커밋·push는 성능 관문 통과 뒤로 유지한다. 실제 아이 관찰: 실행 안 함.
+
+
+### 2026-08-30 루프 238 반복 7 가설 — 구간별 framestats로 최대 지연 병목 구간 확정
+
+- 가장 중요한 미충족 조건: 반복 6의 deadline miss `16/239=6.69%`가 cold launch·화면 전환·쓰기 안정 중 어느 구간에 몰렸는지 알 수 없어 수정 대상을 고를 수 없다.
+- 반증 가능한 가설: framestats를 앱 시작→홈 안정→자음 메뉴 진입→`ㄱ` 쓰기 진입→쓰기 안정 후 안정으로 나누어 새로 측정하면, 병목이 한 구간에서만 deadline miss의 대부분을 차지할 것이다. 그 구간의 가장 큰 원인 하나로 Compose draw·animation 비용을 최소 수정하면 같은 고정 흐름의 deadline miss는 3% 미만·frozen 0으로 회복할 것이다.
+- 반증 기준: 새 고정 흐름의 deadline miss가 3% 이상이거나 frozen frame이 1개라도 발생하거나, 수정 뒤 화면·callback·semantics가 회귀하거나, 대부분 지연이 특정 구간에 모이지 않아 원인을 확정할 수 없으면 가설을 기각한다.
+- 합리적인 최소 변경: 새 자산·D2는 시작하지 않고, 지배적인 구간별 측정과 그 구간의 원인 하나만 수정한다. 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 이미 연결된 정원 배경·세 clay 자산으로 과제·다음 행동이 충분하다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 7 결과 최신 위치 정정
+
+- 반복 7 결과 전체가 과거의 동일 문장 anchor 때문에 588행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 238 반복 7 결과 — 메뉴 전환 병목 확정, 첫 최소 수정 기각` 절을 현재 유효한 전체 결과로 사용한다.
+- 최종 판정: 가설 `기각`, 반복 `7`, 루프 238 `진행 중`. 메뉴 전환 병목을 확정했지만 두 최소 수정은 `5/32=15.62%`로 실패해 원복했다. 진행 방해 P2 성능 회귀 1건이 남아 완료 커밋·push는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 238 반복 8 가설 — 메뉴 전환 구간의 full-screen bitmap 합성 제거
+
+- 가장 중요한 미충족 조건: 반복 7의 새 구간별 framestats에서 홈→자음 메뉴 전환이 deadline miss `3/31=9.68%`로 D1 성능 상한 3% 미만을 넘었고, full-screen 정원 bitmap을 포함한 480ms 연속 합성이 남은 지배적 비용으로 확정됐다.
+- 반증 가능한 가설: 홈과 최종 선택 화면의 정원 shell은 유지하고 짧은 메뉴 전환 장면만 메뉴색 단색 surface와 실제 Compose 글자 확대·fade로 제한하면, 메뉴 선택 의미를 유지하면서 같은 고정 흐름의 deadline miss가 3% 미만·frozen 0으로 회복할 것이다.
+- 반증 기준: 새 APK의 홈→자음 메뉴 전환에서 deadline miss가 3% 이상이거나 frozen frame이 1개라도 발생하거나, 선택 글자·메뉴색·semantics·callback·최종 정원 shell 중 하나라도 회귀하면 가설을 기각한다.
+- 합리적인 최소 변경: `MenuSelectionTransition`의 full-screen 정원 bitmap과 tint overlay만 제거하고 기존 메뉴 `softSurface`를 전환 배경으로 쓴다. 홈·선택 화면·자산·교육 geometry·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 선택 전환 배경을 정원 합성에서 메뉴색 단색으로 단순화한다. 자산 필요 판정: 불필요 — 기존 자산은 홈과 최종 scene shell에 그대로 유지하며 전환은 Compose surface와 실제 글자로 충분하다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮤레이터·아이 대리 QA와 구분한다.
+### 2026-08-30 루프 238 반복 8 결과 — bitmap 제거 후도 동일 전환 지연로 가설 기각
+
+- 최소 변경과 원복: `MenuSelectionTransition`의 full-screen 정원 bitmap과 tint overlay를 제거하고 메뉴 단색 surface와 실제 Compose 글자만 남긴 새 APK를 검증했다. 성능이 개선되지 않아 실패 코드는 원복하고 반복 6 production 상태를 보존했다.
+- 자동 검증: 후보 코드에서 `./scripts/verify.sh`의 unit·lint·debug build와 `git diff --check`가 통과했다. 후보 APK SHA-256은 `d5f77153cdc4eead784ef66aca7536ef27d47b11d7a07a82202b80afe58bb220`이다.
+- 환경: `emulator-5554`/`alarmquest-qa` 단독, QA 시작 uptime `6318.63`초, 물리 1080 × 2340, `user_rotation=1`, PNG 2340 × 1080, LimDo focus를 확인했다. 실기기 조작은 0건이다.
+- 성능 결과: Back callback으로 홈을 고정한 뒤 자음 카드를 실제 tap한 유효 구간은 31 frame, deadline miss `3/31=9.68%`, frozen 0이었다. 최대 frame은 `300.419ms`, 다음은 `49.857ms`와 `18.045ms`로 장기 frame 하나가 지배적이었다.
+- 실화면 직접 판정: `captures/loop238/iteration8/performance/home-fixed.png`·XML에서 정원 shell·세 clay 그림·실제 글자·보호자 진입의 잘림·겹침 0건, 세 카드 `688~689 × 702 px`, 보호자 callback `194 × 194 px`를 확인했다. `selection-fixed.png`·XML의 자음 14개와 홈 callback도 유지됐다.
+- 이전 비교·판정: 반복 7의 bitmap 포함 전환과 동일한 `3/31=9.68%`이므로 bitmap 연속 합성이 근본 원인이라는 가설을 `기각`한다. 자동 아트 디렉션·UI/UX·자산 회귀는 0건이나 자동 성능·아이 대리 QA는 실패다. 새 P0·P1 0건, 진행 방해 P2 성능 회귀 1건을 유지한다. 실제 아이 관찰: 실행 안 함.
+- 다음 작업: 반복 9에서 `300.419ms` frame의 composition/layout/draw/GPU 구간을 수치로 분해해 지배 원인 하나를 확정한다. 성능 관문 전 font scale·TalkBack·D2·완료 커밋·push는 시작하지 않는다.
+
+### 2026-08-30 루프 238 반복 9 가설 — 300ms 전환 frame의 CPU·GPU 지연 분해
+
+- 가장 중요한 미충족 조건: 반복 8의 메뉴 전환 31 frame 중 `300.419ms` 한 frame이 deadline miss를 지배했지만 composition/layout/draw/GPU 중 어느 구간이 원인인지 확정되지 않아 추가 제품 수정은 추측이다.
+- 반증 가능한 가설: 반복 8의 유효한 `gfxinfo framestats` 원시 행에서 `PerformTraversalsStart`·`DrawStart`·`IssueDrawCommandsStart`·`SwapBuffers`·`GpuCompleted`·`FrameCompleted`를 나누면 300ms 지연의 80% 이상을 차지하는 단일 구간을 확정할 수 있다.
+- 반증 기준: 해당 frame을 원시 행에서 일의적으로 식별할 수 없거나, 타임스탬프가 무효하거나, 가장 큰 구간이 전체의 80% 미만이어서 단일 지배 원인을 확정할 수 없으면 가설을 기각한다.
+- 합리적인 최소 변경: production 코드·자산·화면은 바꾸지 않고 기존 유효 framestats의 장기 frame 하나만 수치로 분해해 다음 수정 대상을 확정한다. font scale·TalkBack·D2는 시작하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오 — 이번 반복은 기존 D1 APK의 성능 근거만 분석한다. 자산 필요 판정: 불필요 — 새 bitmap이 교육 과제를 더 분명하게 하지 않고 분석 범위와도 무관하다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 9 결과 최신 인계
+
+- 최소 변경: production 코드·자산·화면은 바꾸지 않았다. 반복 8의 원시 `gfxinfo framestats` 행 `FrameTimelineVsyncId=980635`를 분해해 `captures/loop238/iteration9/performance/frame-980635-breakdown.txt`에 고정했다.
+- 수치 근거: 전체 300.419ms 중 `HandleInputStart → PerformTraversalsStart` 143.360ms=47.72%, traversal 73.167ms=24.36%, draw command 제출 56.147ms=18.69%, draw 준비 21.328ms=7.10%, GPU 4.505ms=1.50%다. 교차 파일의 최장 167.015ms frame도 최대 단일 구간이 53.56%로 80% 미만이다.
+- 가설 판정: 최대 구간이 사전 80% 기준에 미달했으므로 단일 지배 원인 확정 가설을 `기각`한다. GPU가 단일 병목이 아니며 CPU 전반부·traversal·draw command 제출이 복합적으로 지연됐다.
+- 검증: `git diff --check`, `scripts/check-automation.sh`, `scripts/check-emulator-only.sh` 통과. 앱 코드 변경과 새 화면 수집은 없어 `verify.sh`·실화면 QA를 반복하지 않았다. 실기기 조작은 0건이다.
+- 자동 성능 역할·아이 대리 QA: 성능 관문 미충족으로 실패. 새 P0·P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 반복 10에서 Perfetto/system trace로 main thread slice를 수집해 143.360ms CPU 전반부의 가장 큰 작업 하나를 확정한다. deadline miss 3% 미만·frozen 0 통과 전 font scale 1.5·2.0·TalkBack·D2·완료 커밋·push는 시작하지 않는다.
+### 2026-08-30 루프 238 반복 10 가설 — system trace로 전환 지연의 최대 main-thread 작업 확정
+
+- 가장 중요한 미충족 조건: 반복 9의 `gfxinfo framestats`는 300.419ms frame의 CPU 전반부 `HandleInputStart → PerformTraversalsStart` 143.360ms를 보였지만, 그 안의 어떤 main-thread 작업이 가장 큰지 알 수 없어 추가 제품 수정은 추측이다.
+- 반증 가능한 가설: `alarmquest-qa`의 같은 production APK에서 홈 안정 후 자음 카드를 실제 tap하는 짧은 Perfetto/system trace를 수집하면, 100ms 이상 전환 frame과 중첩되는 main-thread slice 중 한 작업이 해당 구간의 50% 이상을 차지해 다음 최소 수정 대상을 확정할 수 있을 것이다.
+- 반증 기준: trace 수집이 실패하거나, LimDo focus·2340 × 1080·uptime 관문이 누락되거나, 100ms 이상 전환 frame을 재현하지 못하거나, 최대 단일 main-thread slice가 전반부의 50% 미만이어서 하나의 수정 대상을 확정할 수 없으면 가설을 기각한다.
+- 합리적인 최소 변경: production 코드·자산·화면은 바꾸지 않고, 실제 전환 trace와 분석 근거만 추가해 다음 반복의 단일 제품 수정 대상을 고정한다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 아니오 — 성능 원인 진단 근거만 수집한다. 자산 필요 판정: 불필요 — 이미 production에 연결된 정원 배경과 clay 그림을 그대로 사용한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 10 결과 최신 위치 정정
+
+- 반복 10 결과 전체가 과거의 동일 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 238 반복 10 결과 — userspace trace 확보·장기 frame 미재현으로 가설 기각` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 판정: 가설 `기각`, 반복 `10`, 루프 238 `진행 중`. deadline miss 3% 미만 관문은 미충족이며 진행 방해 P2 1건을 유지한다. production 미변경, 완료 커밋·push 없음, 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 11 가설 — action atlas decode 상한 축소
+
+- 가장 중요한 미충족 조건: 반복 10 Perfetto의 홈→자음 전환에서 `1254×1254` bitmap decode 14.419ms가 재구성과 중첩됐다. 해당 bitmap은 셀당 313.5px인 action atlas다.
+- 반증 가능한 가설: 4×4 action atlas를 `836×836`(셀당 209px)로 균일 축소하면 decode pixel이 55.6% 줄어 전환 구간의 decode는 10ms 미만, 고정 흐름의 deadline miss는 3% 미만·frozen 0으로 회복할 수 있다.
+- 반증 기준: decode 10ms 이상, deadline miss 3% 이상, frozen 1개 이상, 2340 × 1080에서 네 조작 아이콘의 흐림·왜곡·셀 번짐·잘림, WritingCanvas·네 조작 callback·교육 geometry 중 하나라도 회귀하면 가설을 기각한다.
+- 합리적인 최소 제품 변경: production atlas 하나를 4×4 셀 경계와 alpha를 보존한 채 836×836으로만 축소한다. 코드·배치·자산·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 새 bitmap은 교육 과제를 더 분명하게 하지 않고 기존 atlas의 표시 비용만 최적화한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 11 결과 최신 인계
+
+- 반복 11 결과 전체와 최신 위치 정정 절이 과거의 동일 문장 anchor 때문에 587행 부근에 먼저 덧붙여졌다. 덧붙이기 전용 계약에 따라 기존 기록을 수정·삭제하지 않고 `루프 238 반복 11 결과 — 외부 앱 focus로 실화면·성능 미판정` 절과 이 절을 현재 유효한 최신 결과로 사용한다.
+- 최종 판정: 가설 `미판정`, 반복 `11`, 루프 238 `진행 중`. 836×836 action atlas 후보의 자동·lint·build는 통과했지만 Google Calendar focus로 LimDo 실화면·decode·framestats를 수집하지 못했다. 후보는 보존하고 완료 커밋·push는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 238 반복 12 가설 — action atlas 축소 후보얘의 LimDo 실화면·성능 판정
+
+- 가장 주요 미충족 조건: 반복 11의 836×836 action atlas 축소 후보가 자동·lint·build를 통과했으나 Google Calendar focus 충돌로 LimDo 2340 × 1080 화질·네 callback·decode·framestats가 미판정이다.
+- 반중 가능한 가설: 에뮬레이터 전용 관문이 통과하고 현재 후보 APK를 명시적으로 실행하면, 네 조작으 168 × 168 px callback과 화질을 유지하며·atlas decode 상한 축소·PSS·고정 흐름 framestats가 반복 5·6의 성능 회귀 기준을 통과할 것이다.
+- 반중 기준: LimDo focus·2340 × 1080·uptime 중 하나라도 누락, 네 조작 중 하나라도 callback·잘림·의미 피드백이 보이거나, atlas decode 상한이 의도와 다르거나, frozen frame이 하나라도 발생하거나 deadline miss가 3% 이상이면 가설을 기각한다. 다른 앱 focus가 전면이 아니거나 실기기 후보가 발견되면 미판정으로 남기고 제품을 중단한다.
+- 합리적인 최소 변경: production 코드·자산을 더 바꾸지 않고, 존재하는 축소 후보를 검증하는 새 APK 실화면·성능 근거만 수집한다. D2·font scale·TalkBack·새 자산은 시작하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 피요 판정: 불피요 — 새 그림을 만들거나 교육 과제를 더 분명하게 하지 않는다. 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 12 결과 — Google Calendar 전면 충돌로 후보 보존·미판정
+
+- 자동 검증: `./scripts/check-automation.sh`·`./scripts/check-emulator-only.sh`·`./scripts/verify.sh`·`git diff --check`가 모두 통과했고, ADB에는 `emulator-5554` 하나만 있었다.
+- 에뮤레이터 관문: uptime `652.28`초, 물리 1080 × 2340, `user_rotation=1`은 통과했다. 그러나 `mCurrentFocus`와 `mFocusedApp`가 모두 `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`으로 확인되어 LimDo 실행·입력·캡처·성능 측정을 시작하지 않고 중단했다.
+- 이전 비교·가설 판정: 반복 11과 동일하게 다른 앱 focus 충돌이 재현돼 가설을 `미판정`으로 남긴다. production 파일·자산을 더 바꾸지 않았고 836×836 action atlas 후보를 보존했다.
+- 남은 조건·다음 작업: 감독자가 Google Calendar 전면 사용 충돌을 해소하고 LimDo focus가 보장된 새 세션에서 동일 후보 APK의 네 조작 화질·callback·decode·PSS·framestats만 재검증한다. D2·font scale·TalkBack·새 자산은 시작하지 않는다.
+- 중단 기준: 필수 Android 실화면 근거를 수집할 수 없어 루프 성공 조건을 충족하지 못했으므로 완료 커밋·push를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 238 반복 13 가설 — 축소 action atlas 실화면·성능 재판정
+
+- 가장 중요한 미충족 조건: 반복 12에서 보존한 836 × 836 `limdo_action_button_atlas.png` 후보가 자동 검사만 통과했고, 네 조작의 실제 화질·callback과 현재 APK 대비 decode·PSS·framestats 회귀는 Google Calendar focus 충돌 때문에 미판정이다.
+- 반증 가능한 가설: 같은 후보 APK를 `alarmquest-qa`의 LimDo 전면 상태에서 검증하면 네 168 × 168 px 조작의 윤곽·재질·상태 구분과 callback을 유지하면서 atlas RGBA decode 비용을 줄이고, 대표 홈→선택→쓰기 흐름의 deadline miss를 3% 미만·frozen frame 0개로 유지할 수 있다.
+- 반증 기준: QA 직전 `mCurrentFocus`·`mFocusedApp` 중 하나라도 LimDo가 아니거나, 실제 조작이 흐리거나 잘리거나 콜백이 틀리거나, decode 감소가 확인되지 않거나, deadline miss 3% 이상·frozen frame 1개 이상·PSS 측정 실패·자동 관문 실패 중 하나가 발생하면 가설을 기각한다. 다른 프로젝트 앱이 전면이면 입력·설치·캡처·성능 수집을 즉시 중단하고 미판정한다.
+- 합리적인 최소 변경: production 코드·자산을 더 바꾸지 않고 현재 작업 트리의 축소 atlas 후보 하나만 새 APK와 실제 네 조작·성능 근거로 판정한다. 새 자산·D2·font scale·TalkBack은 시작하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — atlas 후보의 실제 조작 표시가 이전 후보와 달라질 수 있어 새 화면 판정이 필요하다. 자산 필요 판정: 불필요 — 새 그림을 만들지 않고 기존 action atlas의 표시 비용만 줄인 후보를 검증한다.
+- 실제 아이 관찰: 실행 안 함. 자동·에뮬레이터·아이 대리 QA와 구분한다.
+
+### 2026-08-30 루프 238 반복 13 결과 — Google Calendar focus 충돌로 미판정
+
+- 사전 자동 관문: 앱 코드 변경 전에 `./scripts/check-automation.sh`가 작업 가치·시각 루프·최종 전체 플레이·자동화 계약을 통과했고, `./scripts/check-emulator-only.sh`는 `serial=emulator-5554`, `avd=alarmquest-qa`, 실기기 후보 0건으로 통과했다. `adb devices -l`에도 `emulator-5554` 하나만 있었다.
+- 에뮬레이터 수명·형상: QA 직전 uptime은 `983.33`초로 7,200초 미만, 물리 크기는 1080 × 2340, `user_rotation=1`이었다.
+- 정확한 중단 원인: QA 직전 `mCurrentFocus`와 `mFocusedApp`가 모두 `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다. `docs/회귀-규칙.md`의 공용 에뮬레이터 focus 규칙과 최신 사용자 지시에 따라 Calendar를 조작·종료하지 않았고 LimDo 강제 실행·APK 설치·입력·PNG·hierarchy·framestats·PSS 수집도 하지 않았다.
+- 최소 변경 결과: production 코드·자산·테스트는 변경하지 않았다. 반복 12에서 보존한 836 × 836 action atlas 후보와 기존 작업 트리를 그대로 유지했다.
+- 이전 반복 비교·가설 판정: 반복 12와 같은 외부 focus 충돌이 재현되어 새 LimDo 실화면·callback·decode·성능 근거를 얻지 못했다. 제품 가설은 `미판정`이며 자동 관문 통과만으로 성공 조건을 완료 처리하지 않는다.
+- 남은 조건·다음 작업: 감독자가 Google Calendar 전면 상태와 공유 에뮬레이터 사용 충돌을 해소하고 LimDo focus를 보장한 다음 새 세션에서 같은 후보 APK의 네 조작 화질·callback·decode·PSS·framestats만 재검증한다. 새 자산·D2·font scale·TalkBack은 시작하지 않는다.
+- 루프 판정: 진행 중. 성공 조건 6·8과 최종 실화면 관문이 남아 완료 커밋·일반 push를 하지 않는다. 새 P0·P1은 확인되지 않았고 기존 진행 방해 P2 성능 회귀 1건은 미해결이다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 14 가설 — 외부 앱 focus 관문 후 축소 action atlas 후보 재판정
+
+- 가장 중요한 미충족 조건: 836 × 836 action atlas 후보가 자동 관문만 통과했고, LimDo 실화면·callback·decode·PSS·framestats는 외부 앱 focus 충돌로 여전히 미판정이다.
+- 반증 가능한 가설: 자동화·에뮬레이터·uptime 관문 통과 후 LimDo가 전면이면 네 168 × 168 px 조작의 화질·재질·callback을 유지하고 decode·PSS·deadline miss 3% 미만·frozen 0개 관문을 통과할 것이다.
+- 반증 기준: QA 직전 LimDo focus가 아니거나, 네 조작 중 하나라도 화질·잘림·callback 오류, decode 감소·PSS 측정 실패, deadline miss 3% 이상, frozen 1개 이상이면 가설을 기각한다.
+- 합리적인 최소 변경: production 코드·자산을 더 바꾸지 않고 현재 action atlas 후보를 갑자기 LimDo 전면 상태에서 검증한다. 새 자산·D2·font scale·TalkBack은 시작하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 atlas의 표시 비용 최적화 후보만 검증한다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 14 결과 — Google Calendar focus 충돌로 후보 보존·미판정
+
+- 사전 관문: `check-automation`·`check-emulator-only` 통과, `emulator-5554` 이외 기기·실기기 후보 0건. uptime `1065.41`초, 물리 1080 × 2340, `user_rotation=1` 통과.
+- 정확한 중단 원인: `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`가 모두 Google Calendar `WhatsNewFullScreen`이었다.
+- 조치: 공용 에뮬레이터 focus 회귀 규칙에 따라 Calendar를 조작·종료하지 않았고 LimDo 강제 실행·설치·입력·PNG·hierarchy·decode·PSS·framestats 수집을 중단했다. 실기기 조작은 0건이다.
+- 이전 비교·가설 판정: 반복 13과 동일한 외부 focus 충돌이 재현돼 새 LimDo 근거를 얻지 못했다. 가설은 `미판정`이다. production 코드·자산·테스트는 바꾸지 않고 836 × 836 action atlas 후보와 기존 작업 트리를 보존한다.
+- 남은 조건: 공유 에뮬레이터 충돌 해소와 LimDo focus 보장 후 같은 후보 APK의 네 조작 화질·callback·decode·PSS·framestats만 재검증한다. 새 자산·D2·font scale·TalkBack은 시작하지 않는다.
+- 루프 판정: `진행 중`, 반복 `14`. 성공 조건 6·8·실화면 관문이 남아 커밋·push하지 않는다. 새 P0·P1은 확인할 수 없고 기존 진행 방해 P2 성능 회귀 1건은 미해결이다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 반복 15 가설·결과 — 공용 앱 focus 재현으로 15회 상한 차단
+
+- 가장 중요한 미충족 조건: 836 × 836 action atlas 후보의 LimDo 실화면·callback·decode·PSS·framestats가 외부 앱 focus 충돌로 미판정이다.
+- 반증 가능한 가설: 자동화·에뮬레이터·uptime 관문 통과 후 LimDo가 전면이면 네 조작 168 × 168 px의 화질·재질·callback과 decode·PSS·deadline miss 3% 미만·frozen 0 관문을 통과할 것이다. QA 직전 LimDo focus가 아니면 미판정으로 남긴다.
+- 사전 관문: `./scripts/check-automation.sh`·`./scripts/check-emulator-only.sh` 통과, ADB에는 `emulator-5554` 하나, 실기기 후보 0건이었다. uptime `1834.75`초, 물리 1080 × 2340, `user_rotation=1`도 통과했다.
+- 차단 원인: `topResumedActivity`·`ResumedActivity`·`mCurrentFocus`·`mFocusedApp`가 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다.
+- 조치: 계약에 따라 Calendar를 조작·종료하지 않았고 LimDo 강제 실행·설치·입력·PNG·hierarchy·decode·PSS·framestats 수집을 시작하지 않았다. 실기기 조작은 0건이다.
+- 이전 비교·가설 판정: 반복 14와 동일한 외부 focus 충돌이 재현돼 LimDo 근거는 `미판정`이다. 반복 12·13·14·15의 같은 원인이 3회 이상 연속됐고 이번 반복이 15회 상한이므로 루프를 `차단`한다.
+- 보존·남은 조건: production 코드·자산·테스트와 836 × 836 atlas 후보를 그대로 보존했다. 성공 조건 6·8·실화면 관문과 진행 방해 P2 성능 회귀 1건이 남아 커밋·push하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 공용 에뮬레이터 사용 충돌을 해소하고 LimDo focus가 보장된 이후 같은 action atlas 후보의 화질·callback·decode·PSS·framestats를 검증해야 한다. 새 자산·D2·font scale·TalkBack은 시작하지 않는다.
+### 2026-08-30 루프 238 새 세션 사전 관문 — 15회 상한 차단 보존
+
+- 지정 문서와 Git 상태를 다시 읽고 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 모두 통과했다. 에뮬레이터는 `emulator-5554`·`alarmquest-qa`, 실기기 후보 0건이다.
+- 실제 재개 지점은 이미 반복 15·상태 `차단`이며, 반복 12~15의 Google Calendar 전면 focus가 같은 원인으로 3회 이상 연속됐고 15회 중지 상한에 도달했다. 따라서 새 가설·제품 변경·반복 16을 시작하지 않았다.
+- 기존 D1 production 코드·자산·836×836 action atlas 후보와 미판정 실화면·성능 근거를 그대로 보존했다. 완료 커밋·push는 실행하지 않았고 실제 아이 관찰은 실행 안 함이다.
+- 재개 조건은 감독자가 공용 에뮬레이터의 Google Calendar 충돌을 해소하고 LimDo focus를 보장하는 것이다. 그 전에는 네 조작 화질·callback·decode·PSS·framestats, D2, font scale, TalkBack을 진행하지 않는다.
+
+### 2026-08-30 루프 238 새 세션 차단 재확인 — 반복 추가 금지
+
+- 지정 문서와 현재 작업 트리를 다시 확인했다. 실제 재개 지점은 반복 `15`, 상태 `차단`이며, 같은 Google Calendar 전면 focus 원인이 3회 이상 연속됐고 프로젝트의 15회 중지 상한에 이미 도달했다.
+- 새 제품 변경 전에 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 모두 통과했다. 대상은 `emulator-5554`·`alarmquest-qa` 하나이고 실기기 후보는 0건이다.
+- 중지 조건을 우회해 반복 16을 만들거나 LimDo 실행·설치·입력·새 화면 수집을 수행하지 않았다. 기존 D1 production 코드·자산·836×836 action atlas 후보와 미판정 성능 근거를 그대로 보존했다.
+- 결과 판정은 `차단 유지`다. 성공 조건 6·8과 실화면·성능 관문이 남아 완료 커밋·push를 실행하지 않았다. 실제 아이 관찰은 실행 안 함이다.
+- 재개 조건은 감독자가 공용 에뮬레이터의 Google Calendar 사용 충돌을 해소하고 LimDo focus를 보장하는 것이다. 그 뒤 새 작업자가 현재 후보의 네 조작 화질·callback·decode·PSS·framestats를 검증해야 한다.
+### 2026-08-30 루프 238 새 세션 차단 상태 재확인 — 반복 추가 없음
+
+- 지정 문서·최신 상태·Git 작업 트리를 다시 확인했다. 현재 루프는 이미 반복 15에서 Google Calendar `WhatsNewFullScreen` 외부 focus 원인이 3회 이상 연속되었고 15회 상한에 도달해 `차단`이다.
+- 코드 변경 전 관문 `./scripts/check-automation.sh`는 `작업 가치 관문 통과`, `자동화 계약 통과`, `루프: 238`, `상태: 차단`, `반복: 15`를 보고했다. 이 통과는 차단 상태의 문서 정합성 통과이며 제품 작업 재개 승인이 아니다.
+- 중지 규칙을 따라 16번째 반복, production 코드·자산 변경, 에뮬레이터 설치·입력·캡처, 검증 재수집을 시작하지 않았다. 기존 미커밋 D1 후보와 836×836 action atlas를 그대로 보존했다.
+- 판정: `BLOCKED`. 가설 채택·기각·미판정의 새 제품 반복은 시작하지 않았다. 감독자가 공용 에뮬레이터의 Google Calendar focus 충돌을 해소하고 LimDo focus를 보장해야 동일 후보의 네 조작 화질·callback·decode·PSS·framestats 검증을 재개할 수 있다.
+- 완료 조건은 미충족이므로 커밋·`git push origin HEAD`를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 CLI 작업자 차단 인계 — 15회 상한 준수
+
+- 지정 문서와 Git 작업 트리를 확인한 뒤 제품 코드 변경 전에 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`, `adb devices -l`을 실행했다. 자동화·작업 가치·시각 루프 계약과 에뮬레이터 전용 관문은 통과했고, ADB 대상은 `emulator-5554` 하나이며 실기기 후보는 0건이었다.
+- 실제 재개 지점은 루프 238 반복 `15`, 상태 `차단`이다. 반복 12~15의 Google Calendar `WhatsNewFullScreen` 전면 focus가 같은 원인으로 3회 이상 연속됐고 15회 상한에 이미 도달했으므로, 중지 조건을 우회하는 반복 16의 가설·제품 변경·에뮬레이터 설치·입력·화면 수집을 시작하지 않았다.
+- 기존 D1 production 코드·자산과 836×836 action atlas 후보를 그대로 보존했다. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문은 여전히 미판정이고, 진행 방해 P2 성능 회귀 1건이 남아 있다.
+- 판정: `차단 유지`. 완료 조건을 충족하지 못했으므로 커밋과 `git push origin HEAD`를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 공용 에뮬레이터의 Google Calendar 사용 충돌을 해소하고 LimDo focus를 보장한 뒤 새 작업자가 같은 후보의 실화면·성능 근거를 검증한다. 그 전에는 D2·font scale·TalkBack·새 자산을 시작하지 않는다.
+
+### 2026-08-30 루프 238 새 세션 차단 재확인 — 외부 focus 지속
+
+- 필수 문서와 Git 작업 트리를 확인한 뒤 앱 코드 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 모두 통과했다. ADB 대상은 `emulator-5554`·`alarmquest-qa` 하나이고 실기기 후보는 0건이다.
+- QA 전 읽기 전용 재확인에서 uptime은 `2746.59`초로 7,200초 미만이지만, `topResumedActivity`·`ResumedActivity`가 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다. 공용 에뮬레이터 충돌 규칙에 따라 Calendar 조작·종료, LimDo 강제 실행·설치·입력·새 화면 수집을 하지 않았다.
+- 현재 재개 지점은 이미 반복 `15`, 상태 `차단`이며 같은 focus 원인이 3회 이상 연속되고 15회 상한에 도달했다. 따라서 반복 16의 가설·제품 변경을 추가하지 않았고 기존 D1 코드·자산·836×836 action atlas 후보를 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문이 미판정이고 진행 방해 P2 성능 회귀 1건이 남아 커밋·push를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 현재 CLI 세션 차단 재확인 — 반복 상한 보존
+
+- 지정 문서·상태·최근 이력·Git 작업 트리를 읽고 제품 변경 전 관문을 다시 실행했다. `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`는 통과했고 ADB에는 `emulator-5554` 하나만 있으며 실기기 후보는 0건이다.
+- QA 직전 uptime은 `2844.55`초, 물리 크기는 `1080 × 2340`, `user_rotation=1`로 통과했다. 그러나 `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`가 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다.
+- 루프 238은 이미 반복 `15` 상한과 같은 외부 focus 원인 3회 이상 연속 실패로 `차단` 상태다. 중지 조건을 지켜 반복 16의 가설·제품 변경·LimDo 실행·설치·입력·화면 수집을 만들지 않았고 기존 미커밋 D1 변경을 그대로 보존했다.
+- 판정: `BLOCKED` 유지. 감독자가 공용 에뮬레이터의 Calendar 충돌을 해소하고 LimDo focus를 보장하기 전에는 성공 조건 6·8의 실화면·성능 관문을 판정할 수 없다. 완료 커밋·push는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 238 차단 재확인 — 반복 15 상한 보존
+
+- 새 세션 시작 관문으로 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 모두 통과했다. ADB에는 `emulator-5554` 하나만 있었고 실기기 후보는 0건이었다.
+- 에뮬레이터 uptime은 `2932.47`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다.
+- `mCurrentFocus`, `mFocusedApp`, `topResumedActivity`, `ResumedActivity` 네 지표가 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 가리켰다. 다른 프로젝트 앱이 전면이면 입력하지 않는 계약에 따라 LimDo 실행·설치·입력·캡처·성능 수집을 하지 않았다.
+- 현재 루프는 이미 같은 focus 충돌이 3회 이상 연속됐고 반복 15 상한에 도달했다. 따라서 반복 16을 만들거나 새 가설·제품 변경을 시작하지 않고 `차단` 판정을 유지한다. 완료 커밋과 push는 실행하지 않았다.
+- 남은 조건: 감독자가 공용 에뮬레이터 focus 충돌을 해소한 뒤 동일 후보 APK의 네 조작 화질·callback·decode·PSS·framestats와 남은 접근성·회귀 관문을 검증해야 한다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 CLI 차단 인계 — 반복 16 미생성
+
+- 필수 문서·현재 상태·최근 이력·Git 작업 트리를 확인하고 앱 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 모두 통과했다. ADB 대상은 `emulator-5554`·`alarmquest-qa` 하나이고 실기기 후보는 0건이다.
+- 읽기 전용 QA 환경 확인에서 uptime은 `3053.60`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `topResumedActivity`와 `ResumedActivity`는 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다.
+- 루프 238은 이미 같은 외부 focus 원인이 3회 이상 연속됐고 반복 15 상한에 도달해 `차단`이다. 중지 조건을 지켜 반복 16의 가설·제품 변경·LimDo 실행·설치·입력·PNG·hierarchy·성능 수집을 시작하지 않았다.
+- 기존 미커밋 D1 코드·production 자산·836×836 action atlas 후보를 그대로 보존했다. 성공 조건 6·8의 실화면·callback·decode·PSS·framestats와 남은 접근성 관문은 미판정이고 진행 방해 P2 성능 회귀 1건이 남는다.
+- 판정: `BLOCKED` 유지. 완료 조건을 충족하지 못해 커밋과 `git push origin HEAD`를 실행하지 않았다. 감독자가 공용 에뮬레이터의 Calendar focus 충돌을 해소하고 LimDo focus를 보장한 뒤 새 작업자가 같은 후보를 검증해야 한다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 새 CLI 세션 차단 재확인 — 반복 15 상한 보존
+
+- 필수 문서와 작업 트리를 다시 확인하고 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 모두 통과했다. ADB 대상은 `emulator-5554`·`alarmquest-qa` 하나이고 실기기 후보는 0건이다.
+- 읽기 전용 QA 환경 확인에서 uptime은 `3153.35`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `topResumedActivity`와 `ResumedActivity`는 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 점유했다.
+- 공용 focus 회귀 규칙과 반복 15 상한 중지 조건을 따라 반복 16·새 가설·제품 변경·LimDo 실행·설치·입력·PNG·hierarchy·성능 수집을 시작하지 않았다. 기존 D1 변경·production 자산·836×836 action atlas 후보를 그대로 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문은 미판정이고 진행 방해 P2 성능 회귀 1건이 남는다. 완료 조건을 충족하지 못해 커밋·`git push origin HEAD`를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 공용 에뮬레이터의 Google Calendar 사용 충돌을 해소하고 LimDo focus를 보장한 다음, 새 작업자가 같은 action atlas 후보의 실화면·성능 근거를 검증한다.
+
+### 2026-08-30 루프 238 새 세션 차단 재확인 — Calendar focus 지속
+
+- 지정 문서·상태·최근 이력·Git 작업 트리를 확인했다. 현재 유효한 재개 지점은 루프 238 반복 `15`, 상태 `차단`이며 반복 16은 중지 상한을 위반하므로 생성하지 않았다.
+- 앱 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`는 모두 통과했다. ADB 대상은 `emulator-5554`·`alarmquest-qa` 하나이고 실기기 후보는 0건이다.
+- 읽기 전용 QA 환경 확인에서 uptime은 `3381.13`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`는 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 가리켰다.
+- 공용 에뮬레이터 충돌 규칙을 따라 Calendar를 조작·종료하거나 LimDo를 강제 실행·설치·입력·캡처하지 않았다. 기존 D1 코드·자산·836×836 action atlas 후보를 그대로 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문은 미판정이고 진행 방해 P2 성능 회귀 1건이 남는다. 완료 조건을 충족하지 못해 커밋·`git push origin HEAD`는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 CLI 작업자 차단 인계 — 반복 15 상한과 외부 focus 재확인
+
+- 필수 문서·현재 상태·최근 이력·Git 작업 트리를 확인했다. 실제 재개 지점은 루프 `238`, 반복 `15`, 상태 `차단`이며 반복 16은 프로젝트 중지 상한을 위반하므로 생성하지 않았다.
+- 앱 변경 전 관문 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`는 모두 통과했다. ADB 대상은 `emulator-5554`·`alarmquest-qa` 하나이고 실기기 후보는 0건이었다.
+- 읽기 전용 QA 환경 확인에서 uptime은 `3489.64`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`는 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 가리켰다.
+- 공용 에뮬레이터 focus 규칙과 반복 15 상한을 따라 Calendar 조작·종료, LimDo 강제 실행·설치·입력·PNG·hierarchy·성능 수집, production 코드·자산 변경을 시작하지 않았다. 기존 D1 작업 트리와 836×836 action atlas 후보를 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문은 미판정이고 진행 방해 P2 성능 회귀 1건이 남는다. 완료 조건을 충족하지 못해 커밋·`git push origin HEAD`는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 Google Calendar 전면 점유를 해소하고 LimDo focus를 보장한 후 새 작업자가 같은 후보의 실화면·성능 근거를 검증해야 한다.
+### 2026-08-30 루프 238 CLI 차단 재확인 — 반복 15 상한 유지
+
+- 필수 문서·현재 상태·최근 이력·사용자 지시·Git 작업 트리를 확인했다. 유효한 재개 지점은 반복 `15`, 상태 `차단`이며 프로젝트 중지 조건 때문에 반복 16의 가설과 제품 변경은 만들지 않았다.
+- 앱 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 통과했다. ADB 대상은 `emulator-5554`·`alarmquest-qa` 하나이며 실기기 후보는 0건이었다.
+- 읽기 전용 환경 확인에서 uptime은 `3649.68`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `topResumedActivity`와 `ResumedActivity`는 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다.
+- 다른 프로젝트 앱 전면 점유 계약과 15회 상한을 따라 Calendar 조작·종료, LimDo 실행·설치·입력·화면·성능 수집, production 코드·자산 변경을 수행하지 않았다. 기존 D1 후보와 836×836 action atlas를 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문이 미판정이고 진행 방해 P2 성능 회귀 1건이 남아 완료 커밋·push를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 공용 에뮬레이터의 Google Calendar 전면 점유를 해소하고 LimDo focus를 보장한 뒤 새 작업자가 같은 후보를 검증한다.
+
+### 2026-08-30 루프 238 새 CLI 작업자 차단 재확인 — 네 focus 지표 Calendar 점유
+
+- 필수 문서·현재 상태·최근 이력·QA·최신 사용자 지시와 전체 `git status`를 확인했다. 유효한 재개 지점은 반복 `15`, 상태 `차단`이며 같은 외부 focus 원인 3회 이상 연속과 15회 상한 때문에 반복 16의 가설·제품 변경을 만들지 않았다.
+- 앱 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`가 모두 통과했다. ADB 대상은 `emulator-5554`의 `alarmquest-qa` 하나이고 실기기 후보는 0건이었다.
+- 읽기 전용 환경 확인에서 uptime은 `3719.02`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity` 네 지표가 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 가리켰다.
+- 공용 에뮬레이터 충돌 규칙에 따라 Calendar 조작·종료, LimDo 강제 실행·설치·입력·PNG·hierarchy·decode·PSS·framestats 수집, production 코드·자산 변경을 수행하지 않았다. 기존 D1 작업 트리와 836×836 action atlas 후보를 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문은 미판정이고 진행 방해 P2 성능 회귀 1건이 남는다. 완료 커밋·`git push origin HEAD`는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 Google Calendar 전면 점유를 해소하고 LimDo focus를 보장한 뒤 새 작업자가 반복 15에 보존된 같은 후보의 실화면·성능 근거를 검증한다.
+
+### 2026-08-30 루프 238 현재 작업자 차단 인계 — 반복 15 상한 보존
+
+- 지정된 문서·상태·최근 이력·QA·최신 사용자 지시와 전체 `git status`를 확인했다. 유효한 재개 지점은 루프 238 반복 `15`, 상태 `차단`이며 동일 외부 focus 원인 3회 이상 연속과 15회 상한 때문에 반복 16을 생성하지 않았다.
+- 앱 변경 전 관문 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`는 모두 통과했다. ADB 대상은 `emulator-5554`/`alarmquest-qa` 하나이고 실기기 후보는 0건이었다.
+- 읽기 전용 환경 확인에서 uptime은 `3903.63`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `topResumedActivity`와 `ResumedActivity`는 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 가리켰다.
+- 공용 에뮬레이터 충돌 규칙과 중지 상한을 따라 Calendar 조작·종료, LimDo 실행·설치·입력·PNG·hierarchy·성능 수집, production 코드·자산 변경을 수행하지 않았다. 기존 D1 작업 트리와 836×836 action atlas 후보를 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문이 미판정이고 진행 방해 P2 성능 회귀 1건이 남아 완료 커밋·push를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 공용 에뮬레이터의 Google Calendar 전면 점유를 해소하고 LimDo focus를 보장한 뒤, 보존된 반복 15 후보의 실화면·성능 근거를 검증한다.
+
+### 2026-08-30 루프 238 새 세션 중지 조건 재확인 — 반복 15 유지
+
+- 지정된 필수 문서·최근 이력·QA·최신 사용자 지시와 전체 `git status`를 확인했다. 실제 재개 지점은 루프 238 반복 `15`, 상태 `차단`이며 같은 외부 focus 원인 3회 이상 연속과 15회 상한에 이미 도달했으므로 반복 16의 가설·제품 변경을 생성하지 않았다.
+- 앱 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`는 모두 통과했다. ADB에는 `emulator-5554`의 `alarmquest-qa` 하나만 있고 실기기 후보는 0건이었다.
+- 읽기 전용 환경 확인 결과 uptime은 `3998.38`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `topResumedActivity`와 `ResumedActivity`는 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 가리켰다.
+- 공용 에뮬레이터 충돌 규칙과 중지 상한을 따라 Calendar 조작·종료, LimDo 실행·설치·입력·PNG·hierarchy·decode·PSS·framestats 수집, production 코드·자산 변경을 수행하지 않았다. 기존 D1 작업 트리와 836×836 action atlas 후보를 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문은 미판정이고 진행 방해 P2 성능 회귀 1건이 남는다. 완료 조건을 충족하지 못해 커밋·`git push origin HEAD`를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 Google Calendar 전면 점유를 해소하고 LimDo focus를 보장한 뒤, 반복 15에 보존된 같은 후보의 실화면·성능 근거를 검증한다.
+### 2026-08-30 새 CLI 작업자 차단 재확인 — 반복 15 상한 보존
+
+- 문서·상태 판정: 루프 238은 반복 15에서 동일한 Google Calendar 전면 focus 원인이 3회 이상 연속됐고 15회 상한에 도달해 이미 `차단`이다. 중지 조건을 우회해 반복 16이나 새 가설·제품 변경을 만들지 않았다.
+
+### 2026-08-30 루프 238 새 CLI 세션 차단 재확인 — 반복 15 상한 유지
+
+- 지정 문서·상태·최근 이력·QA·최신 사용자 지시와 전체 `git status`를 확인했다. 실제 재개 지점은 루프 238 반복 `15`, 상태 `차단`이며 같은 외부 focus 원인 3회 이상 연속과 15회 상한 때문에 반복 16을 생성하지 않았다.
+- 읽기 전용 관문: `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`가 통과했다. ADB에는 `emulator-5554` 하나만 있었고 실기기 후보는 0건이었다. uptime은 `4161.41`초로 7,200초 미만, 물리 크기는 1080 × 2340, `user_rotation=1`이었다.
+- focus 판정: `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`가 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 가리켰다. 다른 프로젝트 앱 전면 점유 시 조작 중지 계약에 따라 LimDo 실행·설치·입력·PNG·hierarchy·성능 수집을 하지 않았다.
+- 결과: 기존 D1 미커밋 코드·자산·테스트를 그대로 보존했다. 반복 16, 제품 변경, 완료 커밋, push는 실행하지 않았으며 루프 238은 `차단`을 유지한다. 실제 아이 관찰: 실행 안 함.
+- 자동 관문: `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`가 통과했다. ADB에는 `emulator-5554` 하나만 있고 실기기 후보는 0건이었다.
+- 에뮬레이터 읽기 전용 근거: uptime `4074.43`초로 7,200초 미만, 물리 크기 1080 × 2340, `user_rotation=1`이었다. `topResumedActivity`·`ResumedActivity`·`mCurrentFocus`·`mFocusedApp`는 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다.
+- 조치·판정: 공용 에뮬레이터 focus 규칙에 따라 Calendar와 LimDo를 조작·종료·실행·설치하지 않았고 입력·PNG·hierarchy·성능 수집도 하지 않았다. production 코드·자산과 836 × 836 action atlas 후보를 보존했으며 완료 커밋·push를 실행하지 않았다.
+- 남은 조건: 감독자가 공용 에뮬레이터 충돌을 해소하고 LimDo focus를 보장한 뒤 같은 후보 APK의 네 조작 화질·callback·decode·PSS·framestats를 검증해야 한다. 성공 조건 6·8과 진행 방해 P2 성능 회귀 1건은 미판정이다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 차단 상태 재확인 — 반복 15 상한 보존
+
+- 사전 관문: `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`가 통과했고 `adb devices -l`에는 `emulator-5554` 하나만 있어 실기기 후보는 0건이었다.
+- 에뮬레이터 읽기 전용 근거: uptime `4258.39`초로 7,200초 미만, 물리 크기 1080 × 2340, `user_rotation=1`을 확인했다. 그러나 `topResumedActivity`와 `ResumedActivity`는 계속 `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다.
+- 판정: 같은 외부 focus 원인이 3회 이상 연속됐고 현재 루프가 이미 반복 15 상한에 도달했으므로 반복 16을 만들지 않았다. LimDo 실행·설치·입력·PNG·hierarchy·decode·PSS·framestats 수집과 production 변경을 하지 않았으며, 836 × 836 action atlas 후보를 그대로 보존한다.
+- 결과: 루프 238은 `차단`을 유지한다. D1 성공 조건의 실화면·성능·접근성·아이 대리 QA가 미판정이고 진행 방해 P2 성능 회귀 1건이 남아 완료 커밋·push를 실행하지 않았다. 감독자가 공용 에뮬레이터 focus 충돌을 해소한 뒤에만 같은 후보 검증을 재개할 수 있다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 238 새 CLI 작업자 차단 재확인 — 반복 15 상한 보존
+
+- 지정 문서와 Git 작업 트리를 읽고 제품 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`, `adb devices -l`을 실행했다. 자동화·작업 가치·시각 루프 계약과 에뮬레이터 전용 관문은 통과했고, 대상은 `emulator-5554`/`alarmquest-qa` 하나이며 실기기 후보는 0건이다.
+- 읽기 전용 환경 재확인에서 uptime `4380.34`초, 물리 1080 × 2340, `user_rotation=1`을 확인했다. 그러나 `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`는 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다.
+- 현재 재개 지점은 이미 반복 `15`, 상태 `차단`이며 같은 외부 focus 원인이 반복 12~15에서 3회 이상 연속됐다. 15회 상한과 공용 에뮬레이터 focus 회귀 규칙을 지켜 반복 16, 새 가설, 제품 코드·자산 변경, LimDo 실행·설치·입력·캡처·성능 수집을 시작하지 않았다.
+- 판정: `차단 유지`. 기존 D1 production 작업 트리와 836 × 836 action atlas 후보를 보존했다. 성공 조건 6·8과 실화면·성능 관문, 진행 방해 P2 1건이 남아 완료 커밋·push를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 공용 에뮬레이터의 Google Calendar 사용 충돌을 해소하고 LimDo focus를 보장한 뒤, 다음 새 작업자가 같은 후보의 네 조작 화질·callback·decode·PSS·framestats만 검증한다.
+### 2026-08-30 루프 238 CLI 작업자 중지 재확인 — 반복 15 상한 유지
+
+- 지정된 계약 문서·현재 상태·최근 이력·QA·최신 사용자 지시와 전체 Git 작업 트리를 확인했다. 실제 재개 지점은 루프 238 반복 `15`, 상태 `차단`이며 동일한 외부 앱 focus 원인이 3회 이상 연속됐고 15회 상한에 도달했으므로 반복 16이나 새 제품 가설을 만들지 않았다.
+- 코드 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`가 통과했다. `adb devices -l`에는 `emulator-5554`/`alarmquest-qa` 하나만 있었고 실기기 후보는 0건이었다.
+- 읽기 전용 환경 근거는 uptime `4489.24`초, 물리 `1080x2340`, `user_rotation=1`이다. `topResumedActivity`와 `ResumedActivity`가 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 가리켰다.
+- 공용 에뮬레이터 focus 계약과 중지 조건에 따라 Calendar 조작·종료, LimDo 실행·설치·입력·PNG·hierarchy·decode·PSS·framestats 수집, production 코드·자산 변경을 하지 않았다. 기존 D1 작업 트리와 836 × 836 action atlas 후보를 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 실화면·성능·접근성·아이 대리 QA와 진행 방해 P2 1건이 남아 완료 커밋·`git push origin HEAD`를 실행하지 않았다. 감독자가 Google Calendar 전면 충돌을 해소하고 LimDo focus를 보장해야 재개할 수 있다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 238 새 CLI 세션 차단 재확인 — Calendar 전면 점유 지속
+
+- 지정된 필수 문서·최근 이력·QA·최신 사용자 지시와 전체 `git status`를 확인했다. 실제 재개 지점은 루프 238 반복 `15`, 상태 `차단`이며 동일 외부 focus 원인 3회 이상 연속과 15회 상한을 준수해 반복 16·새 가설·제품 변경을 시작하지 않았다.
+- 코드 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`는 모두 통과했다. `adb devices -l`에는 `emulator-5554`/`alarmquest-qa` 하나만 있었고 실기기 후보는 0건이었다.
+- 읽기 전용 환경 근거는 uptime `4562.51`초, 물리 `1080x2340`, `user_rotation=1`이다. `topResumedActivity`와 `ResumedActivity`는 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 가리켰다.
+- 공용 에뮬레이터 focus 계약과 중지 조건에 따라 Calendar 조작·종료, LimDo 실행·설치·입력·PNG·hierarchy·decode·PSS·framestats 수집, production 코드·자산 변경을 하지 않았다. 기존 D1 작업 트리와 836 × 836 action atlas 후보를 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 실화면·성능·접근성·아이 대리 QA와 진행 방해 P2 1건이 남아 완료 커밋·`git push origin HEAD`를 실행하지 않았다. 감독자가 Google Calendar 전면 충돌을 해소하고 LimDo focus를 보장한 뒤 같은 후보를 검증해야 한다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 새 CLI 작업자 차단 재확인 — 반복 15 상한 보존
+
+- 재개 판정: 현재 루프는 이미 반복 15에서 같은 Google Calendar 전면 focus 원인이 3회 이상 연속됐고 15회 상한에 도달해 `차단`이다. 중지 계약에 따라 새 가설, 반복 16, 제품 변경을 시작하지 않았다.
+- 새 사전 관문: `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`가 통과했고 `adb devices -l`에는 `emulator-5554` 하나만 있어 실기기 후보는 0건이었다.
+- 에뮬레이터 근거: uptime `4688.55`초로 7,200초 미만, 물리 크기 1080 × 2340, `user_rotation=1`이었다. `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`는 모두 `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다.
+- 안전 조치: 공용 에뮬레이터 focus 회귀 규칙에 따라 Calendar를 조작·종료하지 않았고 LimDo 실행·설치·입력·PNG·hierarchy·성능 수집을 하지 않았다. production 코드·자산과 기존 작업 트리를 보존했으며 커밋·push도 하지 않았다.
+- 현재 판정: 루프 238 `차단`, 반복 `15`를 유지한다. 성공 조건 6·8과 실화면 관문, 진행 방해 P2 성능 회귀 1건은 미해결이다. 감독자가 공용 focus 충돌을 해소하고 LimDo 전면을 보장한 뒤 같은 836 × 836 action atlas 후보만 재검증해야 한다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 새 CLI 작업자 중지 조건 재확인 — 반복 15 상한 및 Google Calendar focus 차단 유지
+
+- 상태 원본의 루프 238은 이미 반복 15와 동일 focus 원인 3회 이상에 도달해 `차단`이다. `AGENTS.md`의 15회 상한과 동일 근본 원인 3반복 중지 조건을 적용해 반복 16 가설을 새로 만들지 않았다.
+- 읽기·자동 관문: 지정된 필수 문서와 최신 이력·QA·사용자 지시·Git 상태를 확인했다. `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`는 통과했고 ADB에는 `emulator-5554` 하나만 있어 실기기 후보는 0건이었다.
+- 에뮬레이터 읽기 근거: uptime `4769.32`초로 7,200초 미만, 물리 `1080×2340`, `user_rotation=1`이었다. `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`는 모두 `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`이었다.
+- 판정·조치: 공용 에뮬레이터의 다른 앱 focus 회귀 규칙에 따라 Calendar를 조작·종료하지 않았고 LimDo 실행·설치·입력·캡처·성능 수집도 시작하지 않았다. production 코드·자산·테스트는 변경하지 않았고, 성공 조건 6·8·실화면 관문이 미판정이므로 완료 커밋·push를 하지 않았다.
+- 남은 조건: 감독자가 Google Calendar 전면 사용 충돌을 해소하고 LimDo focus를 보장한 뒤에만 보존된 836×836 action atlas 후보의 네 조작 화질·callback·decode·PSS·framestats를 재판정한다. 새 P0·P1은 확인할 수 없고 기존 진행 방해 P2 1건은 미해결이다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 238 새 CLI 작업자 중지 인계 — 반복 15 상한 유지
+
+- 필수 문서·현재 상태·최근 이력·QA·최신 사용자 지시·Git 작업 트리를 확인하고, 제품 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 모두 통과했다. ADB 대상은 `emulator-5554`·`alarmquest-qa` 하나이고 실기기 후보는 0건이다.
+- 읽기 전용 QA 환경 확인에서 uptime은 `4886.92`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `topResumedActivity`·`ResumedActivity`는 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 점유했다.
+- 실제 재개 지점은 이미 반복 `15`, 상태 `차단`이며 동일 외부 focus 원인이 3회 이상 연속됐고 15회 중지 상한에 도달했다. 따라서 반복 16·새 가설·제품 변경·LimDo 실행·설치·입력·PNG·hierarchy·성능 수집을 시작하지 않았다.
+- 기존 미커밋 D1 코드·production 자산·836×836 action atlas 후보를 그대로 보존했다. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문은 미판정이고 진행 방해 P2 성능 회귀 1건이 남는다.
+- 판정: `BLOCKED` 유지. 완료 조건을 충족하지 못해 커밋과 `git push origin HEAD`를 실행하지 않았다. 감독자가 공용 에뮬레이터의 Calendar focus 충돌을 해소하고 LimDo focus를 보장한 뒤 새 작업자가 같은 후보를 검증해야 한다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 238 새 CLI 세션 중지 관문 재확인 — 반복 15 차단 보존
+
+- 지정 문서와 Git 작업 트리를 확인한 뒤 앱 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 모두 통과했다. ADB 대상은 `emulator-5554`·`alarmquest-qa` 하나고 실기기 후보는 0건이다.
+- 읽기 전용 QA 환경 재확인에서 uptime은 `4975.41`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. 그러나 `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity` 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 가리켰다.
+- 현재 재개 지점은 이미 반복 `15`, 상태 `차단`이고 동일 focus 원인이 3회 이상 연속됐다. 중지 조건을 준수해 반복 16·새 가설·제품 변경·LimDo 실행·설치·입력·PNG·hierarchy·성능 수집을 시작하지 않았다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문은 미판정이고 진행 방해 P2 성능 회귀 1건이 남는다. 기존 D1 코드·자산·836×836 action atlas 후보를 그대로 보존했고, 커밋·`git push origin HEAD`는 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 공용 에뮬레이터의 Google Calendar 사용 충돌을 해소하고 LimDo focus를 보장한 뒤 새 작업자가 같은 후보의 실화면·성능 근거를 검증한다.
+### 2026-08-30 루프 238 새 CLI 작업자 중지 인계 — 반복 15 상한·외부 focus 지속
+
+- 필수 문서·현재 상태·최근 이력·QA·최신 사용자 지시·Git 작업 트리를 확인했다. 실제 재개 지점은 루프 `238`, 반복 `15`, 상태 `차단`이며 같은 외부 focus 원인이 3회 이상 연속되고 15회 중지 상한에 이미 도달했으므로 반복 16의 가설이나 제품 변경을 만들지 않았다.
+- 앱 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행해 모두 통과했다. ADB 대상은 `emulator-5554`·`alarmquest-qa` 하나이고 실기기 후보는 0건이었다.
+- 읽기 전용 환경 확인에서 uptime은 `5062.80`초로 7,200초 미만, 물리 크기는 `1080x2340`, `user_rotation=1`이었다. `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`는 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 가리켰다.
+- 공용 에뮬레이터 충돌 규칙에 따라 Calendar 조작·종료, LimDo 강제 실행·설치·입력·PNG·hierarchy·성능 수집을 하지 않았다. 기존 D1 코드·production 자산·836x836 action atlas 후보와 관련 없는 작업 트리를 그대로 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 네 조작 화질·callback·decode·PSS·framestats와 최종 실화면 관문은 미판정이고 진행 방해 P2 성능 회귀 1건이 남는다. 완료 조건을 충족하지 못해 커밋·`git push origin HEAD`를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 공용 에뮬레이터의 Google Calendar 사용 충돌을 해소하고 LimDo focus를 보장한 뒤 새 작업자가 같은 후보의 실화면·성능 근거를 검증한다. 그 전에는 D2·font scale·TalkBack·새 자산을 시작하지 않는다.
+
+### 2026-08-30 루프 238 새 CLI 자동화 재확인 — 반복 15 상한 유지
+
+- 필수 문서·현재 상태·최근 이력·QA·최신 사요자 지시·Git 상태를 화긴했다. 재개 지점은 루프 `238`, 반복 `15`, 상태 `차단`이며 동일 외부 focus 원이 3회 이상·15회 상한에 도달해 반복 16·새 가설·제품 변경을 시작하지 않았다.
+- 앱 변경 전 관문: `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`가 통과했고, ADB 대상은 `emulator-5554`/`alarmquest-qa` 하나이며 실기기 후보는 0건이다.
+- 읽기 전용 환경 근거: uptime `5163.69`초, 물리 `1080x2340`, `user_rotation=1`이다. `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`는 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 계속 점유했다.
+- 공용 focus 회귀·중지 조건을 따라 Calendar 조작·종료, LimDo 실행·설치·입력·캡처·성능 수집, production 변경을 수행하지 않았다. 성공 조건 6·8의 실화면·성능·접근성·아이 대리 QA와 진행 방해 P2 1건이 남아 `BLOCKED`를 유지한다. 완료 조건을 충족하지 못해 커밋·push를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 238 새 CLI 작업자 차단 인계 — 반복 15 상한 보존
+
+- 필수 문서·현재 상태·최근 220줄 이력·최근 180줄 QA·최근 240줄 사용자 지시와 전체 Git 작업 트리를 확인했다. 실제 재개 지점은 루프 `238`, 반복 `15`, 상태 `차단`이며 동일한 외부 focus 원인이 3회 이상 연속되고 15회 중지 상한에 도달했으므로 반복 16이나 새 제품 가설을 만들지 않았다.
+- 제품 변경 전 `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`를 실행했다. 자동화·작업 가치·시각 루프·에뮬레이터 전용·diff 관문은 통과했고 ADB 대상은 `emulator-5554`/`alarmquest-qa` 하나이며 실기기 후보는 0건이다.
+- 읽기 전용 환경 근거는 uptime `5383.12`초, 물리 `1080x2340`, `user_rotation=1`이다. `mCurrentFocus`·`mFocusedApp`·`topResumedActivity`·`ResumedActivity`는 모두 Google Calendar `com.google.android.calendar/.launch.oobe.WhatsNewFullScreen`을 가리켰다.
+- 공용 에뮬레이터 focus 회귀 규칙에 따라 Calendar 조작·종료, LimDo 실행·설치·입력·PNG·hierarchy·decode·PSS·framestats 수집과 production 변경을 수행하지 않았다. 기존 D1 코드·자산·테스트와 836 × 836 action atlas 후보를 보존했다.
+- 판정: `BLOCKED` 유지. 성공 조건 6·8의 실화면·성능·접근성·아이 대리 QA와 진행 방해 P2 성능 회귀 1건이 남아 완료 커밋·`git push origin HEAD`를 실행하지 않았다. 실제 아이 관찰: 실행 안 함.
+- 재개 조건: 감독자가 Google Calendar 전면 사용 충돌을 해소하고 LimDo focus를 보장한 뒤 새 작업자가 같은 후보의 네 조작 화질·callback·decode·PSS·framestats만 검증한다. 그 전에는 D2·font scale·TalkBack·새 자산을 시작하지 않는다.
+
+### 2026-08-30 자동화 결함 수정 — 차단 상태 작업자 무한 재확인 중지
+
+- 사용자 지시: 루프 238이 계속 진행되지 않는 원인을 검토한 결과, 제품 검증이 아니라 `차단` 상태의 작업자 재확인 세션이 반복되는 감독자 결함으로 확인되어 수정한다.
+- 근본 원인: `scripts/run-cli-loop.sh`의 `has_work()`가 `.loop/state.md`의 상태를 읽지 않고 큐의 `활성 루프: 238`만 있으면 참을 반환했다. `scripts/check-automation.sh`는 `차단`을 유효한 상태로 허용했고 `.loop/env.sh`의 `CODEX_LOOP_MAX_SESSIONS=0`은 세션을 무제한으로 허용했다. 작업자가 차단 내용을 이력에 덧붙이면 `durable_fingerprint()`가 변해 `지속기록=yes`로 판정되는 경로도 함께 확인했다.
+- 가설: `has_work()`가 `차단`·`완료` 상태에서 즉시 거짓을 반환하고 자동화 검사에 이 가드를 고정하면, 활성 큐 번호가 남아 있어도 차단 루프가 새 작업자를 만들지 않고 종료할 것이다.
+- 최소 변경: `scripts/run-cli-loop.sh`의 작업 판정에 상태 읽기와 `차단|완료` 조기 종료를 추가했다. `scripts/check-automation.sh`에는 상태 읽기와 차단·완료 가드의 존재를 검사하는 회귀 관문을 추가했다. 제품 코드·자산·에뮬레이터 focus는 변경하지 않았다.
+- 사전 조치: 기존 구형 감독자에 `./scripts/stop-cli-loop.sh`로 중지 신호를 보냈고, 현재 작업자 세션 45가 종료된 뒤 감독자·분리 screen이 모두 중지되는 것을 확인했다. 중지 중에는 현재 세션이 끝날 때까지 즉시 종료되지 않는 기존 동작도 확인했다.
+- 검증: `bash -n scripts/run-cli-loop.sh scripts/check-automation.sh scripts/cli-loop-status.sh scripts/start-cli-loop.sh scripts/stop-cli-loop.sh`, `./scripts/check-automation.sh`, `git diff --check` 통과. 차단 상태에서 패치된 `./scripts/run-cli-loop.sh`를 직접 실행했을 때 에뮬레이터 준비 관문만 통과하고 `CLI 루프 완료: 활성 또는 준비 작업이 없음`으로 종료했다. `.loop/runtime/sessions.tsv`는 527줄에서 변하지 않았고 새 작업자 세션·제품 입력·캡처는 0건이었다.
+- 판정: 자동화 수정 가설 `채택`. 루프 238의 제품 차단 원인인 Google Calendar `WhatsNewFullScreen` focus와 성능 관문 미판정은 그대로 보존하며, 차단 상태에서 무한 재확인하는 자동화 결함은 해소됐다. 실제 아이 관찰은 실행하지 않았다.
+- 남은 위험: `has_work()` 수정은 새 세션부터 적용되므로 이미 실행 중인 구형 감독자는 중지·재시작이 필요하다. 차단 해제 후에는 보존된 반복 15 후보를 새 에뮬레이터 focus에서 다시 검증해야 하며, 커밋·push는 아직 하지 않았다.
+
+### 2026-08-30 자동화 수정 후 재개 관문 확인 — 차단 상태 정상 종료
+
+- 사용자 지시: 자동화 결함 수정 뒤 루프를 재개한다.
+- 재개 가설: 패치된 감독자가 차단 상태를 읽고 `--once`에서 새 작업자를 만들지 않으며, 반복 15 상한과 외부 앱 focus 안전 경계를 보존한다.
+- 검증: `./scripts/run-cli-loop.sh --once`가 종료 코드 0으로 끝났다. `check-automation`·`ensure-emulator-ready.sh`·`check-emulator-only.sh`는 통과했고 `CLI 루프 완료: 활성 또는 준비 작업이 없음`을 출력했다.
+- 비교: `.loop/state.md`는 루프 238·상태 `차단`·반복 15를 유지했고 새 `codex exec` 작업자·세션·제품 입력·PNG·hierarchy·성능 수집은 0건이다. 차단 상태에서 감독자가 멈추는 동작은 정상이다.
+- 판정: 자동화 재개 관문 `통과`, 제품 루프 재개는 `미판정`이다. Google Calendar 전면 충돌 해소와 LimDo focus 보장이 아직 확인되지 않아 반복 16·제품 변경·커밋·push를 실행하지 않았다. 실제 아이 관찰은 실행하지 않았다.
+
+### 2026-08-30 루프 238 사용자 재개 — 반복 15 보존 후보의 새 focus 검증
+
+- 사용자 지시: 모든 개발이 끝나지 않았다면 작업을 시작한다.
+- 가장 중요한 미충족 조건: 반복 15에서 보존한 `836 × 836` action atlas 후보의 LimDo 실화면·callback·decode·PSS·framestats가 Google Calendar focus로 미판정이었다.
+- 반증 가능한 가설: 새 `alarmquest-qa` cold boot에서 Launcher가 아닌 LimDo를 명시적으로 실행하고 네 focus 지표가 LimDo를 가리키면, 같은 후보 APK의 홈·메뉴 전환·네 조작 화면과 남은 성능 근거를 안전하게 재개할 수 있다.
+- 반증 기준: 실기기 후보가 하나라도 보이거나, uptime·물리 화면·rotation이 맞지 않거나, 네 focus 지표 중 하나라도 다른 앱을 가리키거나, APK 설치·실행·화면 캡처가 실패하면 즉시 미판정으로 중단한다.
+- 최소 변경: 제품 코드·자산·테스트는 추가로 바꾸지 않고, 사용자 재개 요청에 따라 반복 15의 보존 후보를 새 에뮬레이터 focus에서 검증한다. D2·font scale·TalkBack·새 자산은 시작하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 보존한 atlas 후보를 실제 production 화면에서 다시 판정한다. 자산 필요 판정: 불필요 — 새 그림을 만들지 않고 기존 후보를 검증한다.
+### 2026-08-30 루프 238 사용자 재개 — 화면 경로 통과, 성능 게이트 차단
+
+- 사용자 지시: 모든 개발이 완료되지 않았다면 작업을 시작한다.
+- 가설: 새 cold boot로 외부 focus 충돌을 제거하고 메뉴 전환의 `progress` 읽기를 `graphicsLayer` 람다 안으로 옮기면 홈·선택·쓰기 경로를 유지하면서 전환 재구성 비용을 줄일 수 있다.
+- 사전 확인: `bash scripts/ensure-emulator-ready.sh`와 `bash scripts/check-emulator-only.sh` 통과. 대상은 `alarmquest-qa`·`emulator-5554` 하나이며 물리 1080×2340, `user_rotation=1`, 실기기 후보 0건이다. Google Calendar `WhatsNewFullScreen` focus 충돌은 새 cold boot에서 재현되지 않았다.
+- 최소 제품 변경: `MainActivity.kt`의 메뉴 전환 `progress.value`를 `graphicsLayer` 블록 내부에서 읽도록 변경해 레이아웃·배경·시맨틱스 재구성을 줄였다. 색상·callback·입력 영역은 바꾸지 않았다.
+- 최소 QA 변경: `SceneInventoryEvidenceTest.kt`에 각 테스트 전 학습 목록 삭제와 Activity 재생성을 추가했다. 앞선 보호자 목록 테스트가 11개 목록을 남겨 다음 테스트의 `학습 목록을 다 했어요` 조건을 오염시키던 격리 결함을 제거했다.
+- 검증: `./scripts/verify.sh`, `./scripts/check-visual-loop.sh`, `git diff --check` 통과. 단일 clean-data `reachableStableScenesAreCapturedFromHomeNavigation` 통과. 격리 수정 후 `SceneInventoryEvidenceTest` 2/2 통과. 최종 APK `eb1ac886ae4bfa4f9592bd8bac67fccb1f651170de3a1bd0ae408836360228a4`를 지정 에뮬레이터에 설치하고 홈·자음 선택·`ㄱ` 쓰기 화면을 2340×1080 RGBA PNG와 hierarchy로 확인했다. 홈 카드 bounds는 688×702·689×702·689×702, 보호자 진입은 194×194이며 쓰기 canvas semantics가 존재한다.
+- 실패 근거: 메뉴 전환 중간 framestats는 13프레임 중 `Number Frame deadline missed: 2`(15.38%)였다. 기존 전체 흐름도 93프레임 중 9건(9.68%)으로 D1 기준 3% 미만을 넘었다. 색상 필터 병합 실험은 GPU 중앙값 18ms로 악화돼 되돌렸고, 정원 배경·오버레이를 보존한 레이어 갱신 수정 뒤에도 최초 구성 프레임 miss가 남았다.
+- QA 경계: 자동·에뮬레이터 QA와 아이 대리 시뮬레이션만 수행했다. 실제 아이 관찰·실기기 QA·배포·커밋·push는 수행하지 않았다.
+- 판정: 화면 callback·전체 장면 QA와 자동 관문은 통과했지만 D1 성능 P2가 남았다. 반복 15 상한을 지켜 반복 16과 D2 전환을 만들지 않고 `차단`으로 기록한다.
+
+### 2026-08-30 루프 238 사용자 재개 — 전환 레이아웃 선행 준비 실험 미채택
+
+- 사용자 지시: 계속.
+- 가설: 홈 화면에서 메뉴 전환에 사용하는 96sp 글자 레이아웃을 투명한 선행 항목으로 미리 준비하면, 화면 교체 직후 최초 구성 프레임의 deadline miss가 줄어들 것이다.
+- 최소 변경: `MainActivity.kt`의 홈 composable에 전환 글자 선행 준비 항목을 임시 추가해 측정했다. 시각·callback·접근성 의미에는 영향을 주지 않도록 투명 처리와 semantics 제거를 사용했으며, 개선되지 않아 즉시 원복했다. 현재 제품 소스에는 이 실험의 순변경이 없다.
+- 검증: 새 foreground `alarmquest-qa`에서 `emulator-5554`, 물리 1080×2340, `user_rotation=1`을 확인했다. 선행 준비 실험의 동일 전환 측정 3회는 각각 14프레임 중 2회(14.29%), 13프레임 중 2회(15.38%), 13프레임 중 2회(15.38%) deadline miss였다. `./scripts/verify.sh`, `./scripts/check-automation.sh`, `./scripts/check-visual-loop.sh`, `git diff --check`는 모두 통과했다.
+- 비교: 선행 준비 전 보존 근거인 13프레임 중 2회(15.38%)와 동일 범위이며 D1 요구사항인 3% 미만을 충족하지 못했다. 따라서 가설은 기각하고 실험 코드를 원복했다.
+- 판정: 이번 재개에서도 자동·에뮬레이터·아이 대리 QA와 실제 아이 관찰을 구분했다. 실제 아이 관찰·실기기 QA·배포·커밋·push는 수행하지 않았다. 반복 15 상한을 보존하고 반복 16·D2 전환 없이 `차단`을 유지한다.
+
+### 2026-08-30 루프 엔지니어링 재설정 — 238 차단 보존·239 성능 결함 분리
+
+- 사용자 지시: 루프 엔지니어링으로 계속 작업할 수 있게 재설정 및 점검한다.
+- 점검 결과: `run-cli-loop.sh`는 `차단|완료` 상태에서 작업자를 만들지 않는 가드를 정상 보유하고 있어, 루프 238을 그대로 두면 감독자가 멈추는 것이 올바른 동작이다. 반면 `.loop/queue.md`의 238 행은 `준비`로 남아 상태 문서와 불일치했고, D0 172프레임 전체 흐름과 루프 238 13~14프레임 진단 비율이 같은 3% 게이트처럼 기록돼 재개 목표가 불명확했다.
+- 재경계화: 루프 238은 반복 15·`차단`으로 보존하고 큐에도 `차단`으로 정정했다. 사용자의 새 재설정 승인을 근거로 단일 결함 루프 239 `D1 메뉴 전환 최초 프레임 성능 회복`을 만들고 활성 루프 239·상태 `준비`·반복 0으로 설정했다.
+- 새 측정 계약: D0와 같은 `cold launch → 홈 → 자음 선택 → ㄱ 쓰기 진입 → 3초 안정` 전체 흐름으로 3% 게이트를 판정한다. 0.22초 trace는 최초 composition·layout·draw 진단에만 사용하며, 표본 수나 대기만 늘려 통과시키지 않는다.
+- 보존 경계: 홈·선택·쓰기 callback, A 정원·clay 자산, WritingCanvas·네 조작·교육 geometry·38개 음성 근거를 보존한다. D2·새 자산·실기기·배포·완료 커밋·push는 시작하지 않는다. 실제 아이 관찰: 실행 안 함.
+### 2026-08-30 루프 239 반복 1 가설 — 홈·전환 공통 배경의 생명주기 고정
+
+- 가장 중요한 미충족 조건: 홈 카드 탭 직후 최초 전환 진단에서 deadline miss 2회가 남아 있고, D0와 동일한 전체 흐름 3% 미만 관문이 미판정이다.
+- 원인 근거: 기존 최장 frame은 `HandleInputStart → PerformTraversalsStart` 47.72%, `PerformTraversalsStart → DrawStart` 24.36%, draw command 구간 25.79%로 composition/layout/draw 전반에 비용이 분산됐다. 현재 `Home → MenuTransition`은 분기를 교체하며 동일한 full-screen 정원 bitmap과 배경 레이어를 해제·재구성한다.
+- 반증 가능한 가설: 홈과 메뉴 전환을 하나의 정원 scene shell 안에서 교체해 full-screen bitmap 레이어의 생명주기를 고정하면, 시각·semantics·callback을 보존하면서 짧은 진단의 deadline miss가 기존 2회보다 줄고 전체 흐름은 3% 미만이 될 것이다.
+- 반증 기준: 짧은 진단 miss가 2회 이상이거나 전체 흐름이 3% 이상, frozen frame이 1개 이상이면 가설을 기각한다. 정원·clay 화풍, 홈 카드, 선택 글자·색, focus·callback 중 하나라도 회귀하면 제품 변경을 채택하지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 동일한 표시를 공통 shell로 재구조한 뒤 전·후 실화면을 비교한다. 자산 필요 판정: 불필요 — 검증된 production 정원 배경과 clay 카드를 그대로 재사용한다.
+
+### 2026-08-30 루프 239 반복 1 결과 — 짧은 전환 개선·전체 관문 미통과
+
+- 최소 제품 변경: `LearningShell`의 `Home`과 `MenuTransition`을 하나의 `GardenSceneShell`에서 처리하고, full-screen `limdo_sunny_garden_scene_background` bitmap을 shell로 올렸다. 홈 카드·전환 overlay·대표 글자·semantics·callback 내용은 바꾸지 않았다.
+- 자동 검증: `./scripts/verify.sh` 전체가 단위 테스트·Android lint·debug build를 모두 통과했고 `git diff --check`도 통과했다. APK SHA-256은 `f1300433f28e0ec88efc0f9ed2f0af338c24e9dd9b1a1427c79a40edc972d762`이다.
+- 에뮬레이터 관문: `adb devices -l`에는 `emulator-5554` 하나만 있었고 `alarmquest-qa`, 실기기 후보 0건이었다. QA 시작 uptime은 148.59초, 물리 1080×2340, `user_rotation=1`, PNG 2340×1080, 네 focus 지표 모두 `com.limdo.hangul/.MainActivity`를 통과했다.
+- 성능 비교: 홈 안정 후 gfxinfo reset→자음 카드 `(430,560)` tap→0.22초 대기의 짧은 진단은 15프레임 중 deadline miss 1회=6.67%, frozen 0, slow UI/draw/bitmap upload 0이다. 이전 13프레임 2회=15.38%보다 절대 miss 1회가 줄어 공통 배경 생명주기 가설의 국소 효과는 확인했다.
+- 전체 흐름: cold launch→1초 홈→자음 tap→0.7초 선택→`ㄱ` `(220,505)` tap→쓰기 3초 안정의 고정 입력에서 199프레임, deadline miss 7회=3.52%, frozen 0, slow UI 3, slow draw 5, bitmap upload 0이다. 3% 미만 관문을 0.52%p 초과했으므로 성공 조건 4는 실패했다. 쓰기 안정 PSS 87,878 KiB로 D0 95,559 KiB 아래이며 메모리 회귀는 없다.
+- 실화면 판정: 홈은 정원 배경·세 clay 카드·보호자 진입이 잘림·겹침 없이 보존됐다. 선택·쓰기로 callback도 진입했지만, 왼쪽 action atlas가 단일 icon이 아닌 인접 셀까지 표시하는 기존 진행 방해 시각 결함을 새 2340×1080 PNG에서 재확인했다. 새 자산은 생성하지 않았다.
+- 판정: 가설 `미판정`. 짧은 전환은 개선됐으나 전체 성능 관문과 실화면 회귀 관문이 남았다. 자동 그래픽 디자인·자동 QA·아이 대리 QA는 성능 3% 초과와 atlas 셀 경계 결함으로 실패다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건: 전체 7개 miss의 주요 구간을 분해해 6회 이하로 낮추고, action atlas 셀 경계·네 조작 168×168 px·font scale 1.5·2.0·TalkBack·아이 대리 QA를 새 APK에서 통과해야 한다. 다음 반복은 전체 framestats의 가장 큰 남은 구간 하나만 선택하며 D2·실기기·배포를 시작하지 않는다.
+- 완료 조건 미충족으로 커밋·`git push origin HEAD`를 실행하지 않았다.
+
+### 2026-08-30 루프 239 반복 3 결과 — controller 지연 생성 가설 기각·후보 원복
+
+- 이력 위치 정정: 반복 3 가설 절이 덧붙이기 중 동일 문장 anchor를 선택해 반복 1 결과 뒤에 먼저 기록됐다. 기존 기록은 수정·삭제하지 않고, 해당 `루프 239 반복 3 가설` 절과 이 최신 결과를 한 반복으로 사용한다.
+- 최소 제품 변경·원복: `MainActivity` 시작 시 38개 `GuardianVoiceController`를 만들던 map을 빈 mutable map과 lesson별 `getOrPut` 지연 생성으로 바꾸고 회귀 검사를 갱신했다. 신규 성능이 개선되지 않아 가설을 기각하고 제품 소스·검사를 반복 2의 eager map으로 원복했다.
+- 자동 검증: 첫 `./scripts/verify.sh`는 소스 문구 계약을 아직 eager map으로 가정한 `GuardianVoiceRecordingTest.writingFlowPlaysTheLessonVoiceOnlyOnceOnEntry` 1건이 실패했고 lint·debug build는 통과했다. 지연 접근을 검사하도록 조정한 뒤 두 번째 `./scripts/verify.sh`, `./scripts/check-visual-loop.sh`, `git diff --check`는 모두 통과했다. 후보 기각 후 소스·검사는 함께 원복했다.
+- 에뮬레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `215.29`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, 네 focus 지표 LimDo를 통과했다. APK SHA-256은 `46a015eef2d9fd0096b39a94ac6121a08b81e1a3c06bd47cb5aeb3ec7f3b8565`다.
+- 실화면 판정: `captures/loop239/iteration3/after/` 홈·자음 선택·`ㄱ` 쓰기 PNG·hierarchy를 직접 읽었다. 정원·clay 화풍, 세 카드, 보호자 진입, 14 자음, WritingCanvas 1962 × 954 px, 단일 house·eraser·양방향 화살표가 잘림·겹침·인접 셀 노출 없이 보존됐다.
+- 성능 비교: 동일 전체 흐름의 cold launch는 `2,514 ms`, 178프레임 중 deadline miss 15회=`8.43%`, frozen 0, slow UI 12, slow draw 9, bitmap upload 0이었다. 반복 2의 `2,392 ms`·`16/174=9.20%`에서 유의미한 회복이 없고 3% 미만을 통과하지 못했다. 짧은 0.22초 전환은 14프레임 중 miss 1회, frozen 0이고 쓰기 안정 PSS는 90,814 KiB로 통과했다.
+- 가설 판정: `기각`. controller 38개의 객체 생성은 2.4~2.5초 cold launch와 slow UI/draw 집중의 주요 구조 원인이 아니다. 자동 그래픽 디자인 역할은 화면 보존 통과, 자동 QA·아이 대리 QA는 전환 성능 P2로 실패다. 새 P0 0건, 새 P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 저장된 full-flow framestats에서 2.5초 cold launch와 중첩된 최장 frame의 `HandleInputStart`·traversal·draw 구간을 별도로 분리하고, 앱 시작 중 홈 bitmap 최초 decode/draw와 스토리지 load 중 더 큰 하나를 trace로 확정한 뒤 구조적 최소 수정한다. font scale·TalkBack·D2는 시작하지 않는다.
+- 성공 조건 4·8이 미충족이므로 완료 커밋·`git push origin HEAD`를 실행하지 않았다.
+
+### 2026-08-30 루프 239 반복 3 가설 — 초기 38개 음성 controller 지연 생성
+
+- 가장 중요한 미충족 조건: 반복 2의 동일 전체 흐름은 cold launch `2,392 ms`, 174프레임 중 deadline miss 16회=9.20%, slow UI 13회·slow draw 14회로 3% 미만 관문을 통과하지 못했다. 반복 1의 cold launch `428 ms`·199프레임 중 7회=3.52%와 비교하면 시작 구간 변동이 가장 큰 차이다.
+- 구조 원인 근거: `MainActivity.onCreate()`가 홈을 첫 구성하기 전 `WritingVoiceCatalog` 38 lesson의 `GuardianVoiceController`와 전체 map을 동기 생성한다. 홈→자음→`ㄱ` 쓰기 대표 흐름에서는 현재 lesson controller 하나만 필요하다.
+- 반증 가능한 가설: controller를 lesson이 실제로 열릴 때 `getOrPut`으로 지연 생성하면 홈 초기 구성 전 동기 작업이 줄어 동일 전체 흐름의 deadline miss가 3% 미만이 되고 frozen frame 0개를 유지할 것이다. 짧은 전환 miss 1회 이하, 쓰기 안정 PSS 95,559 KiB 이하, 38 lesson mapping·release·재생·홈→자음→`ㄱ` callback을 보존해야 한다.
+- 반증 기준: 동일 전체 흐름 deadline miss 3% 이상, frozen frame 1개 이상, 짧은 전환 miss 2회 이상, PSS 95,559 KiB 초과, 음성 controller mapping·release·재생·화면·callback 회귀 중 하나라도 발생하면 가설을 기각한다.
+- 합리적인 최소 제품 변경: eager `associateWith` map을 빈 mutable map과 단일 `controllerFor()` 접근으로 바꾸고 기존 두 사용 지점만 교체한다. 음성 파일·UI·자산·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 성능 구조 변경 후 동일 홈·선택·쓰기 2340 × 1080 화면 보존을 새 APK로 확인한다. 자산 필요 판정: 불필요 — 기존 정원·clay·action atlas가 충분하며 새 bitmap은 초기 CPU 구조 결함을 해결하지 않는다.
+
+### 2026-08-30 루프 239 감독자 재개 점검 — cold boot 회전 안정화
+
+- 재현: 반복 2 종료 뒤 감독자를 다시 시작했을 때 첫 `ensure-emulator-ready.sh`는 새 `alarmquest-qa`를 uptime 8초·`user_rotation=1`로 통과했지만, 다음 세션 직전 재검사에서 Android 부팅 서비스가 값을 `0`으로 되돌려 `에뮬레이터 준비 실패: user_rotation이 1이 아님: 0`으로 감독자가 중지됐다.
+- 독립 근거: 반복 1 작업자도 fresh boot 뒤 첫 앱 실행에서 `user_rotation=0`을 확인하고 수동으로 다시 `1`을 써야 했다. 같은 근본 원인이 두 번 확인돼 회귀 규칙과 기계 검사를 추가한다.
+- 최소 자동화 변경: `scripts/ensure-emulator-ready.sh`에 `stabilize_display`를 추가해 `accelerometer_rotation=0`·`user_rotation=1`을 쓴 뒤 1초 읽기까지 최대 15회 안정화한다. `scripts/check-automation.sh`가 함수·15회 상한·실제 호출을 검사한다.
+- 제품 경계: 앱 코드·자산·성능 판정·반복 번호는 바꾸지 않았다. 루프 239 반복 2의 제품 인계와 에뮬레이터 전용·실기기 금지 경계를 그대로 유지한다. 실제 아이 관찰: 실행 안 함.
+
+### 2026-08-30 루프 239 성능 게이트 산술 정정
+
+- 반복 1 결과의 남은 조건에 적힌 `199프레임에서 6회 이하`는 3% 미만 기준의 수기 계산 오류다. `6 / 199 × 100 = 3.015%`이므로 같은 분모에서는 최대 5회여야 한다.
+- 전체 흐름의 total frames는 실행마다 달라질 수 있으므로 다음 반복부터 절대 miss 횟수를 고정하지 않고 저장된 `deadline miss / total frames × 100 < 3.0`을 실제 값으로 계산해 판정한다.
+- `.loop/state.md`의 현재 반증 기준과 `LOOP_GOAL.md`는 이미 절대 횟수가 아닌 3% 미만 비율을 사용한다. 덧붙이기 전용 계약에 따라 과거 문장은 삭제하지 않고 이 절을 최신 정정으로 사용한다.
+
+### 2026-08-30 루프 239 반복 2 가설 — action atlas의 production 규격 복원
+
+- 가장 중요한 미충족 조건: 반복 1의 쓰기 실화면에서 왼쪽 네 조작 atlas가 한 셀 대신 인접 셀을 함께 표시해 아이가 홈·지우기·이전·다음 동작을 구분하기 어렵고, 성공 조건 6·8의 UI/UX·아이 대리 QA를 직접 막는다.
+- 원인 근거: production `ActionButtonAtlasSpec`은 `3 × 3`, 셀 `418 px`, 전체 `1254 × 1254 px`를 요구하지만 현재 변경 자산은 실제 `836 × 836 px`이다. `drawImage`가 둘째·셋째 열에 `srcOffset=418·836`을 적용하므로 유효 셀 경계와 일치하지 않고 셋째 열은 원본 범위를 벗어난다.
+- 반증 가능한 가설: 현재 3 × 3 그림 구성과 alpha를 유지한 채 atlas 전체를 계약 크기 `1254 × 1254 px`로 균일 확대하면, 각 `418 × 418 px` source cell이 하나의 동작만 표시하고 callback·네 조작 `168 × 168 px`·홈→자음→ㄱ 흐름을 보존할 것이다. 잘못된 source crop 제거로 쓰기 진입 draw의 불필요한 경계 처리가 사라져 전체 deadline miss도 반복 1의 7회보다 늘지 않아야 한다.
+- 반증 기준: 자산이 RGBA·1254 × 1254·3 × 3 셀 경계 계약을 벗어나거나, 실화면에서 인접 아이콘·잘림·검은 배경이 남거나, 네 조작 bounds/callback이 회귀하거나, 전체 miss가 7회 이상·짧은 전환 miss가 2회 이상·frozen frame이 1회 이상이면 가설을 기각한다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 쓰기 화면의 잘못된 atlas crop을 고친다. 자산 필요 판정: 불필요 — 새 그림을 생성하지 않고 현재 production 후보의 규격만 복원한다.
+
+### 2026-08-30 루프 239 반복 2 결과 — 네 조작 복원·전체 성능 가설 기각
+
+- 최소 제품 변경: 기존 3 × 3 action 그림과 alpha를 보존한 채 `limdo_action_button_atlas.png`를 `836 × 836`에서 production 계약 `1254 × 1254`로 균일 확대했다. 코드·callback·셀 정의·새 그림 생성은 바꾸지 않았다.
+- 자동 검증: 자산은 PNG·RGBA·alpha 보유·1254 × 1254이며 `./scripts/verify.sh`의 단위 테스트·lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check`가 통과했다. APK SHA-256은 `129c9f4e4871cfc4ded616222a82fdb62f1c2ae359ec4c4abd8c5245d04c2ed0`이다.
+- 에뮬레이터 관문: QA 시작 uptime `139.52`초, `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, 네 focus 지표 모두 `com.limdo.hangul/.MainActivity`를 통과했다.
+- 실화면 비교: 반복 1 `captures/loop239/iteration1/after/writing.png`의 왼쪽 action atlas 인접 셀 노출이 반복 2 `captures/loop239/iteration2/after/writing.png`에서 사라졌다. 홈·지우기·이전·다음은 각각 단일 house·eraser·왼쪽·오른쪽 화살표로 보이고 검은 배경·잘림·halo·셀 번짐은 0건이다. hierarchy는 WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 네 조작 `[11,356][179,524]`·`[11,556][179,724]`·`[2161,356][2329,524]`·`[2161,556][2329,724]`=각 168 × 168 px를 유지했다.
+- 성능 비교: 짧은 0.22초 전환은 12프레임 중 deadline miss 1회, frozen 0, bitmap upload 0으로 반복 1의 절대 miss 1회를 유지했다. 동일 전체 흐름은 174프레임 중 deadline miss 16회=9.20%, frozen 0, slow UI 13, slow draw 14, bitmap upload 0으로 반복 1의 7/199=3.52%보다 악화됐다. 쓰기 안정 PSS는 90,848 KiB로 D0 95,559 KiB 아래다.
+- 판정: atlas 규격·시각 가설은 `채택`, 성능 비회귀 가설은 `기각`이다. 자동 그래픽 디자인 역할은 네 조작 범위 통과지만, 자동 QA·아이 대리 QA와 루프 전체는 진행 방해 P2 성능 1건 때문에 실패다. 새 P0 0건, 새 P1 0건, 진행 방해 P2 1건이다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건: 반복 1·2에서 변동한 전체 miss를 cold launch·메뉴 전환·쓰기 진입 구간의 타임스탬프와 slow UI/draw로 분해해 가장 큰 구조 원인 하나를 다음 반복에서 수정해야 한다. font scale 1.5·2.0, TalkBack, 최종 자동 역할 관문도 남았다.
+- 완료 조건 미충족으로 커밋·`git push origin HEAD`를 실행하지 않았다.
+
+### 2026-08-30 루프 239 반복 3 최신 위치 정정
+
+- 반복 3 가설과 결과가 동일 anchor 선택으로 연대기의 반복 2 결과 앞에 먼저 덧붙었다. 기존 기록은 수정·삭제하지 않고 `루프 239 반복 3 가설 — 초기 38개 음성 controller 지연 생성`과 `루프 239 반복 3 결과 — controller 지연 생성 가설 기각·후보 원복` 절을 현재 유효한 반복 3 기록으로 사용한다.
+- 최종 판정은 가설 `기각`, 루프 239 `진행 중`, 반복 `3`이다. 제품 후보는 원복했고 성능 P2 1건이 남아 커밋·push는 없다.
+
+### 2026-08-30 루프 239 반복 4 가설 — 정원 shell의 불투명 전체 배경 이중 draw 제거
+
+- 가장 중요한 미충족 조건: 반복 3의 동일 전체 흐름은 178프레임 중 deadline miss 15회=8.43%로 3% 미만 관문을 통과하지 못했다. 짧은 메뉴 전환은 miss 1회이므로 상태 callback보다 cold launch·홈 연속 draw 비용을 먼저 줄여야 한다.
+- 원인 근거: `GardenSceneShell`은 화면 전체에 `warmCream` 배경을 그린 뒤 동일 범위에 alpha가 없는 `limdo_sunny_garden_scene_background` bitmap을 `FillBounds`로 다시 그린다. 실제 표시 pixel에 기여하지 않는 하부 full-screen fill이 매 frame 남아 있다.
+- 반증 가능한 가설: 불투명 정원 bitmap 아래의 중복 `warmCream` draw만 제거하면 홈·전환의 pixel·semantics·callback은 동일하고, 동일 전체 흐름 deadline miss는 3% 미만, frozen frame은 0이 될 것이다. 짧은 전환 miss 1회 이하, PSS 95,559 KiB 이하도 유지해야 한다.
+- 반증 기준: 전체 deadline miss 3% 이상, frozen 1회 이상, 짧은 전환 miss 2회 이상, PSS 상한 초과, 투명·가장자 pixel 차이, 홈 카드·보호자·자음·쓰기 callback 회귀 중 하나라도 발생하면 가설을 기각한다.
+- 합리적인 최소 제품 변경: `GardenSceneShell` Box의 중복 `.background(warmCream)` 한 개만 제거한다. 배경 bitmap·카드·모션·자산·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 새 APK의 동일 홈·선택·쓰기 2340 × 1080 pixel과 hierarchy를 이전 상태와 비교한다. 자산 필요 판정: 불필요 — 기존 불투명 정원 bitmap을 그대로 재사용한다.
+
+### 2026-08-30 루프 239 반복 4 결과 — 중복 fill 제거 가설 기각·후보 원복
+
+- 최소 제품 변경·원복: `GardenSceneShell` Box의 `warmCream` full-screen fill 한 개를 제거한 후 검증했다. 성능이 개선되지 않아 가설을 기각하고 해당 소스 한 곳을 반복 3 상태로 원복했다. 기존 미커밋 D1 자산·action atlas·자동화 변경은 보존했다.
+- 자동 검증: 후보에서 `./scripts/verify.sh`의 단위 테스트·lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check`가 모두 통과했다. APK SHA-256은 `223b2ca37cc255425ad4e441335f6e34f50321079a48cd5b85475e48e39435e8`이다.
+- 에뮤레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `578.67`초, 물리 1080 × 2340, `user_rotation=1`을 통과했다. 홈·선택·쓰기 PNG는 모두 2340 × 1080이고 LimDo focus와 production callback을 유지했다.
+- 실화면 판정: `captures/loop239/iteration4/after/home.png`를 직접 읽었다. 정원·clay 화풍, 세 카드, 보호자 진입, 한글·가장자·자산 잘림과 배경 투명 결함은 0건이다. 쓰기 hierarchy는 WritingCanvas 1962 × 954 px와 네 조작 168 × 168 px를 유지했다.
+- 성능 비교: cold launch는 `3,043 ms`, 동일 전체 흐름은 177프레임 중 deadline miss 17회=`9.60%`, frozen 0, slow UI 14, slow draw 15, bitmap upload 0이다. 반복 3의 `2,514 ms`·15/178=`8.43%`보다 악화됐고 3% 미만을 통과하지 못했다. 쓰기 안정 PSS는 92,731 KiB로 D0 95,559 KiB 이하다. 추가 0.22초 재수집은 이미 선택 화면인 상태에서 tap해 0 frame이므로 짧은 전환 완료 근거에서 제외하고, 반복 3의 유효한 1 miss를 현재 기준으로 보존한다.
+- 가설 판정: `기각`. 실제 pixel에 기여하지 않는 하부 fill은 전체 miss의 주요 원인이 아니다. 자동 그래픽 디자인 역할은 화면 보존 통과, 자동 QA·아이 대리 QA는 성능 P2로 실패다. 새 P0 0건, 새 P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 저장된 full-flow framestats의 miss 17개를 cold launch·홈 entrance·메뉴 transition·쓰기 demonstration의 절대 timestamp로 나누고, 가장 많은 miss가 모인 연속 모션 구간 하나의 frame별 layer invalidation을 구조적으로 줄여야 한다. font scale·TalkBack·D2는 시작하지 않았다.
+- 성공 조건 4·8이 미충족이므로 완료 커밋·`git push origin HEAD`를 실행하지 않았다.
+
+### 2026-08-30 루프 239 반복 6 가설 — 동적 표시기 갱신 빈도 제한
+
+- 가장 중요한 미충족 조건: 반복 5의 동일 전체 흐름은 180프레임 중 deadline miss 13회=7.22%로 3% 미만 관문을 통과하지 못했다. 짧은 전환 miss 1회·frozen 0이므로 메뉴 전환 callback보다 쓰기 진입 후 전체 동적 표시기가 남은 작업 재그리기다.
+- 구조 원인 근거: `rememberInfiniteTransition` 원시 값을 60 Hz 상태로 노출하며, 눈에 보이는 위치가 시각적으로 구분되지 않는 사이에도 1962 × 954 px Canvas draw를 계속 무효화한다.
+- 반증 가능한 가설: 표시기 위치를 3초 주기에 45개 단계로 제한하면 매초 15회의 작은 위치 변화는 보존하면서 전체 surface 재그리기를 줄여 deadline miss가 3% 미만이 될 것이다. 이동 표시기의 경로·시작·종료·음성·입력 판정은 보존한다.
+- 반증 기준: 동일 흐름 deadline miss 3% 이상, frozen 1개 이상, 짧은 전환 miss 2회 이상, PSS 95,559 KiB 초과, 표시기 이동이 눈에 띄거나 아이가 5초 관문을 이해하지 못하면 기각한다.
+- 합리적인 최소 제품 변경: 동적 표시기의 표현 값만 45개 단계로 양자화하고, 기존 geometry·자산·입력·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 production 정원·clay·action atlas를 재사용한다.
+
+### 2026-08-30 루프 239 반복 7 결과 — draw node 분리 가설 기각·소스 원복
+
+- 최소 제품 변경·원복: `WritingCanvas` 밖쪽의 기존 입력·semantics modifier를 `Box`에 유지하고, 정적/입력 `Canvas`와 60 Hz demonstration marker overlay `Canvas`를 분리해 검증했다. 전체 deadline miss가 3% 미만이 되지 않아 가설을 기각하고 `WritingCanvas.kt`를 반복 6의 production 소스로 원복했다. 기존 미커밋 D1 코드·자산·action atlas는 보존했다.
+- 자동 검증: 후보 상태의 `./scripts/verify.sh` 단위 테스트·lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check`가 모두 통과했다. APK SHA-256은 `captures/loop239/iteration7/performance/apk-sha256.txt`에 저장했다.
+- 에뮬레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `2003.31`초, 물리 1080 × 2340, `user_rotation=1`, LimDo focus를 통과했다. 동일 입력은 cold launch → 홈 → 자음 선택 `(430,560)` → `ㄱ` `(220,500)` → 3초 안정으로 고정했다.
+- 성능 비교: 동일 전체 흐름은 297프레임 중 deadline miss 12회=`4.04%`, frozen 0, slow UI 7, slow draw 11, bitmap upload 0이다. 반복 6의 원복 기준 13/180=`7.22%`보다 비율과 절대 miss는 줄었지만 3% 미만 관문은 통과하지 못했다. 짧은 0.22초 전환은 16프레임 중 miss 1회, bitmap upload 0이고 쓰기 안정 PSS는 `95,152 KiB`로 D0 `95,559 KiB` 이하였다.
+- 실화면 판정: `captures/loop239/iteration7/after/writing.png`을 직접 읽었다. 정확한 2340 × 1080에서 정원 화풍, `ㄱ` 교육 geometry, 시작·끝·방향 marker, 네 조작 자산의 가림·잘림은 0건이다. hierarchy의 WritingCanvas는 `[189,63][2151,1017]`=1962 × 954 px, 네 조작은 각 168 × 168 px이며 입력·semantics를 유지했다.
+- 판정: 가설 `기각`. 자동 그래픽 디자인 역할은 화면 보존 통과이지만, 자동 QA·아이 대리 QA와 루프 전체는 진행 방해 P2 성능 1건으로 실패다. 신규 P0 0건, P1 0건, 진행 방해 P2 1건이다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: draw node 분리만으로는 slow draw 11회를 3% 미만으로 낮추지 못했다. 다음 반복은 정적 guide의 `Path`·점선 계산 결과를 size·lesson·완료 획수 key로 cache하고 draw 당 geometry 재계산만 줄이는 단일 가설을 검증한다. 성공 조건 4·8 미충족으로 커밋·`git push origin HEAD`는 실행하지 않았다.
+
+### 2026-08-30 루프 239 반복 6 결과 — 양자화 가설 기각·소스 원복
+
+- 최소 제품 변경·원복: `WritingCanvas` 동적 표시기의 표현 위치를 45단계로 양자화해 검증했다. 성능이 크게 악화돼 가설을 기각하고 제품 소스를 반복 5 상태로 원복했다. 기존 D1 자산·action atlas·callback은 보존했다.
+- 자동 검증: 후보 상태의 `./scripts/verify.sh`가 단위 테스트·lint·debug build를 모두 통과했다. 원복 후 `git diff --check`와 자동화 관문을 다시 확인한다.
+- 에뮬레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `1679.13`초, 물리 1080 × 2340, `user_rotation=1`, LimDo focus를 통과했다. APK를 덮어쓰기 설치하고 cold launch → 홈 → 자음 → `ㄱ` 쓰기 → 3초 안정의 같은 입력 흐름을 실행했다.
+- 성능 비교: cold launch는 `2,488 ms`, 전체 90프레임 중 deadline miss 58회=`64.44%`, frozen 0, slow UI 14, slow draw 45, bitmap upload 0이다. 반복 5의 13/180=`7.22%`보다 miss와 slow draw가 크게 악화됐다. 프레임 상태를 양자화하면 안드로이드가 갱신 간격 사이를 deadline miss로 집계해 현재 gate와 제품 모션 모두에 적합하지 않다. 쓰기 안정 PSS는 `92,080 KiB`로 상한 이하였다.
+- 실화면 판정: `captures/loop239/iteration6/after/writing.png`을 직접 읽었다. 2340 × 1080, WritingCanvas 1962 × 954 px, 네 조작 168 × 168 px, 정원 화풍·교육 geometry·시작·종료·방향 표시는 보존됐지만 이동이 15 Hz로 끊겨 보일 위험과 성능 P2로 자동 그래픽 디자인·자동 QA·아이 대리 QA를 실패 처리했다. 실제 아이 관찰: 실행 안 함.
+- 판정: 가설 `기각`. 신규 P0 0건, P1 0건, 진행 방해 P2 1건이다. 다음 반복은 전체 Canvas의 갱신 횟수를 끊지 않고 정적 guide와 작은 동적 marker를 별도 draw node로 분리해 원본 모션 보간과 gfxinfo deadline을 함께 보존해야 한다. 성공 조건 4·8 미충족으로 커밋·push는 실행하지 않는다.
+
+### 2026-08-30 LOOP 239 ITERATION 5 RESULT
+
+- 가설: 동적 시범 표시기ᄋ터가 1962 x 954 px WritingCanvas 전체를 매 frame 다시 그리는 구조라고 보고, 동적 레이어로 격리하면 전체 miss가 3% 미만이 될 거시라고 보았다. 반증 기준은 3% 이상, frozen 1개 이상, 화면·판정·semantics 회귀였다.
+- 최소 변경: WritingCanvas에 `graphicsLayer()`레이어를 하나 추가하고 기존 정원·자산·geometry·입력·semantics는 바꾸지 않았다. 가설이 기각되어 해당 한 줄 소스 줄이은 지웠다.
+- 자동 검증: `./scripts/verify.sh`, `./scripts/check-visual-loop.sh`, `git diff --check`가 통과했다. `emulator-5554`/`alarmquest-qa` 하나, 실기기 후보 0건, uptime 1166.13초, 물리 1080 x 2340, `user_rotation=1`, LimDo focus를 통과했다.
+- 성능 비교: 동일 흐״름은 180표레임 중 deadline miss 13회=7.22%, frozen 0, slow UI 10, slow draw 10, bitmap upload 0이다. 반복 4의 17/177=9.60%보다 절대 miss 4회가 줄었지만 3% 관문을 통과하지 못했다. 짧은 0.22초 전환은 16표레임 중 miss 1회·frozen 0이고, 쓰기 안정 PSS는 92,521 KiB로 D0 95,559 KiB 이하이다.
+- 실화면 판정: `captures/loop239/iteration5/after/writing.png`을 직접 읽어 2340 x 1080 해상도로 읽었다. WritingCanvas 1962 x 954 px·네 조작 168 x 168 px·교욱 geometry·동적 표시기ᄋ터·정원 화풍을 보존했다. 자동 그래픽 디자인·자동 QA·아이 대리 QA는 화면 통과·성능 P2 실패로 최종 실패이다. 실제 아이 관찰: 실행 안 함.
+- 판정: 가설 `기각`. 레이어 격리는 지웠다. 저장된 framestats의 초반 3초의 동적 표시기ᄋ터가 멈출 모션 구간의 full-surface invalidation을 줄이는 시ᄂ호를 화ᄀ정해야 한다. 성공 조건 4·8 미충족으로 커밋·push는 실행하지 않았다.
+### 2026-08-30 루프 239 반복 7 가설 — 정적 guide와 동적 marker draw node 분리
+
+- 가장 중요한 미충족 조건: 반복 6의 원복 기준 동일 전체 흐름 deadline miss는 13/180=`7.22%`로 3% 미만 관문을 통과하지 못했다.
+- 구조 원인 근거: 현재 하나의 `Canvas` draw lambda가 정적 격자·전체 글자 guide·아이 획·시작·끝 표식과 60 Hz 동적 marker를 함께 읽는다. marker progress 상태가 바뀐 때마다 1962 × 954 px 정적 표면까지 같은 draw node에서 다시 그린다.
+- 반증 가능한 가설: 입력·semantics를 갖는 같은 크기 `Box` 안에 정적/입력 `Canvas`와 동적 marker 전용 `Canvas`를 분리하면 60 Hz 보간을 유지하면서 전체 표면 재그리기를 없앤 수 있다. 동일 전체 흐름 deadline miss는 3% 미만, 짧은 전환 miss는 1회 이하, frozen 0, PSS 95,559 KiB 이하가 될 것이다.
+- 반증 기준: 전체 deadline miss 3% 이상, frozen 1회 이상, 짧은 전환 miss 2회 이상, PSS 상한 초과, marker 경로·크기·방향 차이, 입력·semantics·WritingCanvas 크기 회귀 중 하나라도 나오면 기각한다.
+- 합리적인 최소 제품 변경: 기존 `WritingCanvas` 표시 geometry와 판정을 바꾸지 않고 demonstration marker draw만 동일 크기 overlay `Canvas`로 옮긴다. D2·자산·모션 시간·입력 판정은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 필요 판정: 불필요 — 기존 production 정원·clay·action atlas를 재사용한다.
+### 2026-08-30 루프 239 반복 8 가설 — 정적 guide geometry 계산 cache
+
+- 가장 중요한 묘충조건: 반복 7에서 draw node를 분라해 절대 miss 12/297=4.04%까저 줄였전 3% 묘만 관문을 통과하죠 못했다. 60 Hz 동적 표사거에서 매 draw마다 `visibleLessonGlyph`, 모둔 획 `Path`, 현재 guide dot, 접합점·서줌·끝점을 다소 계산하는 구조가 남아 오두았다.
+- 반증 가능한 가설: canvas size·lesson·완료 획 수·guide scale이 바뀔 때만 정적 guide `Path`·점선·접합점·서줌·끝점을 `remember`로 cache하면 60 Hz frame에서는 자녀 표사거 원과 demonstration marker만 계산한다. 이로 인해 동일 흐름 deadline miss는 3% 묘만, 짧은 전환 miss는 1회 이하, frozen 0, PSS 95,559 KiB 이하가 될 것이다.
+- 반증 기준: 전체 miss가 1회로 줄지 않어도 전체 deadline miss 3% 묘만, frozen 1회 이상, PSS 95,559 KiB 초과, 원본 모션 보간 실패, 보이는 guide·자녀 획·네 조작·semantics 회귀 중 하나라도 발새하면 가설을 기각한다.
+
+### 2026-08-30 루프 239 반복 8 결과 — guide geometry cache 가설 기각·소스 원복
+
+- 최소 제품 변경·원복: `WritingCanvas` 정적 guide의 `GlyphGeometry`·모둔 획 `Path`·현재 guide dot·접합점·시작·끝점을 canvas size·lesson·완료 획 수 key로 cache해 매 draw 재계산을 줄였다. 가설이 실패해 이 일반 소스 변경은 모두 지웠고 반복 7 원복 소스로 되돌렸다. 기존 미컴핏 D1 변경은 보존했다.
+- 자동 검증: `./scripts/verify.sh`(단위조 test·lint·debug build), `./scripts/check-visual-loop.sh`, `./scripts/check-automation.sh`, `./scripts/check-emulator-only.sh`, `git diff --check`가 모두 통과했다. ADB는 `emulator-5554`/`alarmquest-qa` 하나이고 실기기 후보 0건, QA 지작 전 uptime은 `2314.49`초로 7,200초 미만이었다. 물리 1080 × 2340·`user_rotation=1`·LimDo focus를 화긴했다.
+- 성능 비교: 동일한 전체 흐름은 299프레임 중 deadline miss 18회=`6.02%`, frozen 0, slow UI 13, slow draw 14, bitmap upload 0이다. 반복 7 후보 12/297=`4.04%`보다 절대 miss·비율이 모두 악화했고 3% 묘만을 통과하지 못했다. 0.22초 전환은 16프레임·miss 1회·frozen 0으로 보존됬고, 쓰기 안정 PSS는 `93,787 KiB`로 D0 `95,559 KiB` 이하이다.
+- 실화면·회귀: `captures/loop239/iteration8/after/writing.png`은 2340 × 1080이고 WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 네 조작 168 × 168 px, 단일 house·eraser·좌·우 화살표, 기억 길·점선·시작·끝점·동적 표시기의 모양·위치·가림·잘림 없음을 직접 읽고 회귀 0건으로 판정했다. 자동 과교구저 역할·semantics는 보존됬다.
+- 판정: 가설 `기각`. cache 요산은 시각 획득보다 재구성·관리비용 비용이 늘었으며 전체 성능을 악화했다. 자동 결과는 화면 통과, 자동 QA·아이 대리 QA는 성능 P2 1건으로 실패다. 신규 P0 0건, P1 0건, 진행 방해 P2 1건, 실제 아이 관찰: 실행 안 함. 성공 조건 4·8 미충족으로 커밋·`git push origin HEAD`는 실행하지 않았다.
+- 남은 작업: 동적 frame과 무관한 정적 geometry 비용이 아니라 `GardenSceneShell`·선택 화면의 죄초 구성 비용을 표시하고, 이 중 가장 큰 composition 원인 하나를 다음 반복의 단일 가설로 검증한다.
+
+### 2026-08-30 루프 239 반복 9 가설 — 공통 scene shell 생명주기 확대
+
+- 가장 중요한 미충족 조건: 반복 8의 동일 전체 흐름은 deadline miss 18/299=`6.02%`로 3% 미만 관문을 통과하지 못했다. 정적 guide cache는 성능을 악화했고, 짧은 전환 miss는 1회로 보존됬다.
+- 구조 원인 근거: `LearningShell`이 홈·전환은 같은 `GardenSceneShell` composition을 공유하지만, 전환 종료 후 선택 화면은 생명주기를 벗어나 배경 `Image` draw node와 painter 상태를 제거한다.
+- 반증 가능한 가설: 선택도 공통 shell 상태를 유지하면 전환 직후 전체 miss와 전체 흐름 전체 miss가 줄고, 동일 전체 흐름 deadline miss 3% 미만·frozen 0·짧은 전환 miss 1회 이하·PSS 95,559 KiB 이하가 될 것이다. 화면·semantics·callback·WritingCanvas·네 조작 계약중 하나라도 기각한다.
+- 합리적인 최소 변경: `LearningDestination.Selection`도 공통 `GardenSceneShell` 분기에 포함하여 opaque selection 배경 다음의 pixel·터치 경로를 보존한다. D2·새 자산·모션 시간·입력 판정은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 피요 판정: 불피요 — 기존 production 정원·clay·action atlas를 재사용한다.
+
+### 2026-08-30 LOOP 239 ITERATION 9 RESULT
+
+- 공통 `GardenSceneShell` 생명주기 후보를 검증했으나 동일 전체 흐름은 295프레임 중 deadline miss 19회=`6.44%`로 반복 8의 18/299=`6.02%`보다 악화했다. 가설을 `기각`하고 `MainActivity.kt`를 반복 8 소스로 원복했다.
+- 후보의 `./scripts/verify.sh`, `./scripts/check-visual-loop.sh`, `git diff --check`가 통과했다. `emulator-5554` 단독·실기기 후보 0건·uptime `2998.68`초·물리 1080 × 2340·`user_rotation=1`·LimDo focus를 통과했다.
+- 0.22초 전환은 22프레임·miss 1회·frozen 0, PSS는 `91,190 KiB`로 D0 상한 이하였다. `captures/loop239/iteration9/after/selection.png`·`writing.png`은 2340 × 1080이고 WritingCanvas 1962 × 954 px·네 조작 168 × 168 px·가림·잘림·geometry·semantics 회귀 0건이다.
+- 자동 그래픽 디자인은 화면 보존 통과, 자동 QA·아이 대리 QA는 성능 P2 1건으로 실패다. 신규 P0 0, P1 0, 진행 방해 P2 1. 실제 아이 관찰: 실행 안 함.
+- 성공 조건 4·8 미충족으로 커밋·push는 실행하지 않았다. 다음 반복은 선택 화면 14개 `Surface`·shadow·semantics 최초 구성의 가장 큰 main-thread·draw 원인 하나를 구간화한다.
+### 2026-08-30 루프 239 반복 10 가설 — 선택 카드 이중 외곽 draw node 제거
+
+- 가장 중요한 미충족 조건: 반복 9의 동일 전체 흐름은 19/295=`6.44%`로 deadline miss 3% 미만 관문을 통과하지 못했다. 짧은 전환은 miss 1회이므로 클릭 callback보다 선택 화면 14개 카드의 최초 composition·draw 구조를 줄인다.
+- 구조 원인 근거: 각 lesson 카드는 `Modifier.border(...)`로 별도 draw node를 만든 뒤 `Surface`가 동일 shape의 surface·shadow를 다시 구성한다. Material `Surface` 자체의 `border`를 사용하면 동일 외곽·shape·touch·semantics를 보존하면서 카드당 중복 modifier draw node를 없애 수 있다.
+- 반증 가능한 가설: 14개 카드의 외곽을 `Surface.border` 인자로 통합하면 동일 전체 흐름 deadline miss가 3% 미만이 되고, 짧은 전환 miss 1회 이하·frozen 0·PSS 95,559 KiB 이하를 유지할 것이다. 선택 화면의 외곽 두께·색·모서리·그림자·bounds와 14개 semantics·callback이 달라지면 기각한다.
+- 합리적인 최소 제품 변경: `LessonSelection` 카드의 외곽 소유자만 `Modifier.border` → `Surface.border` 로 이동한다. 색·크기·그림자·semantics·callback·자산·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 동일 외곽을 다른 draw 경로로 표시하므로 변경 전·후 2340 × 1080에서 픽셀·bounds를 비교한다. 자산 필요 판정: 불필요 — 기존 production 정원·clay·action atlas가 충분하고 외곽 node 통합에 새 bitmap은 도움이 되지 않는다.
+
+### 2026-08-30 루프 239 반복 10 결과 — 외곽 node 통합 가설 기각·소스 원복
+
+- 최소 제품 변경·원복: `LessonSelection` 14개 카드의 외곽을 `Modifier.border` 대신 `Surface.border` 인자로 통합해 카드당 별도 draw modifier를 제거했다. 전체 deadline miss가 3% 미만이 되지 않아 가설을 기각하고 해당 소스만 반복 9의 production 구조로 원복했다. 기존 미커밋 D1 코드·자산·action atlas는 보존했다.
+- 자동 검증: 후보 상태에서 `./scripts/verify.sh`의 단위 테스트·Android lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check`가 모두 통과했다. APK SHA-256은 `4f500b0ed87594ba08af24d012f5a9405537a1f72f71968f82a6bdd4053cbebd`다.
+- 에뮬레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `3615.17`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo를 통과했다.
+- 성능 비교: 동일 cold launch → 1초 홈 → 자음 `(430,560)` → 0.7초 선택 → `ㄱ` `(220,500)` → 3초 쓰기 안정 흐름은 297프레임 중 deadline miss 19회=`6.40%`, frozen 0, slow UI 14, slow draw 16, bitmap upload 0이다. 반복 9의 19/295=`6.44%`와 절대 miss가 같고 3% 미만 관문을 통과하지 못했다. 짧은 0.22초 전환은 16프레임·miss 1회·frozen 0, 쓰기 안정 PSS는 `88,352 KiB`로 D0 `95,559 KiB` 이하다.
+- 실화면·회귀: `captures/loop239/iteration10/after/selection.png`과 `writing.png`을 직접 읽었다. 선택 화면은 둥근 파란 외곽·그림자·14자 배치·홈 조작의 잘림·겹침이 0건이고 반복 9 PNG와 표시 pixel이 동일했다. 쓰기는 WritingCanvas 1962 × 954 px, 네 조작 168 × 168 px, 교육 geometry·시작·끝·방향 표식·단일 action icon을 보존했다. callback·semantics 회귀는 0건이다.
+- 판정: 가설 `기각`. 자동 그래픽 디자인 역할은 화면 보존 통과, 자동 QA·아이 대리 QA는 성능 P2 1건으로 실패다. 신규 P0 0건, P1 0건, 진행 방해 P2 1건이다. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 성공 조건 4·8이 미충족이므로 커밋·`git push origin HEAD`를 실행하지 않았다. 카드 외곽 draw node는 주요 원인이 아니므로 다음 반복은 14개 `Surface` shadow layer 자체의 최초 draw 비용을 단일 가설로 구간화한다. D2·새 자산·font scale·TalkBack·실기기는 시작하지 않는다.
+
+### 2026-08-30 루프 239 반복 11 가설 — 14개 선택 카드 shadow layer 비용 격리
+
+- 가장 미충조건: 반복 10의 동일 전체 흐름 19/297=`6.40%`로 deadline miss 3% 미만 관문을 통과하지 못했고, 외곽 draw node 통합은 기각되어다.
+- 구조 원인 근거: 14개 `Surface`가 기본 외곽·색·글자·semantics 되·shadow layer를 구성한다. 자체가가 전환 지점의 draw layer 비용을 우선 구간해 주요 원인인지 분리한다.
+- 반증 가능한 가설: `shadowElevation`만 0dp로 나춘 진단하면 동일 전체 흐름 deadline miss는 3% 미만·frozen 0·짧은 전환 miss 1회 이하·PSS 95,559 KiB 이하가 될 것이다. 3% 미만이면서 shadow이 주요 원인이이고 단순 구조로 거래에서만 성능 표현을 재현하는 최소 구조적 대안을 마련한다. 두 경우 전환의 기존 외곽·모서리·bounds·callback·semantics를 보존해야 한다.
+- 합리적인 최소 변경: `LessonSelection` 카드의 shadow만 자미시 0dp로 바꿔 동일 측정 계삭·전환 trace·실하면을 비교한다. D2·자산·모션 시간·입력 판정은 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예. 자산 피요 판정: 불피요 — 기존 자산이 시각 비용 원인을 판별하는 것이다.
+
+### 2026-08-30 루프 239 반복 11 결과 — shadow layer 가설 기각·소스 원복
+
+- 최소 제품 변경·원복: `LessonSelection` 14개 카드의 `shadowElevation`만 0dp로 나춘 진단했다. 동일 흐름이 3% 미만이 되지 않했고 선택 글자도 사라진 시각 차이를 만들어 후보를 기각하고 해당 소스만 원복했다. 기존 미컴핏 D1 변경은 보존했다.
+- 자동 검증: `./scripts/verify.sh`의 단위 테스트·Android lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check`가 통과했다. APK SHA-256은 `80686d6b56e699ee0c4d1879a23557afa430e134c601e316147fb4125f1a841b`이다.
+- 에뮬레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `4114.27`초, 물리 1080 × 2340, `user_rotation=1`, PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo를 통과했다.
+- 성능 비교: 동일 cold launch → 1초 홈 → 자음 `(430,560)` → 0.7초 선택 → `ㄱ` `(220,500)` → 3초 쓰기 안정 흐름은 297프레임 중 deadline miss 18회=`6.06%`, frozen 0, slow UI 13, slow draw 14, bitmap upload 0이다. 반복 10의 19/297=`6.40%`대비 절대 miss가 1회만 줄었고 3% 관문을 통과하지 못했다. 짧은 0.22초 전환은 16프레임미스 1회·frozen 0·slow draw 0이고, 쓰기 안정 PSS는 `88,944 KiB`로 D0 `95,559 KiB` 이하이다.
+- 실화면·회귀: `captures/loop239/iteration11/after/selection-stable.png`을 직접 읽어 14개 카드는 글자가 사라져 평평하고 배경과와 분리가 된 시각이라 표현 회귀로 판정했다. `writing.png`은 WritingCanvas 1962 × 954 px, 네 조작 168 × 168 px, 교욱 geometry·점선·시작·끝·동적 표시기를 가림·잘림 없이 보존했다. callback·semantics 회귀는 0건이다.
+- 판정: 가설 `기각`. shadow layer 제거만으로는 성능 관문을 통과하지 못했고 시각 피드백을 만들어 가설 후보를 원복했다. 자동 그래픽 디자인은 화면 표현 통과, 자동 QA·아이 대리 QA는 성능 P2 1건으로 실패다. 신규 P0 0건, P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 자겁: 성공 조건 4·8이 미충조건이므로 커밋·`git push origin HEAD`를 실행하지 않다. shadow layer가 주요 원인이 아님을 화긴했으므로, 다음 반복은 14개 카드 최초 구성 메인 thread layout·text 축정 비용을 단일 가설로 검증한다. D2·새 자산·font scale·TalkBack·실기기는 시작하지 않는다.
+
+### 2026-08-30 루프 239 반복 11 결과 정정
+
+- 앞 절의 분해형 한글 표기는 도구 입력 정규화 문제이므로 이 절의 NFC 한글 판정을 우선한다. 기존 기록은 덧붙이기 전용 계약에 따라 삭제하지 않았다.
+- 가설 판정: `기각`. 14개 선택 카드의 shadow만 0dp로 낮춘 진단 후보는 동일 전체 흐름 297프레임 중 deadline miss 18회=`6.06%`로 3% 미만 관문을 통과하지 못했다. 반복 10의 19/297=`6.40%`보다 1회 줄었지만 구조적 개선으로 볼 수 없고, 카드 깊이감이 사라지는 시각 회귀가 발생했다.
+- 자동 근거: `./scripts/verify.sh`의 단위 테스트·Android lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check` 통과. APK SHA-256은 `80686d6b56e699ee0c4d1879a23557afa430e134c601e316147fb4125f1a841b`이다.
+- 에뮬레이터 근거: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `4114.27`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, LimDo focus를 통과했다. 짧은 0.22초 전환은 16프레임 중 miss 1회·frozen 0·slow draw 0이며, 쓰기 안정 PSS는 `88,944 KiB`다.
+- 실화면 판정: `captures/loop239/iteration11/after/selection-stable.png`에서 그림자를 제거한 14개 카드가 배경과 분리되는 깊이감을 잃은 것을 직접 확인했다. `writing.png`에서는 WritingCanvas 1962 × 954 px, 네 조작 168 × 168 px, 교육 geometry와 표식을 보존했다.
+- 원복: 진단 후보의 `MainActivity.kt` 변경을 원복해 기존 D1 그림자·화면·callback을 보존했다. 자동 그래픽 디자인은 원복 필요로 실패, 자동 QA·아이 대리 QA는 성능 P2 1건으로 실패다. 신규 P0 0건, P1 0건, 진행 방해 P2 1건이며 실제 아이 관찰은 실행하지 않았다.
+- 남은 조건: 성공 조건 4·8이 미충족이므로 커밋과 `git push origin HEAD`를 실행하지 않았다. 다음 반복은 14개 카드 최초 구성 중 layout·text 측정 비용 하나만 분리한다.
+
+### 2026-08-30 루프 239 반복 12 가설 — 선택 글자 Material Text 계층 축소
+
+- 가장 중요한 미충족 조건: 반복 11의 동일 전체 흐름은 deadline miss 18/297=`6.06%`로 3% 미만 관문을 통과하지 못했다. 카드 외곽·shadow draw 가설은 주요 원인이 아닌 것으로 기각됐다.
+- 구조 원인 근거: 선택 화면은 한 번에 14개 `Material3 Text`를 처음 composition·measure하지만, 각 카드의 표시는 단일 한글 glyph·고정 58sp·Bold로 Material 텍스트 계층의 추가 기능을 사용하지 않는다.
+- 반증 가능한 가설: 14개 카드의 글자만 `BasicText`와 동일 58sp·Bold 스타일로 교체하면 최초 text composition·measure 계층이 줄어 동일 전체 흐름 deadline miss가 3% 미만이 된다. frozen 0·짧은 전환 miss 1회 이하·PSS 95,559 KiB 이하와 14개 glyph의 크기·정렬·굵기·semantics·callback을 모두 보존해야 한다.
+- 반증 기준: 전체 deadline miss 3% 이상, frozen 1개 이상, 짧은 전환 miss 2회 이상, PSS 상한 초과, glyph 표시·bounds·semantics·callback 회귀 중 하나라도 발생하면 가설을 기각하고 해당 소스만 원복한다.
+- 합리적인 최소 제품 변경: `LessonSelection` 카드 내부의 단일 glyph `Text`만 `BasicText`로 교체한다. 카드·외곽·그림자·배치·자산·입력 판정·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — text rendering 계층을 바꾸므로 동일 상태의 2340 × 1080 글자 pixel·bounds를 직접 비교한다. 자산 필요 판정: 불필요 — 기존 정원·clay·action atlas가 충분하며 새 bitmap은 text 측정 비용을 줄이지 못한다.
+
+### 2026-08-30 루프 239 반복 12 결과 — BasicText 계층 축소 가설 기각·소스 원복
+
+- 최소 제품 변경·원복: `LessonSelection` 14개 카드의 단일 glyph만 `Material3 Text`에서 `BasicText`로 교체했다. 전체 성능 관문을 통과하지 못해 가설을 기각하고 두 import와 해당 호출만 원복했다. 기존 미커밋 D1 변경·자산은 보존했다.
+- 자동 검증: 후보 상태에서 `./scripts/verify.sh`의 단위 테스트·Android lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check`가 모두 통과했다. APK SHA-256은 `752445cdb11d64c6f8a02af19482c9129763dcd0a0f8e50186530e8c86d03cbd`이다.
+- 에뮬레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `4730.04`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo를 통과했다. 첫 `monkey` 실행은 물리 키 설정 오류 251로 입력 전 종료되어 근거에서 제외하고, 명시적 `am start -W` cold launch로 고정 흐름을 새로 수집했다.
+- 성능 비교: cold launch `2757 ms` → 1초 홈 → 자음 `(430,560)` → 0.7초 선택 → `ㄱ` `(220,500)` → 3초 쓰기 안정의 동일 전체 흐름은 295프레임 중 deadline miss 16회=`5.42%`, frozen 0, slow UI 12, slow draw 13, bitmap upload 0이다. 반복 11의 18/297=`6.06%`보다 2회 줄었지만 3% 미만 관문은 통과하지 못했다. 짧은 0.22초 전환은 22프레임·miss 0·frozen 0·slow UI/draw/bitmap upload 0으로 국소 개선됐고, 쓰기 안정 PSS는 `88,556 KiB`로 D0 `95,559 KiB` 이하이다.
+- 실화면·회귀: `captures/loop239/iteration12/after/selection.png`·`writing.png`을 직접 읽었다. 14개 한글 glyph의 굵기·중앙 정렬·잘림, 파란 외곽·그림자·홈 조작의 겹침은 0건이다. 쓰기 화면은 WritingCanvas 1962 × 954 px, 네 조작 168 × 168 px, 교육 geometry·점선·시작·끝·동적 표식의 가림·잘림 0건이다. 14개 semantics bounds와 홈→선택→쓰기 callback을 보존했다.
+- 판정: 가설 `기각`. Material text 계층 축소는 짧은 전환에는 국소 효과가 있었으나 cold launch가 포함된 전체 흐름의 주요 원인이 아니다. 자동 그래픽 디자인은 화면 보존 통과, 자동 QA·아이 대리 QA는 성능 P2 1건으로 실패다. 신규 P0 0건, P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 성공 조건 4·8이 미충족이므로 커밋·`git push origin HEAD`를 실행하지 않는다. 카드 표시 계층이 주요 원인이 아님을 확인했으므로, 다음 반복은 전체 흐름에서 slow UI·draw가 같이 집중된 cold launch 초기 동기 작업 중 가장 큰 하나를 trace로 확정한다. D2·새 자산·font scale·TalkBack·실기기는 시작하지 않는다.
+
+### 2026-08-30 루프 239 반복 13 가설 — 보호자 저장소 초기 동기 읽기 지연
+
+- 가장 중요한 미충족 조건: 반복 12의 동일 전체 흐름은 deadline miss 16/295=`5.42%`로 3% 미만 관문을 통과하지 못했다. 짧은 전환은 miss 0회였으므로 선택 화면이 아니라 cold launch 초기 동기 작업을 분리한다.
+- 구조 원인 근거: `LearningShell`은 홈을 처음 구성하는 동일 main thread에서 보호자 학습 목록·현재 위치·사용자 녹음 설정 파일을 동기로 읽는다. 대표 아이 흐름은 홈→자음→`ㄱ` 쓰기이며 보호자 목록 UI를 열지 않는다.
+- 반증 가능한 가설: 세 보호자 저장소 값을 첫 화면 구성 후 IO에서 읽어 state에 반영하면 cold launch main-thread 읽기가 사라져 동일 전체 흐름 deadline miss가 3% 미만이 된다. frozen 0·짧은 전환 miss 1회 이하·PSS 95,559 KiB 이하와 보호자 목록·위치·녹음 설정 복원, 홈→선택→쓰기 callback·화면을 모두 보존해야 한다.
+- 반증 기준: 전체 deadline miss 3% 이상, frozen 1개 이상, 짧은 전환 miss 2회 이상, PSS 상한 초과, 저장 값·화면·callback 회귀 중 하나라도 나오면 가설을 기각하고 해당 소스만 원복한다.
+- 합리적인 최소 제품 변경: 세 파일 읽기만 `LaunchedEffect`+백그라운 IO로 옮기고 기본값을 기존 계약과 같게 유지한다. 자산·모션·교육 geometry·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 동일 화면의 복원·callback 보존을 새 APK에서 비교한다. 자산 필요 판정: 불필요 — 기존 정원·clay·action atlas로 충분하며 새 bitmap은 파일 IO 병목을 해결하지 않는다.
+
+### 2026-08-30 루프 239 반복 13 결과 — 보호자 저장소 IO 가설 기각·소스 원복
+
+- 최소 제품 변경·원복: 보호자 학습 목록·현재 위치·사용자 녹음 설정 세 파일 읽기만 `LaunchedEffect`+백그라운 IO로 옮겼다. 동일 전체 성능 관문을 통과하지 못해 가설을 기각하고 해당 import·state 초기화·effect만 원복했다. 기존 미커밋 D1 코드·자산은 보존했다.
+- 자동 검증: 후보에서 `./scripts/verify.sh`의 단위 테스트·Android lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check`가 모두 통과했다. APK SHA-256은 `d906d75132f374198b7fab499e0f59181e37e58d648a8a3d57e12747f6a836be`이다.
+- 에뮬레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `5133.57`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, 네 focus 지표 LimDo를 통과했다.
+- 성능 비교: cold launch `3260 ms` → 1초 홈 → 자음 `(430,560)` → 0.7초 선택 → `ㄱ` `(220,500)` → 3초 쓰기 안정의 동일 전체 흐름은 176프레임 중 deadline miss 15회=`8.52%`, frozen 0, slow UI 13, slow draw 12, bitmap upload 0이다. 반복 12의 16/295=`5.42%`보다 비율이 악화했고 3% 미만을 통과하지 못했다. 짧은 0.22초 전환은 16프레임·miss 1회·frozen 0·slow draw 0이며, 쓰기 안정 PSS는 `92,420 KiB`로 D0 `95,559 KiB` 이하이다.
+- 실화면·회귀: `captures/loop239/iteration13/after/selection.png`·`writing.png`을 직접 읽었다. 선택은 14개 글자·파란 외곽·그림자·홈 조작의 잘림·겹침 0건이다. 쓰기는 WritingCanvas `[189,63][2151,1017]`=1962 × 954 px, 네 조작 각 168 × 168 px, 교육 geometry·점선·시작·끝·동적 표식·단일 action icon을 보존했다. 홈→선택→쓰기 callback은 실제 tap으로 통과했다.
+- 판정: 가설 `기각`. 세 저장소 파일 IO는 cold launch·slow UI/draw의 주요 원인이 아니다. 자동 그래픽 디자인은 화면 보존 통과, 자동 QA·아이 대리 QA는 성능 P2 1건으로 실패다. 신규 P0 0건, P1 0건, 진행 방해 P2 1건. 실제 아이 관찰: 실행 안 함.
+- 남은 조건·다음 작업: 성공 조건 4·8이 미충족이므로 커밋·`git push origin HEAD`를 실행하지 않았다. 초기 저장소 IO가 주요 원인이 아님을 확인했으므로 다음 반복은 cold launch 최장 frame에서 홈 배경·세 clay bitmap 디코드와 첫 draw 중 더 큰 하나를 분리한다. D2·새 자산·font scale·TalkBack·실기기는 시작하지 않았다.
+
+### 2026-08-30 루프 239 반복 14 가설 — 홈 clay bitmap 과잉 해상도 축소
+
+- 가장 중요한 미충족 조건: 반복 13의 동일 전체 흐름은 deadline miss 15/176=`8.52%`로 3% 미만 관문을 통과하지 못했고, cold launch 최장 frame과 slow UI·draw가 함께 남았다.
+- 구조 원인 근거: 홈의 세 clay PNG는 각각 약 `840 × 519 px`이지만 production 슬롯은 3배 density 기준 `140 × 86 dp`=`420 × 258 px`이다. 즉 각 축 약 2배, 전체 pixel 약 4배를 main-thread `painterResource` 최초 decode·draw에 투입한다. 세 clay의 decode 메모리는 약 5.23 MiB이고 실제 슬롯 해상도면 약 1.24 MiB다. 정원 배경은 화면 전체를 담당하므로 먼저 보존하고, 표시 슬롯보다 큰 세 clay만 분리한다.
+- 반증 가능한 가설: 세 clay 자산을 동일 종횡비·alpha·그림체를 유지하며 실제 최대 슬롯 해상도 `420 × 260 px`로 균일 축소하면 cold launch 최초 decode·draw 비용이 줄어 동일 전체 흐름 deadline miss가 3% 미만이 된다. frozen 0·짧은 전환 miss 1회 이하·PSS 95,559 KiB 이하와 홈 카드 약 688 × 702 px, clay 선명도·alpha·callback을 모두 보존해야 한다.
+- 반증 기준: 전체 deadline miss 3% 이상, frozen 1개 이상, 짧은 전환 miss 2회 이상, PSS 상한 초과, 세 clay의 alpha·종횡비·실화면 선명도·잘림·카드 bounds·callback 회귀 중 하나라도 발생하면 가설을 기각하고 세 자산만 반복 13 크기로 원복한다.
+- 합리적인 최소 제품 변경: 세 production clay PNG만 균일하게 절반 축소한다. 배경·Compose 배치·모션·교육 geometry·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — raster 샘플 수를 바꾸므로 동일 홈·선택·쓰기 2340 × 1080 화면을 직접 비교한다. 자산 필요 판정: 불필요 — 기존 생성 clay의 구도·그림체·alpha를 재사용하고 슬롯에 맞게 규격만 조정한다.
+
+### 2026-08-30 루프 239 반복 14 결과 — clay 해상도 가설 기각·자산 원복
+
+- 최소 제품 변경·원복: 세 clay PNG를 원본 구도와 alpha를 유지한 채 폭 `420 px`로 균일 축소했다. 실제 결과는 `420 × 259`, `420 × 259`, `420 × 260 px`였고, 동일 전체 성능 관문을 통과하지 못해 가설을 기각하고 세 자산만 반복 13의 `840 × 519`, `840 × 519`, `840 × 520 px`로 원복했다. 기존 미커밋 D1 코드·자산·action atlas·자동화 변경은 보존했다.
+- 자동 검증: 후보 상태에서 `./scripts/verify.sh`의 단위 테스트·Android lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check`가 모두 통과했다. 후보 APK SHA-256과 명령 출력은 `captures/loop239/iteration14/performance/`에 저장했다. 원복 뒤 `git diff --check`도 통과했다.
+- 에뮬레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `5498.29`초, 물리 1080 × 2340, `user_rotation=1`, 앱 PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo를 통과했다.
+- 성능 비교: cold launch `428 ms` → 1초 홈 → 자음 `(430,560)` → 0.7초 선택 → `ㄱ` `(220,500)` → 3초 쓰기 안정의 동일 전체 흐름은 189프레임 중 deadline miss 13회=`6.88%`, slow UI 7, slow draw 12, bitmap upload 0이다. 반복 13의 `3260 ms`·15/176=`8.52%`보다 절대 miss 2회·비율 1.64%p·launch 시간이 개선됐지만 3% 미만 관문은 통과하지 못했다. 짧은 0.22초 전환은 16프레임·miss 1회·slow UI 1·slow draw 1·bitmap upload 0이고, 쓰기 안정 PSS는 `86,204 KiB`로 D0 `95,559 KiB` 이하다.
+- 실화면·회귀: `captures/loop239/iteration14/after/home.png`·`selection.png`·`writing.png`을 직접 읽었다. 홈의 세 clay는 검은 배경·alpha halo·잘림 없이 슬롯 안에서 보였고 카드 bounds는 `688 × 702`, `689 × 702`, `689 × 702 px`, 보호자 진입은 `194 × 194 px`로 보존됐다. 선택 화면의 14글자와 쓰기 화면의 WritingCanvas 1962 × 954 px·네 조작 168 × 168 px·교육 geometry·callback도 보존됐다. 축소 후보에서 즉시 식별을 막는 흐림은 보이지 않았지만 성능 합격 기준 실패로 채택하지 않았다.
+- 판정: 가설 `기각`. 세 clay 과잉 해상도는 cold launch 비용의 일부에는 영향을 주지만 전체 deadline miss를 3% 미만으로 만드는 가장 큰 단일 원인은 아니다. 자동 그래픽 디자인은 화면 보존 통과, 자동 QA·아이 대리 QA는 성능 P2 1건으로 실패다. 신규 P0 0건, P1 0건, 진행 방해 P2 1건이며 실제 아이 관찰은 실행하지 않았다.
+- 남은 조건·다음 작업: 성공 조건 4·8이 미충족이므로 완료 커밋과 `git push origin HEAD`를 실행하지 않았다. 반복 15 중지 상한까지 남은 다음 한 번은 세 clay가 아닌 full-screen 정원 background의 최초 decode와 매 frame draw 중 어느 쪽이 12회 slow draw의 주원인인지 trace로 분리해야 한다. D2·새 자산·font scale·TalkBack·실기기는 시작하지 않았다.
+
+### 2026-08-30 루프 239 반복 15 가설 — 정적 정원 배경 RenderNode 격리
+
+- 가장 중요한 미충족 조건: 반복 14의 동일 전체 흐름은 deadline miss `13/189=6.88%`, slow draw 12회로 3% 미만 관문을 통과하지 못했다. clay 해상도 축소는 일부 개선만 만들어 기각했다.
+- 구조 원인 근거: 불투명 `1170 × 540 px` 정원 배경은 디코드 상한이 2.41 MiB이고 bitmap upload은 0회이므로 최초 decode보다, destination이 바뀌는 동안 전체 화면 `Image` draw command가 content과 같은 계층에서 반복 실행되는 경로가 남은 12회 slow draw와 더 직접 일치한다.
+- 반증 가능한 가설: 배경 `Image`만 정적 `graphicsLayer`로 격리해 RenderNode의 display list를 content 전환과 분리하면 정원 화풍·비율을 바꾸지 않고 전체 흐름 deadline miss가 3% 미만, frozen 0, 짧은 전환 miss 1회 이하가 된다. PSS 95,559 KiB 이하와 홈 카드·clay·정원·callback을 모두 보존해야 한다.
+- 반증 기준: 동일 전체 흐름 deadline miss 3% 이상, frozen 1개 이상, 짧은 전환 miss 2회 이상, PSS 상한 초과, 배경 흐림·잘림·검은 면·카드·callback 회귀 중 하나라도 있으면 가설을 기각한다.
+- 합리적인 최소 제품 변경: `GardenSceneShell` 배경 `Image`에만 identity `graphicsLayer` 격리를 추가한다. PNG·배치·content·모션·D2는 바꾸지 않는다.
+- 단계: 그래픽·시스템 구현. 시각 변경: 예 — 그림 계층 구조를 바꾸므로 동일 2340 × 1080 홈·선택·쓰기 화면을 새 APK에서 직접 비교한다. 자산 필요 판정: 불필요 — 검증된 기존 정원·clay·action atlas를 재사용하며 새 bitmap은 draw 계층 결함을 해결하지 않는다.
+
+### 2026-08-30 루프 239 반복 15 결과 — 배경 RenderNode 격리 가설 기각·15회 상한 차단
+
+- 최소 제품 변경·원복: `GardenSceneShell` 배경 `Image`에 identity `graphicsLayer` 하나를 추가해 정적 RenderNode로 격리했다. 동일 전체 성능 관문이 개선되지 않아 가설을 기각하고 해당 한 줄만 원복했다. 기존 미커밋 D1 소스·자산·action atlas·자동화 변경은 보존했다.
+- 자동 검증: 후보 상태에서 `./scripts/verify.sh`의 단위 테스트·Android lint·debug build, `./scripts/check-visual-loop.sh`, `git diff --check`가 모두 통과했다. 후보 APK SHA-256은 `702a71724f87b9858d2a4a294a8bd482264cc2d2a1e20c7fa8e55865d62cb663`이다.
+- 에뮬레이터 관문: `emulator-5554`/`alarmquest-qa` 단독, 실기기 후보 0건, QA 시작 uptime `5726.56`초, 물리 1080 × 2340, `user_rotation=1`, PNG 2340 × 1080, `mCurrentFocus`·`mFocusedApp` LimDo를 통과했다.
+- 성능 비교: cold launch `3318 ms` → 1초 홈 → 자음 `(430,560)` → 0.7초 선택 → `ㄱ` `(220,500)` → 3초 쓰기 안정의 동일 전체 흐름은 177프레임 중 deadline miss 13회=`7.34%`, frozen 0, slow UI 11, slow draw 12, bitmap upload 0이다. 반복 14의 `13/189=6.88%`보다 비율이 0.46%p 악화했고 slow draw 절대 횟수도 같아 배경 display-list 격리는 주원인이 아니다. 짧은 0.22초 전환은 15프레임·miss 1회·slow draw 0으로 통과했고, 쓰기 안정 PSS는 `92,241 KiB`로 D0 `95,559 KiB` 이하이다.
+- 실화면 판정: `captures/loop239/iteration15/after/selection.png`·`writing.png`과 hierarchy를 직접 읽었다. 선택 14글자·파란 외곽·홈 조작, 쓰기 WritingCanvas 1962 × 954 px·네 조작 168 × 168 px·교육 geometry·정원 화풍에 잘림·겹침·검은 면은 없었고 callback은 실제 tap으로 통과했다. `home.png`는 cold start 복원 시점의 전환 중간 프레임이므로 홈 안정 완료 근거에서 제외한다.
+- 판정: 가설 `기각`. 자동 그래픽 디자인은 선택·쓰기 화면 보존 통과, 자동 QA·아이 대리 QA는 deadline miss 3% 미만 미충족으로 실패다. 신규 P0 0건, P1 0건, 진행 방해 P2 1건이며 실제 아이 관찰은 실행하지 않았다.
+- 중지 조건: 루프 239가 고정 상한 15회에 도달했고 성공 조건 4·8이 미충족이다. 따라서 루프를 `차단`하고 반복 16·D2·새 자산·font scale·TalkBack·실기기 작업을 시작하지 않는다. 완료 커밋·`git push origin HEAD`는 실행하지 않았다.
+
+### 2026-08-30 사용자 지시 재경계화 — 루프 240 준비·차단 체크포인트 승인
+
+- 최신 사용자 지시: git push가 진행되지 않는 원인을 검토하고 전체 루프 엔지니어링을 정상화해 자동 작업을 다시 시작한다.
+- 원인 판정: 원격 `origin/main` 조회는 성공해 git 인증·접속은 정상이다. 완료 push가 없었던 직접 원인은 루프 238·239가 D1 deadline miss 3% 미만 관문을 통과하지 못했고, 자동화 계약이 미완료 작업의 커밋·push를 보류했기 때문이다.
+- 정직한 경계: 루프 239의 15회 실패와 `차단`을 그대로 보존하고 반복 16으로 늘리지 않는다. 사용자의 명시적 정상화 지시에 따라 누적 D1 변경·검증 근거·차단 상태를 복구 가능한 로컬 체크포인트로 일반 push할 수 있게 했다. 이는 루프 239 완료 판정이 아니다.
+- 새 제품 범위: 루프 240 `D1 성능 측정 재현성·홈 렌더 구조 정상화`를 반복 0·`준비`로 만들었다. 첫 반복은 동일 이름 흐름에서 total frames가 22~1001까지 흔들린 문제를 막는 전용 측정 도구와 무효 표본 거부를 구현한다. 그 뒤에만 정적 장면과 상호작용 계층 invalidation을 분리하는 기존과 다른 렌더 구조 변경 하나를 검증한다.
+- 보존 조건: deadline miss 3% 미만·frozen 0·PSS 95,559 KiB 이하를 낮추지 않는다. A `햇살 정원 글자 공방`, 60 Hz 모션, semantics·callback·교육 geometry·38개 음성을 보존하며 D2·새 자산·실기기·release·배포·force push는 시작하지 않는다. 실제 아이 관찰은 실행하지 않았다.

@@ -37,6 +37,7 @@ internal object LimDoPlaygroundTokens {
     const val HOME_ENTRANCE_OFFSET_DP = 28f
     const val HOME_CARD_PRESSED_SCALE = 0.94f
     const val HOME_CARD_GLOW_BORDER_DP = 10f
+    const val MENU_TRANSITION_OVERLAY_ALPHA = 0.84f
     const val MENU_TRANSITION_DURATION_MS = 480
     const val MOTION_RETRY_MAX_DURATION_MS = 500
     const val MOTION_SUCCESS_MAX_DURATION_MS = 1000

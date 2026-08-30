@@ -190,12 +190,23 @@ private fun LearningShell(
     }
 
     when (val current = destination) {
-        LearningDestination.Home -> LearningMenuHome(
-            onSelect = {
-                destination = LearningDestination.MenuTransition(it)
-            },
-            onOpenGuardian = { destination = LearningDestination.GuardianLessons },
-        )
+        LearningDestination.Home,
+        is LearningDestination.MenuTransition,
+        -> GardenSceneShell {
+            when (current) {
+                LearningDestination.Home -> LearningMenuHome(
+                    onSelect = {
+                        destination = LearningDestination.MenuTransition(it)
+                    },
+                    onOpenGuardian = { destination = LearningDestination.GuardianLessons },
+                )
+                is LearningDestination.MenuTransition -> MenuSelectionTransition(
+                    menu = current.menu,
+                    onFinished = { destination = LearningDestination.Selection(current.menu) },
+                )
+                else -> error("GardenSceneShell에서 처리할 수 없는 화면입니다.")
+            }
+        }
         LearningDestination.GuardianLessons -> GuardianLessonScreen(
             onClose = { destination = LearningDestination.Home },
             onOpenStartRecording = { destination = LearningDestination.GuardianStartRecording(it) },
@@ -257,10 +268,6 @@ private fun LearningShell(
                 destination = LearningDestination.GuardianLessons
             },
         )
-        is LearningDestination.MenuTransition -> MenuSelectionTransition(
-            menu = current.menu,
-            onFinished = { destination = LearningDestination.Selection(current.menu) },
-        )
         is LearningDestination.Selection -> LessonSelection(
             menu = current.menu,
             onSelect = { lesson ->
@@ -306,6 +313,23 @@ private fun LearningShell(
 }
 
 @Composable
+private fun GardenSceneShell(content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LimDoPlaygroundTokens.warmCream),
+    ) {
+        Image(
+            painter = painterResource(R.drawable.limdo_sunny_garden_scene_background),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize(),
+        )
+        content()
+    }
+}
+
+@Composable
 private fun MenuSelectionTransition(
     menu: LearningMenu,
     onFinished: () -> Unit,
@@ -318,23 +342,31 @@ private fun MenuSelectionTransition(
         )
         onFinished()
     }
-    val transition = menuTransitionVisuals(progress.value)
     val visuals = menu.visuals()
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(visuals.softSurface)
             .semantics(mergeDescendants = true) {
                 contentDescription = "${menu.label} 선택 이동, ${menu.symbol}"
             },
         contentAlignment = Alignment.Center,
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    visuals.softSurface.copy(
+                        alpha = LimDoPlaygroundTokens.MENU_TRANSITION_OVERLAY_ALPHA,
+                    ),
+                ),
+        )
         Text(
             text = menu.symbol,
             color = visuals.accent,
             fontSize = 96.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.graphicsLayer {
+                val transition = menuTransitionVisuals(progress.value)
                 alpha = transition.symbolAlpha
                 scaleX = transition.symbolScale
                 scaleY = transition.symbolScale
@@ -349,9 +381,7 @@ private fun LearningMenuHome(
     onOpenGuardian: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(LimDoPlaygroundTokens.playgroundBackground),
+        modifier = Modifier.fillMaxSize(),
     ) {
         Row(
             modifier = Modifier
@@ -366,6 +396,7 @@ private fun LearningMenuHome(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             LearningMenu.entries.forEachIndexed { index, menu ->
+            key(menu) {
             val visuals = menu.visuals()
             val interactionSource = remember { MutableInteractionSource() }
             val isPressed by interactionSource.collectIsPressedAsState()
@@ -412,9 +443,22 @@ private fun LearningMenuHome(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
+                    Image(
+                        painter = painterResource(
+                            when (menu) {
+                                LearningMenu.CONSONANTS -> R.drawable.limdo_home_consonant_clay
+                                LearningMenu.VOWELS -> R.drawable.limdo_home_vowel_clay
+                                LearningMenu.GANADA -> R.drawable.limdo_home_syllable_clay
+                            },
+                        ),
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.size(width = 140.dp, height = 86.dp),
+                    )
                     Text(menu.symbol, fontSize = 76.sp, fontWeight = FontWeight.Bold)
                     Text(menu.label, fontSize = 26.sp, fontWeight = FontWeight.Bold)
                 }
+            }
             }
             }
         }
